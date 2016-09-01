@@ -1,6 +1,6 @@
 close all; clear all;
 % Get all the json logs 
-listing = dir('pushing_data/rect1_json/*v=10_i*.json');
+listing = dir('pushing_data/rect1_json/*v=300_i*.json');
 num_files = length(listing);
 num_samples = 8;
 all_wrenches_local = zeros(num_files * num_samples, 3);
