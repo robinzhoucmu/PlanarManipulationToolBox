@@ -1,29 +1,29 @@
 % Fit a convex 4th order homogenous polynomial.
 % Input:
 % Force, Vel: 3*N matrix.
-% lambda: weight for norm of coefficients.
 % gamma: weight for vel matching.
 % beta: weight for force matching.
 % Output:
 % v_{15,1}: for the coeffs of the polynomial.
-function [v, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(Force, Vel, lambda, gamma, beta, flag_convex, flag_plot)
+% xi: surrogate distance to the 1-level set for each input wrench point.
+% delta: surrogate velocity alignment error.
+% pred_V: predicted twists for each input wrench point.
+% s: positive projection of twists onto the predicted twist.
+
+function [v, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(Force, Vel, gamma, beta, flag_convex, flag_plot)
+lambda = 1;
 if (nargin == 2) 
-    lambda = 1;
     gamma = 1;
     beta = 1;
 end
 if (nargin == 3)
-    gamma = lambda;
-    beta = 1;
-end
-if (nargin == 4)
     beta = 1;
 end
 % Default is with convexity constraint.
-if (nargin < 6)
+if (nargin < 5)
     flag_convex = 1;
 end
-if (nargin < 7)
+if (nargin < 6)
     flag_plot = 1;
 end
 % Extract row vector.
@@ -51,10 +51,8 @@ if (flag_convex == 1)
         cvx_precision high
         variable Q(9,9) semidefinite
         variables v(15) xi(n) delta(n) s(n) Z(n,3) H(10,3)     
-    %minimize(lambda * norm(v) + beta * sum(xi) + gamma * sum(delta))
     minimize(lambda * norm(v) + beta * norm(xi) + gamma * norm(delta))
     subject to 
-        %sum(v) == 1
         % Point Fitting Constraints.
         H == [4*v(1), v(4), v(5); ...
               3*v(4), 2*v(10), v(13); ...
@@ -72,12 +70,7 @@ if (flag_convex == 1)
             Z(i,:) == G(i,:) * H
             norm(Z(i,:) - s(i) * Vel(:,i)') <= delta(i)
             s(i) >= scaling_min
-%             norm([0 Vel(3,i) -Vel(2,i);
-%                   -Vel(3,i) 0 Vel(1,i);
-%                   Vel(2,i) -Vel(1,i) 0] * Z(i,:)') <= delta(i)
-%            Z(i,:) * Vel(:,i) >= 0 
         end
-%           sum(sum(H)) == 1
         % Convexity constraints.
         Q(1,1) == 12 * v(1);
         Q(1,2) + Q(2,1) == 6 * v(4);
@@ -116,15 +109,12 @@ if (flag_convex == 1)
         Q(8,9) + Q(9,8) == 6*v(9);
         Q(9,9) == 12*v(3);
     cvx_end
-    %mean(s)
-    %v
 else
     cvx_begin quiet
     cvx_precision high
     variables v(15) xi(n) delta(n) s(n) Z(n,3) H(10,3)     
     minimize(lambda * norm(v) + beta * sum(xi) + gamma * sum(delta))
     subject to 
-        %sum(v) == 1
         % Point Fitting Constraints.
         H == [4*v(1), v(4), v(5); ...
               3*v(4), 2*v(10), v(13); ...
@@ -142,13 +132,8 @@ else
             Z(i,:) == G(i,:) * H
             norm(Z(i,:) - s(i) * Vel(:,i)') <= delta(i)
             s(i) >= scaling_min
-%             norm([0 Vel(3,i) -Vel(2,i);
-%                   -Vel(3,i) 0 Vel(1,i);
-%                   Vel(2,i) -Vel(1,i) 0] * Z(i,:)') <= delta(i)
         end
-%        sum(sum(H)) == 1
     cvx_end
-%    mean(s)
 end
 
 % disp('velocity matching error');

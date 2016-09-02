@@ -1,10 +1,10 @@
 % Fit elipsoid (e.g., min volumn enclosing elipsoid) 
 % given force and velocities using CVX.
 % F, V: 3*N matrix. 
-% lambda: tradeoff parameter for fitting force.
-% gamma: tradeoff parameter for regularization.
+% gamma: tradeoff parameter for aligning twists.
+% beta: tradeoff parameter for fitting wrenches.
 % A: x^Ax - 1 = 0;
-function [A, xi, delta, pred_V_dir, s] = FitElipsoidForceVelocityCVX(F, V, lambda, gamma, flag_convex, flag_plot)
+function [A, xi, delta, pred_V_dir, s] = FitElipsoidForceVelocityCVX(F, V, gamma, beta, flag_convex, flag_plot)
 if nargin <=4
     flag_convex = 1;
 end
@@ -18,34 +18,24 @@ if (flag_convex)
     cvx_begin quiet
         variable A(d,d) semidefinite
         variables xi(n) s(n) delta(n)
-    minimize( gamma * norm(A, 'fro') + lambda * sum(xi) + sum(delta))
+    minimize( norm(A, 'fro') + beta * sum(xi) + gamma * sum(delta))
     subject to
         for i = 1:n
            norm(F(:,i)' * A * F(:,i) - 1) <= xi(i)
            norm(A * F(:,i) - s(i) * V(:,i)) <= delta(i)
            s(i) >= scale_min
-    %        norm([0 V(3,i) -V(2,i);
-    %                -V(3,i) 0 V(1,i);
-    %                V(2,i) -V(1,i) 0] * A * F(:,i)) <= delta(i)
-           %(A * F(:,i))' * V(:,i) >= 0
-           %norm(A,2) == 1
         end
     cvx_end
 else 
     cvx_begin quiet
         variable A(d,d) symmetric
         variables xi(n) s(n) delta(n)
-    minimize( gamma * norm(A, 'fro') + lambda * sum(xi) + sum(delta))
+    minimize(norm(A, 'fro') + beta * sum(xi) + gamma * sum(delta))
     subject to
         for i = 1:n
            norm(F(:,i)' * A * F(:,i) - 1) <= xi(i)
            norm(A * F(:,i) - s(i) * V(:,i)) <= delta(i)
            s(i) >= scale_min
-    %        norm([0 V(3,i) -V(2,i);
-    %                -V(3,i) 0 V(1,i);
-    %                V(2,i) -V(1,i) 0] * A * F(:,i)) <= delta(i)
-           %(A * F(:,i))' * V(:,i) >= 0
-           %norm(A,2) == 1
         end
     cvx_end 
 end
