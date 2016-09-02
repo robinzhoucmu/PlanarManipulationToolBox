@@ -7,17 +7,17 @@
 % v_{15,1}: for the coeffs of the polynomial.
 % xi: surrogate distance to the 1-level set for each input wrench point.
 % delta: surrogate velocity alignment error.
-% pred_V: predicted twists for each input wrench point.
+% pred_V: predicted twists directions for each input wrench point.
 % s: positive projection of twists onto the predicted twist.
 
 function [v, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(Force, Vel, gamma, beta, flag_convex, flag_plot)
-lambda = 1;
+lambda = 0.1;
 if (nargin == 2) 
     gamma = 1;
     beta = 1;
 end
 if (nargin == 3)
-    beta = 1;
+    beta = 5;
 end
 % Default is with convexity constraint.
 if (nargin < 5)
@@ -51,7 +51,7 @@ if (flag_convex == 1)
         cvx_precision high
         variable Q(9,9) semidefinite
         variables v(15) xi(n) delta(n) s(n) Z(n,3) H(10,3)     
-    minimize(lambda * norm(v) + beta * norm(xi) + gamma * norm(delta))
+    minimize(lambda * norm(v) + beta * sum(xi)/n + gamma * sum(delta)/n)
     subject to 
         % Point Fitting Constraints.
         H == [4*v(1), v(4), v(5); ...
@@ -113,7 +113,7 @@ else
     cvx_begin quiet
     cvx_precision high
     variables v(15) xi(n) delta(n) s(n) Z(n,3) H(10,3)     
-    minimize(lambda * norm(v) + beta * sum(xi) + gamma * sum(delta))
+    minimize(lambda * norm(v) + beta * sum(xi)/n + gamma * sum(delta)/n)
     subject to 
         % Point Fitting Constraints.
         H == [4*v(1), v(4), v(5); ...
@@ -136,14 +136,15 @@ else
     cvx_end
 end
 
-% disp('velocity matching error');
-% mean(delta)
-% disp('force matching error');
-% mean(xi)
-pred_V = Z;
-%pred_V_dir = bsxfun(@rdivide, pred_V, sqrt(sum(pred_V.^2, 2)));
-%disp('poly4: velocity direction alignment l2 distance')
-%err = mean(sqrt(sum((pred_V_dir - Vel').^2, 2)));
+%  disp('velocity matching error');
+%  mean(delta)
+%  disp('force matching error');
+%  mean(xi)
+ pred_V = Z;
+ %pred_V_dir = bsxfun(@rdivide, pred_V, sqrt(sum(pred_V.^2, 2)));
+ %disp('poly4: velocity direction alignment l2 distance')
+ %err = mean(sqrt(sum((pred_V_dir - Vel').^2, 2)))
+[err, dev_angle] = EvaluatePoly4Predictor(Force', Vel', v)
 if (flag_plot)
     h = Plot4thPoly(v, Force');
     VisualizeForceVelPairs(Force, Vel, h);

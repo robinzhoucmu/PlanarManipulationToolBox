@@ -2,8 +2,8 @@
 % collected my MIT MCube lab. 
 % For detailed description of the dataset: https://mcube.mit.edu/push-dataset
 % query_info: specify multiple fields.
-% 1) surface: 'plywood',
-% 2) shape: 'rect1'
+% 1) surface: 'plywood', ''
+% 2) shape: 'rect1', 'butter', 'rect2', etc.
 % 3) velocity: '10',
 % It retrieves concatenated wrench and twist data from the jscon files that
 % match the query_info.

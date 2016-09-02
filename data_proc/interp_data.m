@@ -6,8 +6,8 @@ if nargin == 3
     N = size(object_pose,1);
 end
 t_q = linspace(t_s, t_e, N);
-format long;
 
+% Sort by first column (time).
 object_pose = sortrows(object_pose);
 ind_rep_time = find(object_pose(1:end-1,:) == object_pose(2:end,:));
 object_pose(ind_rep_time, :) = [];
