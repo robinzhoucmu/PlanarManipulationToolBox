@@ -28,11 +28,11 @@ k1 = Vp(1) * vp_cone_edges(2,1) - Vp(2) * vp_cone_edges(1,1);
 k2 = Vp(1) * vp_cone_edges(2,2) - Vp(2) * vp_cone_edges(1,2);
 % if sticking:
 if (k1 >=0 && k2 <=0 )
-    contact_mode = 'sticking'
+    contact_mode = 'sticking';
 elseif (k1 < 0)
-    contact_mode = 'leftsliding'
+    contact_mode = 'leftsliding';
 elseif (k2 > 0)
-    contact_mode = 'rightsliding'
+    contact_mode = 'rightsliding';
 end
 end
 
