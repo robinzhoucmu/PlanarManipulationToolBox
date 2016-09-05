@@ -10,7 +10,7 @@
 
 % Sample usage: folder_name = '~/Pushing/pushing_data'; query_info.surface='abs'; 
 % query_info.shape = 'rect1'; query_info.velocity = 10; num_samples_perfile = 8; 
-% read_json_files(folder_name, query_info, num_samples_perfile);
+% [all_wrenches_local, all_twists_local] = read_json_files(folder_name, query_info, num_samples_perfile);
 function [ all_wrenches_local, all_twists_local ] = read_json_files(folder_name, query_info, num_samples_perfile)
 str_folder = strcat(folder_name, '/', query_info.surface, '/', query_info.shape, '/')
 %'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.349.json'
@@ -23,14 +23,15 @@ for i = 1:1:length(listing)
         delete(strcat(str_folder,listing(i).name));
     end
 end
-
+addpath(str_folder);
 listing = dir(strcat(str_folder, str_file));    
 num_files = length(listing);
 all_wrenches_local = zeros(num_files * num_samples_perfile, 3);
 all_twists_local = zeros(num_files * num_samples_perfile, 3);
 
+shape_vertices = get_shape(query_info.shape);
+shape_vertices(end,:) = [];
 [pho] = compute_shape_avgdist_to_center(query_info.shape);
-
 for i = 1:1:num_files
 (i+0.0)/num_files
 file_name = listing(i).name
@@ -38,7 +39,7 @@ file_name = listing(i).name
 size(object_pose)
 N = num_samples_perfile + 3;
 [obj_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
-[wrench_local, twist_local] = compute_wrench_twist_local_frame(force, obj_pose, tip_pt, t_q);
+[wrench_local, twist_local] = compute_wrench_twist_local_frame(shape_vertices, force, obj_pose, tip_pt, t_q);
 pho = 0.05;
 wrench_local(:,3) = wrench_local(:,3) / pho;
 twist_local(:,3) = twist_local(:,3) * pho;

@@ -31,7 +31,7 @@ if do_plot
     subplot(1,2,1); hold on;
     tip_radius = 0.00475;
     gamma = linspace(0,2*pi);
-    plot_interval = 20;
+    plot_interval = 5;
     for i = 1:plot_interval:length(tip_pose(:,1))
          plot(tip_radius*cos(gamma)+tip_pose(i,2),tip_radius*sin(gamma)+tip_pose(i,3), 'k'); 
     end
