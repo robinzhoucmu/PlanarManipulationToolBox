@@ -49,29 +49,38 @@ classdef PushedObject
             R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
             vec_local = R' * vec;
       end
-      
-      function [V, F] = ComputeVelGivenPointRoundFingerPush(obj, pt, vel, normal, mu)
-        % Input: contact point on the object (pt 2*1), pushing velocity (vel 2*1)
+      function [flag_contact] = GetRoundFingerContactInfo()
+      end
+          
+      function [twist_local, wrench_load_local, contact_mode] = ComputeVelGivenPointRoundFingerPush(obj, ...
+              pt_global, vel_global, normal_global, mu)
+        % Input: 
+        % contact point on the object (pt 2*1), pushing velocity (vel 2*1)
         % and outward normal (2*1, pointing from object to pusher) in world frame;  
         % mu: coefficient of friction. 
         % Note: Ensure that the point is actually in contact before using
         % this function. It does not check point on boundary.
-        % Output: Body twist and friction wrench load on the 1 level set of
-        % limit surface. Note that the third component is unnormalized,
+        % Output: 
+        % Body twist, friction wrench load (local frame) on the 1 level set of
+        % limit surface and contact mode ('separation', 'sticking', 'leftsliding', 'rightsliding' ). 
+        % Note that the third component is unnormalized,
         % i.e, F(3) is torque in NewtonMeters and V(3) is radian/second. 
         % If the velocity of pushing is breaking contact, then we return 
         % all zero 3*1 vector. 
         
-        % Change vel and pt to local frame first. 
-        vel_local = obj.GetVectorInLocalFrame(vel);        
+        % Change vel, pt and normal to local frame first. 
+        vel_local = obj.GetVectorInLocalFrame(vel_global);        
         % Compute the point of contact.
-        pt_local = obj.GetVectorInLocalFrame(pt);
-        [F, V] = ComputeVelGivenSingleContactPtPush(vel_local, pt_local, ...
-            normal, mu, obj.pho, obj.ls_coeffs, obj.ls_type);
-        % Unnormalize the third components of F and V.
-        F(3) = F(3) * obj.pho;
-        V(3) = V(3) / obj.pho;
+        pt_local = obj.GetVectorInLocalFrame(pt_global);
+        normal_local = obj.GetVectorInLocalFrame(normal_global);
+        
+        [wrench_load_local, twist_local, contact_mode] = ComputeVelGivenSingleContactPtPush(vel_local, pt_local, ...
+            normal_local, mu, obj.pho, obj.ls_coeffs, obj.ls_type);
+        % Un-normalize the third components of F and V.
+        wrench_load_local(3) = wrench_load_local(3) * obj.pho;
+        twist_local(3) = twist_local(3) / obj.pho;  
         
       end
+      
    end
 end

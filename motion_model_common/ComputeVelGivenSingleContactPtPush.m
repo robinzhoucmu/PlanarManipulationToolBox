@@ -3,7 +3,7 @@
 % contact outward normal Ct_normal and parameter for limit surface, this function computes 
 % the body twist V and applied load F, both normalized by characteristic length pho.
 % Vp, Pt, Ct_normal: column vectors.
-function [F, V] = ComputeVelGivenSingleContactPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
+function [F, V, contact_mode] = ComputeVelGivenSingleContactPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
 [contact_mode] = DetermineContactModelGivenPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
 if strcmp(contact_mode,'separation')
     F = zeros(3,1);
@@ -18,7 +18,7 @@ else
     [fc_edges] = ComputeFrictionConeEdges(Pt, Ct_normal, Ct_mu, pho);
     if strcmp(contact_mode,'leftsliding')
         F = fc_edges(:,1);
-    else
+    else % right sliding.
         F = fc_edges(:,2);
     end
     if strcmp(LC_type, 'poly4')
