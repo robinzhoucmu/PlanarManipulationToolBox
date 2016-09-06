@@ -17,6 +17,7 @@ for i = 1:1:n-1
     % object.
     cur_shape = bsxfun(@plus, obj_pose(i,1:2),(R * shape')');
     [tip_proj, dist] = projPointOnPolygon(tip_pt(i,:), cur_shape);
+    % Contacting point in fixed robot based frame.
     tip_pt_contact = polygonPoint(cur_shape, tip_proj);
     tip_pt_local = R' * (tip_pt_contact - obj_pose(i,1:2))'; 
     %torque = pc_x * fy - pc_y * fx;

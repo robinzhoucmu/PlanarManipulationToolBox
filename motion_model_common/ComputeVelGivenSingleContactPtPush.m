@@ -1,7 +1,8 @@
 % In local frame: Given a single point contact at location Pt with point
 % velocity Vp (with magnitude), together with coefficient of friction, 
-% contact outward normal and parameter for limit surface, this function computes 
+% contact outward normal Ct_normal and parameter for limit surface, this function computes 
 % the body twist V and applied load F, both normalized by characteristic length pho.
+% Vp, Pt, Ct_normal: column vectors.
 function [F, V] = ComputeVelGivenSingleContactPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
 [contact_mode] = DetermineContactModelGivenPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
 if strcmp(contact_mode,'separation')
