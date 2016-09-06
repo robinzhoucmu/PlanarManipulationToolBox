@@ -5,7 +5,7 @@
 % CORs_{2, Nc}: x,y coordinates of randomly sampled CORs.
 function [CORs] = GenerateRandomCORs3(Pts, Nc, nFacetPts)
 if (nargin == 2)
-    nFacetPts = 50;
+    nFacetPts = max(ceil(Nc/2), 2);
 end
 
 numP = size(Pts, 2);
