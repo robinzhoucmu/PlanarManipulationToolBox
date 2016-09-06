@@ -1,8 +1,8 @@
 % Fit a convex 4th order homogenous polynomial.
 % Input:
 % Force, Vel: 3*N matrix.
-% gamma: weight for vel matching.
-% beta: weight for force matching.
+% gamma: weight for twist matching.
+% beta: weight for wrench matching.
 % Output:
 % v_{15,1}: for the coeffs of the polynomial.
 % xi: surrogate distance to the 1-level set for each input wrench point.
@@ -14,10 +14,10 @@ function [v, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(Force, Vel, gamma, beta,
 lambda = 0.1;
 if (nargin == 2) 
     gamma = 1;
-    beta = 1;
+    beta = 2;
 end
 if (nargin == 3)
-    beta = 5;
+    beta = 2;
 end
 % Default is with convexity constraint.
 if (nargin < 5)

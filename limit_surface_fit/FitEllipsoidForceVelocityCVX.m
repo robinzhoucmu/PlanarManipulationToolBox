@@ -8,10 +8,10 @@ function [A, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F, V, gamm
 lambda = 0.1;
 if (nargin == 2) 
     gamma = 1;
-    beta = 1;
+    beta = 2;
 end
 if (nargin == 3)
-    beta = 1;
+    beta = 2;
 end
 if nargin <=4
     flag_convex = 1;
