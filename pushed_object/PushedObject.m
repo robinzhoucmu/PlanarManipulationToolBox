@@ -145,7 +145,7 @@ classdef PushedObject < handle
           elseif strcmp(obj.shape_type, 'circle')
             % Distance between the center of the object to the
             % center of the finger - object radius
-            dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;     
+            dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
           end
           if (dist <= finger_radius)
             flag_contact = 1;
@@ -180,10 +180,10 @@ classdef PushedObject < handle
         % all zero 3*1 vector. 
         
         % Change vel, pt and normal to local frame first. 
-        vel_local = obj.GetVectorInLocalFrame(vel_global)        
+        vel_local = obj.GetVectorInLocalFrame(vel_global);        
         % Compute the point of contact.
-        pt_local = obj.GetVectorInLocalFrame(pt_global)
-        normal_local = obj.GetVectorInLocalFrame(outward_normal_global)
+        pt_local = obj.GetVectorInLocalFrame(pt_global);
+        normal_local = obj.GetVectorInLocalFrame(outward_normal_global);
         
         [wrench_load_local, twist_local, contact_mode] = ComputeVelGivenSingleContactPtPush(vel_local, pt_local, ...
             normal_local, mu, obj.pho, obj.ls_coeffs, obj.ls_type);

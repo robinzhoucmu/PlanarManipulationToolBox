@@ -4,7 +4,7 @@
 % the body twist V and applied load F, both normalized by characteristic length pho.
 % Vp, Pt, Ct_normal: column vectors.
 function [F, V, contact_mode] = ComputeVelGivenSingleContactPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
-[contact_mode] = DetermineContactModelGivenPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type)
+[contact_mode] = DetermineContactModelGivenPtPush(Vp, Pt, Ct_normal, Ct_mu, pho, LC_coeffs, LC_type);
 if strcmp(contact_mode,'separation')
     F = zeros(3,1);
     V = zeros(3,1);
@@ -29,7 +29,7 @@ else
     % Compute the right scale of V such that normal velocity is the same.
     B = [1, 0, -Pt(2)/pho;
      0, 1, -Pt(1)/pho];
-    s = (Vp' * (-Ct_normal)) / ((B*V)' * (-Ct_normal))
+    s = (Vp' * (-Ct_normal)) / ((B*V)' * (-Ct_normal));
     V = s * V;
 end
 end
