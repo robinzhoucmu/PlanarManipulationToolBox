@@ -16,13 +16,13 @@ if (Vp' * Ct_normal > 0)
     return;
 end
 % Compute applied wrench cone.
-[fc_edges] = ComputeFrictionConeEdges(Pt, Ct_normal, Ct_mu, pho);
+[fc_edges] = ComputeFrictionConeEdges(Pt, Ct_normal, Ct_mu, pho)
 % Compute body twist motion cone.
-[ vc_edges ] = ComputeVelConeGivenFC(fc_edges, LC_coeffs, LC_type);
+[ vc_edges ] = ComputeVelConeGivenFC(fc_edges, LC_coeffs, LC_type)
 % Compute point velocity cone.
-B = [-1, 0, -Pt(2)/pho;
+B = [1, 0, -Pt(2)/pho;
      0, 1, -Pt(1)/pho];
-vp_cone_edges = B * vc_edges;
+vp_cone_edges = B * vc_edges
 % Compute cross product (x1y2 - x2y1) to determine the side. 
 k1 = Vp(1) * vp_cone_edges(2,1) - Vp(2) * vp_cone_edges(1,1);
 k2 = Vp(1) * vp_cone_edges(2,2) - Vp(2) * vp_cone_edges(1,2);

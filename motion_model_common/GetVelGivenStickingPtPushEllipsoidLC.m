@@ -15,7 +15,7 @@ function [F, V] = GetVelGivenStickingPtPushEllipsoidLC(Vp, Pt, A, pho)
 % Vp_x = V_1 - (V_3/pho) * Pt_y
 % Vp_y = V_2 + (V_3/pho) * Pt_x
 % Equivalent to Vp = B*V
-B = [-1, 0, -Pt(2)/pho;
+B = [1, 0, -Pt(2)/pho;
      0, 1, -Pt(1)/pho];
 % The third component of the applied wrench is a cross product.
 % F_3 = (- Pt_y * F_x + Pt_x * F_y)/pho

@@ -27,9 +27,9 @@ else
         V = LC_coeffs * F;
     end
     % Compute the right scale of V such that normal velocity is the same.
-    B = [-1, 0, -Pt(2)/pho;
+    B = [1, 0, -Pt(2)/pho;
      0, 1, -Pt(1)/pho];
-    s = (Vp' * (-Ct_normal)) / ((B*V)' * (-Ct_normal));
+    s = (Vp' * (-Ct_normal)) / ((B*V)' * (-Ct_normal))
     V = s * V;
 end
 end

@@ -18,7 +18,7 @@ classdef PushedObject < handle
       
       % Pose related. object coordinate frame w.r.t the world frame.
       pose %3*1: [x;y;theta]
-      cur_shape_vertices % shape vertices in world frame.
+      %cur_shape_vertices % shape vertices in world frame.
       
       % Configuration parameters for Sampling of wrench,twist pairs. 
       % When the user only gives pressure points and weights for constructor 
@@ -48,8 +48,12 @@ classdef PushedObject < handle
             else
                 % If no limit surface information is provided. By default, we will fit a
                 % ellipsoid model for it.
-                obj.SetWrenchTwistSamplingConfig(200, 0.5);
-                obj.FitLSFromPressurePoints('quadratic');
+                obj.SetWrenchTwistSamplingConfig(200, 0.4);
+                if (nargin == 4)
+                  obj.FitLSFromPressurePoints(ls_type);
+                else
+                  obj.FitLSFromPressurePoints('quadratic');
+                end
             end
 
        end
@@ -112,17 +116,55 @@ classdef PushedObject < handle
       end
       
       function [vec_local] = GetVectorInLocalFrame(obj, vec) 
-            % Input: a column vector 2*1 in world frame.
-            % Output: rotated to local frame.
-            theta = obj.pose(3);
-            R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
-            vec_local = R' * vec;
+           % Input: a column vector 2*1 in world frame.
+           % Output: rotated to local frame.
+           theta = obj.pose(3);
+           R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+           vec_local = R' * vec;
       end
-      function [flag_contact] = GetRoundFingerContactInfo()
+      
+      function [flag_contact, pt_contact, vel_contact, outward_normal_contact] = ...
+          GetRoundFingerContactInfo(obj, pt_finger_center, finger_radius, twist)
+          % Input: pt_center (2*1): center of round finger in world frame. 
+          % finger_radius: radius of the round finger in meter.
+          % twist ([vx,vy,omega]) of the finger body.
+          % Output: flag_contact: whether any point of the round finger
+          % will be in contact with the object.
+          % pt_contact: the point (in world frame) that contacts the object.  
+          % vel_contact: contact point linear velocity.
+          pt_contact = zeros(2,1);
+          vel_contact = zeros(2,1);
+          outward_normal_contact = zeros(2,1);
+          theta = obj.pose(3);
+          R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+          % Get closest point from the center of the cylindrical tip to the object.
+          if strcmp(obj.shape_type, 'polygon')
+            cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
+            % Project onto the polygon.
+            [tip_proj, dist] = projPointOnPolygon(pt_finger_center, cur_shape);
+          elseif strcmp(obj.shape_type, 'circle')
+            % Distance between the center of the object to the
+            % center of the finger - object radius
+            dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;     
+          end
+          if (dist <= finger_radius)
+            flag_contact = 1;
+            if strcmp(obj.shape_type, 'polygon')
+                % Contacting point in world frame.
+                pt_contact = polygonPoint(cur_shape, tip_proj);
+            elseif strcmp(obj.shape_type, 'circle')
+                pt_contact = pt_finger_center + (dist / norm(obj.pose(1:2) - pt_finger_center)) * (obj.pose(1:2) - pt_finger_center);              
+            end
+            vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
+            outward_normal_contact = pt_finger_center - pt_contact; 
+            outward_normal_contact = outward_normal_contact / ( eps + norm(outward_normal_contact));
+          else
+            flag_contact = 0;
+          end
       end
           
       function [twist_local, wrench_load_local, contact_mode] = ComputeVelGivenPointRoundFingerPush(obj, ...
-              pt_global, vel_global, normal_global, mu)
+              pt_global, vel_global, outward_normal_global, mu)
         % Input: 
         % contact point on the object (pt 2*1), pushing velocity (vel 2*1)
         % and outward normal (2*1, pointing from object to pusher) in world frame;  
@@ -138,10 +180,10 @@ classdef PushedObject < handle
         % all zero 3*1 vector. 
         
         % Change vel, pt and normal to local frame first. 
-        vel_local = obj.GetVectorInLocalFrame(vel_global);        
+        vel_local = obj.GetVectorInLocalFrame(vel_global)        
         % Compute the point of contact.
-        pt_local = obj.GetVectorInLocalFrame(pt_global);
-        normal_local = obj.GetVectorInLocalFrame(normal_global);
+        pt_local = obj.GetVectorInLocalFrame(pt_global)
+        normal_local = obj.GetVectorInLocalFrame(outward_normal_global)
         
         [wrench_load_local, twist_local, contact_mode] = ComputeVelGivenSingleContactPtPush(vel_local, pt_local, ...
             normal_local, mu, obj.pho, obj.ls_coeffs, obj.ls_type);

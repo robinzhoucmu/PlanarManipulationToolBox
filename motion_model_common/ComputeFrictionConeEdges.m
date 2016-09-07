@@ -1,5 +1,5 @@
 % Input: 
-% pt_contacts: [x1,x2;y1,y2]; 
+% pt_contacts: [x1,x2;y1,y2];  column vectors.
 % pt_outward_normals: [nx1,nx2;ny1,ny2];
 % mu: coefficient of friction at point of contacts, assume same for both contact points.
 % pho: charateristic length. 
@@ -7,8 +7,8 @@
 % fc_edges: 3*2*size(pc_contacts,2) matrix. Left edge is the left column.
 % Normalized to 1(Directions). With torque component normalized by charateristic length pho. 
 function [fc_edges] = ComputeFrictionConeEdges(pt_contacts, pt_outward_normals, mu, pho)
-fc_edges = zeros(3,4);
 num_contacts = size(pt_contacts,2);
+fc_edges = zeros(3,num_contacts * 2);
 for ind_contact = 1:1:num_contacts
     axis_z = [0;0;1];
     axis_x = -[pt_outward_normals(:,ind_contact);0];
