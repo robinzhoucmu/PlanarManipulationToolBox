@@ -11,7 +11,7 @@ wrench_local = zeros(n-1, 3);
 twist_local = zeros(n-1, 3);
 for i = 1:1:n-1
     theta = obj_pose(i,3);
-    R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+    R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
     wrench_local(i,1:2) = (R' * force(i, 1:2)')';
     % Get closest point from the center of the cylindrical tip to the
     % object.

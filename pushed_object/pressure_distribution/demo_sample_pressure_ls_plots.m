@@ -20,3 +20,15 @@ pushobj_poly4 = PushedObject(support_pts', pressure_weights, shape_info)
 pushobj_poly4.FitLS('poly4', 200, 0.1);
 
 
+shape_info2.shape_id = 'hex';
+shape_info2.shape_type = 'polygon';
+shape_info2.shape_vertices = get_shape('hex');
+shape_info2.shape_vertices = shape_info2.shape_vertices(1:end-1, :);
+shape_info2.pho = compute_shape_avgdist_to_center('hex');
+
+support_pts2 = shape_info2.shape_vertices * 0.75;
+pressure_weights2 = ones(6,1) / 6.0;
+pushobj_hex_quad = PushedObject(support_pts2', pressure_weights2, shape_info2)
+pushobj_hex_quad.FitLS('quadratic', 200, 0.2);
+pushobj_hex_poly4 = PushedObject(support_pts2', pressure_weights2, shape_info2)
+pushobj_hex_poly4.FitLS('poly4', 200, 0.2);

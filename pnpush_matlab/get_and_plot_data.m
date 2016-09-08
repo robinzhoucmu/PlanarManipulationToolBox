@@ -46,6 +46,7 @@ if do_plot
         plot(oriented_shape(:,1)+object_pose(i,2), oriented_shape(:,2) + object_pose(i,3), 'r');
     end
     title('Motion of the object and the pusher in the robot frame')
+    axis equal;
     %Plot force over time
     subplot(1,2,2); hold on;
 

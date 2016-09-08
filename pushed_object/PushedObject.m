@@ -152,7 +152,6 @@ classdef PushedObject < handle
           R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
           % Get closest point from the center of the cylindrical tip to the object.
           if strcmp(obj.shape_type, 'polygon')
-            obj.pose, obj.shape_vertices
             cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
 
             % Project onto the polygon.
@@ -162,7 +161,7 @@ classdef PushedObject < handle
             % center of the finger - object radius
             dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
           end
-          r_blem = 1.00
+          r_blem = 1.00;
           if (dist <= finger_radius * r_blem)
             flag_contact = 1;
             if strcmp(obj.shape_type, 'polygon')
