@@ -12,10 +12,14 @@ h = figure;
 
 p = patch(isosurface(xx,yy,zz,shape,1));
 set( p, 'FaceColor', 'g','FaceAlpha', 0.5, 'EdgeColor', 'none' );
-view(-10, 20);
+view(45, 20);
+%view(-10, 20);
 %view(3);
 grid on;
 axis equal;
 camlight
+xlabel('F_x', 'FontSize', 14);
+ylabel('F_y', 'FontSize', 14);
+zlabel('F_z', 'FontSize', 14);
 end
 

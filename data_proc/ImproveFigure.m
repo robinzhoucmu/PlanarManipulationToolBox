@@ -15,7 +15,7 @@ set(findall(gcf,'-property','FontName'),'FontName','Times New Roman');
 set(gca, 'Linewidth', 1);
 x = get(gca, 'XLabel');
 y = get(gca, 'YLabel');
-set(findall(gcf,'-property','FontSize'),'FontSize', 17.5);
+set(findall(gcf,'-property','FontSize'),'FontSize', 18);
 
 %set(x,'FontSize', 20);
 %set(y,'FontSize', 20);

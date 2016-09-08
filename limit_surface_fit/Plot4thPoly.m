@@ -22,8 +22,8 @@ view(45, 20);
 grid on;
 camlight
 axis equal;
-xlabel('F_x', 'FontSize', 12);
-ylabel('F_y', 'FontSize', 12);
-zlabel('F_z', 'FontSize', 12);
+xlabel('F_x', 'FontSize', 14);
+ylabel('F_y', 'FontSize', 14);
+zlabel('F_z', 'FontSize', 14);
 end
 

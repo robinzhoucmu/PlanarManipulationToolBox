@@ -48,14 +48,27 @@ classdef PushedObject < handle
             else
                 % If no limit surface information is provided. By default, we will fit a
                 % ellipsoid model for it.
-                obj.SetWrenchTwistSamplingConfig(200, 0.4);
-                if (nargin == 4)
-                  obj.FitLSFromPressurePoints(ls_type);
-                else
-                  obj.FitLSFromPressurePoints('quadratic');
-                end
+%                 obj.SetWrenchTwistSamplingConfig(200, 0.4);
+%                 if (nargin == 4)
+%                   obj.FitLSFromPressurePoints(ls_type);
+%                 else
+%                   obj.FitLSFromPressurePoints('quadratic');
+%                 end
             end
 
+       end
+       function [obj] = FitLS(obj, ls_type, num_cors, r_facet)
+            if (nargin < 2)
+                ls_type = 'quadratic';
+            end
+            if (nargin < 3)
+                num_cors = 200;
+            end
+            if (nargin < 4)
+                r_facet = 0.4;  
+            end
+            obj.SetWrenchTwistSamplingConfig(num_cors, r_facet);
+            obj.FitLSFromPressurePoints(ls_type);
        end
        function [obj] = SetWrenchTwistSamplingConfig(obj, num_cors, r_facet)
            if (num_cors < 15)
@@ -87,9 +100,9 @@ classdef PushedObject < handle
             % vector.
             [V, F] = NormalizeForceAndVelocities(V, F, obj.pho);
             if strcmp(obj.ls_type, 'quadratic')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V');
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 5);
             elseif strcmp(obj.ls_type, 'poly4')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V');
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V', 1, 5);
             end
             ls_type = obj.ls_type;
             ls_coeffs = obj.ls_coeffs;
@@ -122,7 +135,7 @@ classdef PushedObject < handle
            R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
            vec_local = R' * vec;
       end
-      
+            
       function [flag_contact, pt_contact, vel_contact, outward_normal_contact] = ...
           GetRoundFingerContactInfo(obj, pt_finger_center, finger_radius, twist)
           % Input: pt_center (2*1): center of round finger in world frame. 
@@ -136,22 +149,26 @@ classdef PushedObject < handle
           vel_contact = zeros(2,1);
           outward_normal_contact = zeros(2,1);
           theta = obj.pose(3);
-          R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+          R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
           % Get closest point from the center of the cylindrical tip to the object.
           if strcmp(obj.shape_type, 'polygon')
+            obj.pose, obj.shape_vertices
             cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
+
             % Project onto the polygon.
-            [tip_proj, dist] = projPointOnPolygon(pt_finger_center, cur_shape);
+            [tip_proj, dist] = projPointOnPolygon(pt_finger_center', cur_shape')
           elseif strcmp(obj.shape_type, 'circle')
             % Distance between the center of the object to the
             % center of the finger - object radius
             dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
           end
-          if (dist <= finger_radius)
+          r_blem = 1.00
+          if (dist <= finger_radius * r_blem)
             flag_contact = 1;
             if strcmp(obj.shape_type, 'polygon')
                 % Contacting point in world frame.
-                pt_contact = polygonPoint(cur_shape, tip_proj);
+                pt_contact = polygonPoint(cur_shape', tip_proj);
+                pt_contact = pt_contact';
             elseif strcmp(obj.shape_type, 'circle')
                 pt_contact = pt_finger_center + (dist / norm(obj.pose(1:2) - pt_finger_center)) * (obj.pose(1:2) - pt_finger_center);              
             end
