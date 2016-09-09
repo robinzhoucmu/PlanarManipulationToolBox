@@ -15,7 +15,8 @@ options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
 
 
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, 'quadratic')
+pushobj = PushedObject(support_pts', pressure_weights, shape_info);
+pushobj.FitLS('poly4', 200, 0.1);
 % Set the circle at the point of origin.
 pushobj.pose = [0;0;0];
 
@@ -27,7 +28,7 @@ finger_radius = 0.005;
 init_finger_pos = [-shape_info.shape_parameters.radius/2; shape_info.shape_parameters.radius*1.25; 0];
 
 total_time = 2;
-total_num_t = 50;
+total_num_t = 30;
 
 t = linspace(0, total_time, total_num_t);
 figure;
