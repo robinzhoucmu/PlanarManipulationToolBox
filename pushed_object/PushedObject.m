@@ -112,9 +112,12 @@ classdef PushedObject < handle
          % Input: pt is a 2*1 column vector. 
          % Output: distance and the projected/closest point (2*1) on the object.
          dist = 0; pt_closest = [0;0];
+         theta = obj.pose(3);
+         R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
          if strcmp(obj.shape_type, 'polygon')
-             [tip_proj, dist] = projPointOnPolygon(pt', obj.cur_shape_vertices);
-             pt_closest = polygonPoint(obj.cur_shape_vertices, tip_proj);
+             cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
+             [tip_proj, dist] = projPointOnPolygon(pt', cur_shape');
+             pt_closest = polygonPoint(cur_shape', tip_proj);
              pt_closest = pt_closest';
              
          elseif strcmp(obj.shape_type, 'circle')
@@ -148,29 +151,31 @@ classdef PushedObject < handle
           pt_contact = zeros(2,1);
           vel_contact = zeros(2,1);
           outward_normal_contact = zeros(2,1);
-          theta = obj.pose(3);
-          R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-          % Get closest point from the center of the cylindrical tip to the object.
-          if strcmp(obj.shape_type, 'polygon')
-            cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
-
-            % Project onto the polygon.
-            [tip_proj, dist] = projPointOnPolygon(pt_finger_center', cur_shape')
-          elseif strcmp(obj.shape_type, 'circle')
-            % Distance between the center of the object to the
-            % center of the finger - object radius
-            dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
-          end
+%           theta = obj.pose(3);
+%           R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
+%           % Get closest point from the center of the cylindrical tip to the object.
+%           if strcmp(obj.shape_type, 'polygon')
+%             cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
+% 
+%             % Project onto the polygon.
+%             [tip_proj, dist] = projPointOnPolygon(pt_finger_center', cur_shape')
+%           elseif strcmp(obj.shape_type, 'circle')
+%             % Distance between the center of the object to the
+%             % center of the finger - object radius
+%             dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
+%           end
+          [dist, pt_closest] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
           r_blem = 1.00;
           if (dist <= finger_radius * r_blem)
             flag_contact = 1;
-            if strcmp(obj.shape_type, 'polygon')
-                % Contacting point in world frame.
-                pt_contact = polygonPoint(cur_shape', tip_proj);
-                pt_contact = pt_contact';
-            elseif strcmp(obj.shape_type, 'circle')
-                pt_contact = pt_finger_center + (dist / norm(obj.pose(1:2) - pt_finger_center)) * (obj.pose(1:2) - pt_finger_center);              
-            end
+%             if strcmp(obj.shape_type, 'polygon')
+%                 % Contacting point in world frame.
+%                 pt_contact = polygonPoint(cur_shape', tip_proj);
+%                 pt_contact = pt_contact';
+%             elseif strcmp(obj.shape_type, 'circle')
+%                 pt_contact = pt_finger_center + (dist / norm(obj.pose(1:2) - pt_finger_center)) * (obj.pose(1:2) - pt_finger_center);              
+%             end
+            pt_contact = pt_closest;
             vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
             outward_normal_contact = pt_finger_center - pt_contact; 
             outward_normal_contact = outward_normal_contact / ( eps + norm(outward_normal_contact));
