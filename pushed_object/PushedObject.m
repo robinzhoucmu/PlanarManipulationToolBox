@@ -152,30 +152,11 @@ classdef PushedObject < handle
           pt_contact = zeros(2,1);
           vel_contact = zeros(2,1);
           outward_normal_contact = zeros(2,1);
-%           theta = obj.pose(3);
-%           R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-%           % Get closest point from the center of the cylindrical tip to the object.
-%           if strcmp(obj.shape_type, 'polygon')
-%             cur_shape = bsxfun(@plus, R * obj.shape_vertices, obj.pose(1:2));
-% 
-%             % Project onto the polygon.
-%             [tip_proj, dist] = projPointOnPolygon(pt_finger_center', cur_shape')
-%           elseif strcmp(obj.shape_type, 'circle')
-%             % Distance between the center of the object to the
-%             % center of the finger - object radius
-%             dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
-%           end
+
           [pt_closest, dist] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
           r_blem = 1.00;
           if (dist <= finger_radius * r_blem)
             flag_contact = 1;
-%             if strcmp(obj.shape_type, 'polygon')
-%                 % Contacting point in world frame.
-%                 pt_contact = polygonPoint(cur_shape', tip_proj);
-%                 pt_contact = pt_contact';
-%             elseif strcmp(obj.shape_type, 'circle')
-%                 pt_contact = pt_finger_center + (dist / norm(obj.pose(1:2) - pt_finger_center)) * (obj.pose(1:2) - pt_finger_center);              
-%             end
             pt_contact = pt_closest;
             vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
             outward_normal_contact = pt_finger_center - pt_contact; 
@@ -192,14 +173,14 @@ classdef PushedObject < handle
         % and outward normal (2*1, pointing from object to pusher) in world frame;  
         % mu: coefficient of friction. 
         % Note: Ensure that the point is actually in contact before using
-        % this function. It does not check point on boundary.
+        % this function. It does not check if point is on the object boundary.
         % Output: 
         % Body twist, friction wrench load (local frame) on the 1 level set of
         % limit surface and contact mode ('separation', 'sticking', 'leftsliding', 'rightsliding' ). 
         % Note that the third component is unnormalized,
-        % i.e, F(3) is torque in NewtonMeters and V(3) is radian/second. 
+        % i.e, F(3) is torque in Newton*Meter and V(3) is radian/second. 
         % If the velocity of pushing is breaking contact, then we return 
-        % all zero 3*1 vector. 
+        % all zero 3*1 vectors. 
         
         % Change vel, pt and normal to local frame first. 
         vel_local = obj.GetVectorInLocalFrame(vel_global);        
@@ -214,6 +195,8 @@ classdef PushedObject < handle
         twist_local(3) = twist_local(3) / obj.pho;  
         
       end
+      function [flag_jammed] = CheckForTwoContactsJamming(obj, pt, vel, out_normal, mu)
       
+      end
    end
 end

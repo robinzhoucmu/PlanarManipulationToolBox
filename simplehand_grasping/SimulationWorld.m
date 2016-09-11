@@ -33,26 +33,33 @@ classdef SimulationWorld < handle
             pose_log = [];
             maxT = max(obj.finger_traj.t);
             cur_t = 0;
-            opts = odeset(  'RelTol',1e-6,...
-                        'AbsTol', 1e-6,...
-                        'Events', @obj.FingerTouchObjectEvent,...
-                        'Vectorized',true,...
-                        'MaxStep',0.05);    
-            dt = 0.001;
-            cur_finger_pos = [obj.finger_traj.INITIAL_R; 0];
+            opts = odeset('RelTol',1e-6,...
+                          'AbsTol', 1e-6,...
+                          'Events', @obj.FingerTouchObjectEvent,...
+                          'Vectorized',true,...
+                          'MaxStep',0.05);    
+            dt_collision = 0.01;
+            [cur_finger_pos,~] = obj.finger_traj.get_pos_and_vel(cur_t);
+            figure;
+            k = 0;
+            plot_interval_t = 0.05;
             while ~flag_finish
-                cur_t
+                if cur_t > k * plot_interval_t
+                    drawCircle(obj.pushobj.pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
+                    plot(obj.pushobj.pose(1), obj.pushobj.pose(2), 'k+');
+                    hold on;
+                    drawCircle(cur_finger_pos(1), cur_finger_pos(2), obj.finger_radius, 'r');
+                    k = k + 1;
+                end
                 pose_log = [pose_log, obj.pushobj.pose];
-                t_range = cur_t:dt:maxT;
+                t_range = [cur_t maxT];
                 sol = ode45(@obj.spirofun, t_range, cur_finger_pos, opts);
                 % Resolve finger pushing event.
                 cur_t = sol.x(end);
-                sol.x
-                sol.ie
                 num_finger_touches = length(sol.ie)
                 % Store the finger state right at collision.
-                cur_finger_pos = sol.y(:,end)
-                twist_linear = obj.finger_traj.compute_vels(cur_t, cur_finger_pos)
+                cur_finger_pos = sol.y(:,end);
+                twist_linear = obj.finger_traj.compute_vels(cur_t, cur_finger_pos);
                 pt_fingers = zeros(2,num_finger_touches);
                 twist_fingers = zeros(3, num_finger_touches);
                 for i = 1:1:num_finger_touches
@@ -71,10 +78,9 @@ classdef SimulationWorld < handle
                         obj.pushobj.ComputeVelGivenPointRoundFingerPush(pt_contact, vel_contact, outward_normal_contact, obj.mu)
                     %twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_local, obj.pushobj.pose(3));
                     %mat_exp_twist =  SE2Algebra.GetExponentialMapGivenTwistVec(twist_global * dt);
-                    homogT = SE2Algebra.GetExponentialMapGivenTwistVec(twist_local * 0.01)
-                    cur_homogT = SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * homogT
+                    homogT = SE2Algebra.GetExponentialMapGivenTwistVec(twist_local * dt_collision);
+                    cur_homogT = SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * homogT;
                     obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(cur_homogT);
-                    obj.pushobj.pose
                 
                 elseif (num_finger_touches == 2)
                 % Otherwise if 2 fingers are involved, check if the object
@@ -86,14 +92,15 @@ classdef SimulationWorld < handle
                     flag_finish = true;
                 end
             end
+            axis equal;
         end
         
         function [value, isterminal, direction] = FingerTouchObjectEvent(obj, t, x)
             for i = 1:1:obj.num_fingers
                 rot_angle = 2 * pi * (i-1.0) / obj.num_fingers;
                 R = [cos(rot_angle), -sin(rot_angle); sin(rot_angle), cos(rot_angle)];
-                pt_finger = R * x
-                [pt_closet, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(pt_finger)
+                pt_finger = R * x;
+                [pt_closet, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(pt_finger);
                 ratio_penetration = 0.05;
                 value(i) = 1;
 %                 r = abs(dist - obj.finger_radius) / obj.finger_radius
