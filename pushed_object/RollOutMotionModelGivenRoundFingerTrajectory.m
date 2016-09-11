@@ -22,7 +22,7 @@ for i = 1:1:N - 1
               pushobj.GetRoundFingerContactInfo(pt_finger_center, finger_radius, twist)
     if (flag_contact)
         [twist_local, wrench_load_local, contact_mode] = ...
-            pushobj.ComputeVelGivenPointRoundFingerPush(pt_contact, vel_contact, outward_normal_contact, const_mu)
+            pushobj.ComputeVelGivenPointRoundFingerPush(pt_contact, vel_contact, outward_normal_contact, const_mu);
         % Convert local twist to global frame.
         pushobj.pose(1:2) = pushobj.pose(1:2) + R * twist_local(1:2) * dt;
         pushobj.pose(3) = pushobj.pose(3) + twist_local(3) * dt;

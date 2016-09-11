@@ -21,7 +21,7 @@ end
 [ vc_edges ] = ComputeVelConeGivenFC(fc_edges, LC_coeffs, LC_type);
 % Compute point velocity cone.
 B = [1, 0, -Pt(2)/pho;
-     0, 1, -Pt(1)/pho];
+     0, 1, Pt(1)/pho];
 vp_cone_edges = B * vc_edges;
 % Compute cross product (x1y2 - x2y1) to determine the side. 
 k1 = Vp(1) * vp_cone_edges(2,1) - Vp(2) * vp_cone_edges(1,1);

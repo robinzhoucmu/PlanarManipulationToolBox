@@ -110,7 +110,7 @@ classdef PushedObject < handle
            
        function [pt_closest, dist] = FindClosestPointAndDistanceWorldFrame(obj, pt)
          % Input: pt is a 2*1 column vector. 
-         % Output: distance and the projected/closest point (2*1) on the object.
+         % Output: distance and the projected/closest point (2*1) on the object boundary.
          dist = 0; pt_closest = [0;0];
          theta = obj.pose(3);
          R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
@@ -124,6 +124,7 @@ classdef PushedObject < handle
              dist = norm(pt - obj.pose(1:2));
              pt_closest = obj.pose(1:2) + ...
                  obj.shape_parameters.radius * (pt - obj.pose(1:2)) / dist;
+             dist = dist - obj.shape_parameters.radius;
              
          elseif strcmp(obj.shape_type, 'ellipse')
          else
@@ -135,7 +136,7 @@ classdef PushedObject < handle
            % Input: a column vector 2*1 in world frame.
            % Output: rotated to local frame.
            theta = obj.pose(3);
-           R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+           R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
            vec_local = R' * vec;
       end
             
@@ -164,7 +165,7 @@ classdef PushedObject < handle
 %             % center of the finger - object radius
 %             dist = norm(obj.pose(1:2) - pt_finger_center) - obj.shape_parameters.radius;   
 %           end
-          [dist, pt_closest] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
+          [pt_closest, dist] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
           r_blem = 1.00;
           if (dist <= finger_radius * r_blem)
             flag_contact = 1;

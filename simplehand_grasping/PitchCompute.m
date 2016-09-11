@@ -13,10 +13,10 @@
 %
 % Example Use:
 %
-% % Create object with a constant pitch of 1, a maximum velocity of 1, an
+% % Create object with a constant pitch of 0 (straigt pushing), a maximum velocity of 1, an
 % % object radius of 1, an initial distance away of 2, and a time step of
 % % 0.1
-% obj = PitchCompute(@(t)(1), 1, 1, 2, 0.1);
+% obj = PitchCompute(@(t)(0), 1, 1, 2, 0.1);
 % 
 % % Plot the trajectory
 % obj.plot();
@@ -80,10 +80,10 @@ classdef PitchCompute
       end    
    end
    
-   methods (Access = private)
+   methods (Access = public)
       
       function v = compute_vels(obj, time, position)
-          st = obj.PitchFun(time);
+          st = 1.0 / (eps + obj.PitchFun(time));
           x = position(1,:);
           y = position(2,:);
           mags = obj.MAX_VEL  ./(sqrt(1+st.^2) .* sqrt(x.^2 + y.^2));

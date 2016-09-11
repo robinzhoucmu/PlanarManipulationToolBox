@@ -1,4 +1,4 @@
-classdef SE2Algebra
+classdef SE2Algebra < handle
     
     properties
     end
@@ -31,8 +31,8 @@ classdef SE2Algebra
         function [mat_exp_twist] = GetExponentialMapGivenTwistVec(twist)
             % Given twist vector, return corresponding homogTransf via
             % exponential map.
-            mat_twist = GetTwistMatrix(twist);
-            mat_exp_twist = GetTwistMatrix(mat_twist);
+            mat_twist = SE2Algebra.GetTwistMatrix(twist);
+            mat_exp_twist = SE2Algebra.GetExponentialMapGivenTwistMat(mat_twist);
         end
         
         function [twist_global] = TransformTwistFromLocalToGlobal(twist_local, cart_pose)
