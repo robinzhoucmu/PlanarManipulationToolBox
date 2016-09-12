@@ -28,6 +28,9 @@
 classdef PitchCompute
     properties (Constant)
        MAX_STEPS = 1000;
+       % If the pitch is greater than MAX_PITCH, we just treat it as pure 
+       % rotation.
+       MAX_PITCH = 2 * pi;
     end
     properties
       % User Specified
@@ -36,6 +39,7 @@ classdef PitchCompute
       OBJ_RAD % The radius of the object to stop the trajectory at
       DT % The time step to compute trajectory points at
       INITIAL_R % The initial distance away from the origin to start at
+      MAX_TIME % Maximum travelling time.
       
       % Computed
       t % The time steps where the trajectory is computed by solving an ode
@@ -50,19 +54,24 @@ classdef PitchCompute
       % Computes the spiral trajectory using ode45 and creates an
       % interpolating polynomial that can be used for computing the
       % trajectory at arbitrary time points
-      function obj = PitchCompute(pitch_fun, max_vel, obj_rad, initial_r, dt)
+      function obj = PitchCompute(pitch_fun, max_vel, obj_rad, initial_r, dt, max_time)
           obj.PitchFun = pitch_fun;
           obj.MAX_VEL = max_vel;
           obj.OBJ_RAD = obj_rad;
           obj.DT = dt;
           obj.INITIAL_R = initial_r;
+          if (nargin == 5)
+            max_time = obj.MAX_STEPS * obj.DT;
+          end
+          obj.MAX_TIME = max_time;
+          opts=odeset('Events',@obj.stop_event_radius);
+          [time,position] = ode45(@obj.spirofun, 0:obj.DT:obj.MAX_TIME, [obj.INITIAL_R;0], opts);
           
-          opts=odeset('Events',@obj.radius_size_event);
-          [time,position] = ode45(@obj.spirofun, 0:obj.DT:obj.DT*(obj.MAX_STEPS-1), [obj.INITIAL_R;0], opts);
           obj.t = time;
-          obj.p = position;
-          obj.v = obj.compute_vels(time, position);
-          obj.interp_p = pchipd(obj.t', obj.p', obj.v');
+          % Note that ode returns N*2 row vectors.
+          obj.p = position';
+          obj.v = obj.compute_vels(time, obj.p);
+          obj.interp_p = pchipd(obj.t, obj.p, obj.v);
       end
       
       % Returns the position and velocity at desired time points 't'.
@@ -75,7 +84,7 @@ classdef PitchCompute
  
       % Plot the path the spiral takes as computed by ode45
       function plot(obj)
-        figure(1);clf;plot(obj.p(:,1), obj.p(:,2));
+        figure(1);clf;plot(obj.p(1,:), obj.p(2,:));
         axis equal; axis([-obj.INITIAL_R,obj.INITIAL_R,-obj.INITIAL_R,obj.INITIAL_R]);
       end    
    end
@@ -83,24 +92,40 @@ classdef PitchCompute
    methods (Access = public)
       
       function v = compute_vels(obj, time, position)
-          st = 1.0 / (eps + obj.PitchFun(time));
-          x = position(1,:);
-          y = position(2,:);
-          mags = obj.MAX_VEL  ./(sqrt(1+st.^2) .* sqrt(x.^2 + y.^2));
-          v = zeros(size(position));
-          v(1,:) = mags .* (-y - x .* st);
-          v(2,:) = mags .* (x - st .* y);
+          % Get how much rotation versus squeezing.
+          pitch = obj.PitchFun(time);
+          if (pitch <= obj.MAX_PITCH)
+             st = 1.0 / (eps + obj.PitchFun(time));
+             x = position(1,:);
+             y = position(2,:);
+             mags = obj.MAX_VEL  ./(sqrt(1+st.^2) .* sqrt(x.^2 + y.^2));
+             v = zeros(size(position));
+             v(1,:) = mags .* (-y - x .* st);
+             v(2,:) = mags .* (x - st .* y);
+          else
+            v = obj.compute_vel_pure_rotation(time, position);
+          end
       end
       
       function dpdt = spirofun(obj, t,p)
-        dpdt = obj.compute_vels(t,p);
+         dpdt = obj.compute_vels(t,p);
       end
       
-      function [value,isterminal,direction] = radius_size_event(obj,t,p)
-        value = p(1)^2 + p(2)^2 - obj.OBJ_RAD^2;
+      function [value,isterminal,direction] = stop_event_radius(obj,t,p)
+        value = p(1)^2 + p(2)^2 - obj.OBJ_RAD^2; 
         isterminal = 1;
         direction = -1;
       end
+      
+      function v = compute_vel_pure_rotation(obj, time, position)
+         x = position(1,:);
+         y = position(2,:);
+         vel_dir = [-y;x];
+         vel_dir = bsxfun(@rdivide, vel_dir, sqrt(sum(vel_dir.^2)));
+         v = vel_dir * obj.MAX_VEL;
+      end
+      
+      
    end
 end
 

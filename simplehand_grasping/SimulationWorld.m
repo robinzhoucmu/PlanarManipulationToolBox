@@ -28,7 +28,10 @@ classdef SimulationWorld < handle
             obj.num_fingers = num_fingers;
         end
         
-        function [flags, pose_log] = SimulationRollOut(obj)
+        function [flags, pose_log] = SimulationRollOut(obj, flag_plot)
+            if (nargin == 1)
+                flag_plot = false;
+            end
             % Default flags.
             flags.jammed = 0;
             flags.grasped = 0;
@@ -38,14 +41,16 @@ classdef SimulationWorld < handle
             pose_log = [];
             maxT = max(obj.finger_traj.t);
             cur_t = 0;
-            opts = odeset('RelTol',1e-7,...
-                          'AbsTol', 1e-7,...
+            opts = odeset('RelTol',1e-6,...
+                          'AbsTol', 1e-6,...
                           'Events', @obj.FingerTouchObjectEvent,...
                           'Vectorized',true,...
-                          'MaxStep',0.01);    
+                          'MaxStep',0.05);    
             dt_collision = 0.005;
             [cur_finger_pos,~] = obj.finger_traj.get_pos_and_vel(cur_t);
-            figure;
+            if (flag_plot)
+                figure;
+            end
             k = 0;
             plot_interval_t = 0.025;
             pt_all_fingers = zeros(2, obj.num_fingers);
@@ -59,7 +64,7 @@ classdef SimulationWorld < handle
                 % Store the finger state right at collision.
                 cur_finger_pos = sol.y(:,end);
                 twist_linear = obj.finger_traj.compute_vels(cur_t, cur_finger_pos);
-                % I don't know but ode is not recording simulatanoues
+                % I don't know why but ode is not recording simulatanoues
                 % event, instead it only records the first finger.
                 touch_values = obj.FingerTouchObjectEvent(cur_t, cur_finger_pos);
                 sol.ie = find(touch_values == 0);
@@ -74,27 +79,19 @@ classdef SimulationWorld < handle
                 end 
                 pt_fingers = pt_all_fingers(:, sol.ie);
                 twist_fingers = twist_all_fingers(:, sol.ie);
-%                 pt_fingers = zeros(2,num_finger_touches);
-%                 twist_fingers = zeros(3, num_finger_touches);
-%                 for i = 1:1:num_finger_touches
-%                     rot_angle = 2 * pi * (sol.ie(i) - 1.0) / obj.num_fingers;
-%                     R = [cos(rot_angle), -sin(rot_angle); sin(rot_angle), cos(rot_angle)];
-%                     pt_fingers(:,i) = R * cur_finger_pos;
-%                     twist_fingers(:, i) = [R * twist_linear; 0];
-%                 end
-                
-                % Drawing
-                if cur_t > k * plot_interval_t
-                    drawCircle(obj.pushobj.pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
-                    plot(obj.pushobj.pose(1), obj.pushobj.pose(2), 'k+');
-                    hold on;
-                    % Draw all fingers.
-                    for i = 1:1:obj.num_fingers
-                        drawCircle(pt_all_fingers(1,i), pt_all_fingers(2,i), obj.finger_radius, 'r');
+                if (flag_plot)
+                    % Drawing
+                    if cur_t > k * plot_interval_t
+                        drawCircle(obj.pushobj.pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
+                        plot(obj.pushobj.pose(1), obj.pushobj.pose(2), 'k+');
+                        hold on;
+                        % Draw all fingers.
+                        for i = 1:1:obj.num_fingers
+                            drawCircle(pt_all_fingers(1,i), pt_all_fingers(2,i), obj.finger_radius, 'r');
+                        end
+                         k = k + 1;
                     end
-                     k = k + 1;
                 end
-                
                 flag_contact = zeros(num_finger_touches);
                 pt_contact = zeros(2, num_finger_touches);
                 vel_contact = zeros(2, num_finger_touches);
@@ -173,9 +170,6 @@ classdef SimulationWorld < handle
 %                     value(i) = 0;
 %                 end
                 value(i) = max(dist - obj.finger_radius,0);
-%                value(i) = (dist - obj.finger_radius)
-                %isterminal(i) = 1;
-                %direction(i) = 0;
             end
 
         end

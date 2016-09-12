@@ -44,7 +44,7 @@ finger_radius = 0.002;
 max_quasistatic_vel = shape_info.shape_parameters.radius; % one radius per second.
 
 finger_movement_sample_dt = 0.01;
-finger_traj = PitchCompute(@(t)(4), max_quasistatic_vel, ...
+finger_traj = PitchCompute(@(t)(0), max_quasistatic_vel, ...
     shape_info.shape_parameters.radius, 2 * shape_info.shape_parameters.radius, finger_movement_sample_dt);
 
 simulation_case = SimulationWorld(pushobj, finger_traj, const_mu, finger_radius, 3);
