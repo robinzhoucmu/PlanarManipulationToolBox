@@ -12,10 +12,12 @@ finger_traj = PitchCompute(pitch_fun, ...
                            uncertainty_radius + finger_radius + eps_init_dist, ...
                            finger_movement_sample_dt);
 
+finger_traj.plot();
 simulation_inst = SimulationWorld(pushobj, finger_traj, mu, finger_radius, 3);
 ct_samples = 0;
 all_results = cell(num_init_samples, 1);
 while (ct_samples < num_init_samples)
+    (ct_samples + 0.0) / num_init_samples
     % Sample a random initial pose such that the object circle center is
     % within (ratio_uncertainty - 1) * circle_radius.
     sampling_radius = (uncertainty_radius - pushobj.shape_parameters.radius);
@@ -35,13 +37,19 @@ end
 % Plot capture regions from result logs.
 figure;
 hold on;
+num_grasped = 0;
+num_jammed = 0;
+num_missed = 0;
 for i = 1:1:ct_samples
     if (all_results{i}.result_flags.grasped == 1)
         plot(all_results{i}.init_pose(1), all_results{i}.init_pose(2), 'r+');
+        num_grasped = num_grasped + 1;
     elseif (all_results{i}.result_flags.jammed == 1)
         plot(all_results{i}.init_pose(1), all_results{i}.init_pose(2), 'k*');
+        num_jammed = num_jammed + 1;
     else
-        plot(all_results{i}.init_pose(1), all_results{i}.init_pose(2), 'bo')
+        plot(all_results{i}.init_pose(1), all_results{i}.init_pose(2), 'bo');
+        num_missed = num_missed + 1;
     end
 end
 end

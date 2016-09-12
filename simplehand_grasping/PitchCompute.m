@@ -84,7 +84,7 @@ classdef PitchCompute
  
       % Plot the path the spiral takes as computed by ode45
       function plot(obj)
-        figure(1);clf;plot(obj.p(1,:), obj.p(2,:));
+        figure;plot(obj.p(1,:), obj.p(2,:));
         axis equal; axis([-obj.INITIAL_R,obj.INITIAL_R,-obj.INITIAL_R,obj.INITIAL_R]);
       end    
    end
@@ -94,7 +94,7 @@ classdef PitchCompute
       function v = compute_vels(obj, time, position)
           % Get how much rotation versus squeezing.
           pitch = obj.PitchFun(time);
-          if (pitch <= obj.MAX_PITCH)
+          if ((pitch <= obj.MAX_PITCH)) %& (time > 6.0 | time < 0.2))
              st = 1.0 / (eps + obj.PitchFun(time));
              x = position(1,:);
              y = position(2,:);

@@ -32,23 +32,33 @@ ls_coeff = [ 1.0276
 ];
 ls_type = 'poly4';
 
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
 %pushobj.FitLS('quadratic', 200, 0.2);
+ls_coeff_quad = diag([1.1417, 1.0792, 2.4776]);
+ls_type_quad = 'quadratic';
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type_quad, ls_coeff_quad);
+
 % Set the circle at the point of origin.
-pushobj.pose = [shape_info.shape_parameters.radius * 0.5;
-    shape_info.shape_parameters.radius * 0.6;
-    0];
-const_mu = 0.05;
+ pushobj.pose = [shape_info.shape_parameters.radius * 0.7;
+     shape_info.shape_parameters.radius * 0.7;
+     0];
+tmpangle = pi*2/3;
+%tmpangle = 0;
+tmpPosition = [cos(tmpangle), - sin(tmpangle); sin(tmpangle), cos(tmpangle)] * cursor_info.Position';
+pushobj.pose = [tmpPosition;0];
+const_mu = 0.25;
 finger_radius = 0.002;
 
 max_quasistatic_vel = shape_info.shape_parameters.radius; % one radius per second.
 
 finger_movement_sample_dt = 0.01;
-finger_traj = PitchCompute(@(t)(1), max_quasistatic_vel, ...
-    shape_info.shape_parameters.radius, 2 * shape_info.shape_parameters.radius, finger_movement_sample_dt);
+eps_init_dist = 0.001;
+finger_traj = PitchCompute(@(t)(pi), max_quasistatic_vel, ...
+    shape_info.shape_parameters.radius, 2 * shape_info.shape_parameters.radius + finger_radius + eps_init_dist, finger_movement_sample_dt);
 
 simulation_case = SimulationWorld(pushobj, finger_traj, const_mu, finger_radius, 3);
 [flags, pose_log] = simulation_case.SimulationRollOut(1);
 flags
 
-%figure;
+
+
