@@ -52,7 +52,7 @@ classdef SimulationWorld < handle
                 figure;
             end
             k = 0;
-            plot_interval_t = 0.025;
+            plot_interval_t = 0.02;
             pt_all_fingers = zeros(2, obj.num_fingers);
             twist_all_fingers = zeros(3, obj.num_fingers);
             while ~flag_finish
