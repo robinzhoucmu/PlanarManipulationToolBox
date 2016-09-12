@@ -195,8 +195,58 @@ classdef PushedObject < handle
         twist_local(3) = twist_local(3) / obj.pho;  
         
       end
-      function [flag_jammed] = CheckForTwoContactsJamming(obj, pt, vel, out_normal, mu)
+      function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus)
+        % This function checks for jamming given two contact points.
+        % Here we assume the contacts are position-controlled and are able
+        % to apply infinite force to the object. 
+        % It checks if the line between the two contacts lines in the 2
+        % friction cones. 
+        % Inputs: pt: contact points column vectors. 2*2. 
+        % out_normals: outward normals at each contact point. 2*2. 
+        % mus: the coefficient of frictions at the two contact points.
+        % Output: boolean variable returning whether the object will be
+        % jammed or not.
+        vec_pt = pts(:,2) - pts(:,1);
+        pho_dummy = 1;
+        fc_edges = zeros(3,4);
+        fc_edges(:,1:2) = ComputeFrictionConeEdges(pts(:,1), out_normals(:,1), mus(1), pho_dummy);
+        fc_edges(:,3:4) = ComputeFrictionConeEdges(pts(:,2), out_normals(:,2), mus(2), pho_dummy);
+        k = zeros(4,1);
+        flag_jammed = true;
+        for i = 1:1:2
+            vec_pt = (-1)^(i-1) * vec_pt;
+            k(2*i-1) = vec_pt(1) * fc_edges(2, 2*i-1) - vec_pt(2) * fc_edges(1, 2*i-1);
+            k(2*i) = vec_pt(1) * fc_edges(2, 2*i) - vec_pt(1) * fc_edges(1, 2*i);
+            if ~(k(2*i-1) >= 0 && k(2*i) <=0)
+                flag_jammed = false;
+            end
+        end
+      end
       
+      function [flag_cagged, flag_in, flag_on] = CheckForCagingGeometry(obj, pts, finger_radius)
+          % This function checks geometric conditions for fingers caing the
+          % object.
+          % Input: pts: the contact points column vectors.
+          % Output: flag_cagged, whether the object is being cagged or not.
+          % flag_in: whether the object is inside the caging boundary.
+          % flag_on: whether the object is on the caging boundary.
+         
+          n_pts = size(pts, 2);
+          flag_cagged = false;
+          flag_in = false;
+          flag_on = false;
+          eps_dist = finger_radius / 4;
+          % For now, let's start with 3 fingers caging a circle. 
+          if (n_pts == 3 && strcmp(obj.shape_type, 'circle'))
+            % Compute pairwise distance between the contact points.
+            dist_pts = pdist(pts');
+            %2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius)
+            % Check in the caging triangle is formed or not.
+            flag_triangle = ((sum(dist_pts <= ...
+                2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius + eps_dist))) == n_pts);
+            [flag_in, flag_on] = inpolygon(obj.pose(1), obj.pose(2), pts(1,:), pts(2,:));
+            flag_cagged = flag_in & flag_triangle;
+          end
       end
    end
 end
