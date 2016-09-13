@@ -1,4 +1,4 @@
-function [all_results] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_samples)
+function [all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_samples)
 rng(1);
 uncertainty_radius = pushobj.shape_parameters.radius * ratio_uncertainty;
 
@@ -52,4 +52,5 @@ for i = 1:1:ct_samples
         num_missed = num_missed + 1;
     end
 end
+num_grasped, num_jammed, num_missed
 end

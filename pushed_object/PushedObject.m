@@ -206,7 +206,7 @@ classdef PushedObject < handle
         % mus: the coefficient of frictions at the two contact points.
         % Output: boolean variable returning whether the object will be
         % jammed or not.
-        vec_pt = pts(:,2) - pts(:,1);
+        vec_pt_12 = pts(:,2) - pts(:,1);
         pho_dummy = 1;
         fc_edges = zeros(3,4);
         fc_edges(:,1:2) = ComputeFrictionConeEdges(pts(:,1), out_normals(:,1), mus(1), pho_dummy);
@@ -214,13 +214,17 @@ classdef PushedObject < handle
         k = zeros(4,1);
         flag_jammed = true;
         for i = 1:1:2
-            vec_pt = (-1)^(i-1) * vec_pt;
+            vec_pt = (-1)^(i-1) * vec_pt_12;
             k(2*i-1) = vec_pt(1) * fc_edges(2, 2*i-1) - vec_pt(2) * fc_edges(1, 2*i-1);
-            k(2*i) = vec_pt(1) * fc_edges(2, 2*i) - vec_pt(1) * fc_edges(1, 2*i);
+            k(2*i) = vec_pt(1) * fc_edges(2, 2*i) - vec_pt(2) * fc_edges(1, 2*i);
             if ~(k(2*i-1) >= 0 && k(2*i) <=0)
                 flag_jammed = false;
             end
+            arrow_length = obj.shape_parameters.radius * 0.5;
+            plot([pts(1,i), pts(1,i) + fc_edges(1,2*i-1) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i-1) * arrow_length], 'b-');
+            plot([pts(1,i), pts(1,i) + fc_edges(1,2*i) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i) * arrow_length], 'b-');
         end
+        
       end
       
       function [flag_cagged, flag_in, flag_on] = CheckForCagingGeometry(obj, pts, finger_radius)

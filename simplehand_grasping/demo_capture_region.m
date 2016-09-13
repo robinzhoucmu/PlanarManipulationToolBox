@@ -33,11 +33,23 @@ ls_type = 'poly4';
 
 pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
 
-pitch_fun = @(t)(pi);
+pitch_fun = @(t)(0);
 
-mu = 0.25;
+mu = 0.5;
 finger_radius = 0.002;
-ratio_uncertainty = 2.0;
-num_init_pose_samples = 100;
-[all_results] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples);
+ratio_uncertainty = 2.0
+num_init_pose_samples = 300;
+[all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples);
+figure;
+hold on;
+for i = 1:1:length(all_results)
+    if (all_results{i}.result_flags.jammed == 1) 
+        plot(all_results{i}.pose_log(1,end), all_results{i}.pose_log(2,end), 'k*');
+    elseif (all_results{i}.result_flags.missed == 1)
+        plot(all_results{i}.pose_log(1,end), all_results{i}.pose_log(2,end), 'bo');
+    else
+        plot(0,0,'r+');
+    end
+end
+axis equal;
 toc;

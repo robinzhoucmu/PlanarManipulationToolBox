@@ -92,7 +92,7 @@ classdef SimulationWorld < handle
                          k = k + 1;
                     end
                 end
-                flag_contact = zeros(num_finger_touches);
+                flag_contact = zeros(num_finger_touches, 1);
                 pt_contact = zeros(2, num_finger_touches);
                 vel_contact = zeros(2, num_finger_touches);
                 outward_normal_contact = zeros(2, num_finger_touches);
@@ -117,12 +117,13 @@ classdef SimulationWorld < handle
                     for i = 1:1:num_finger_touches
                        % Get each contact point, velocity
                        [flag_contact(i), pt_contact(:,i), vel_contact(:,i), outward_normal_contact(:,i)] = ...
-                          obj.pushobj.GetRoundFingerContactInfo(pt_fingers(:,i), obj.finger_radius, twist_fingers(:,1))
-                    end
+                          obj.pushobj.GetRoundFingerContactInfo(pt_fingers(:,i), obj.finger_radius, twist_fingers(:,1));
+                    end                
                     % If neither is breaking contact, check for jamming.
                     if (flag_contact(1) && flag_contact(2))
                         flag_jammed = obj.pushobj.CheckForTwoContactsJammingGeometry(...
                             pt_contact, outward_normal_contact, [obj.mu;obj.mu]);
+
                         if (flag_jammed)
                             flags.jammed = 1;
                             flags.missed = 0;
