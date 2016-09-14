@@ -59,8 +59,12 @@ finger_traj = PitchCompute(@(t)(pitch), max_quasistatic_vel, ...
     shape_info.shape_parameters.radius, 2 * shape_info.shape_parameters.radius + finger_radius + eps_init_dist, finger_movement_sample_dt);
 
 simulation_case = SimulationWorld(pushobj, finger_traj, const_mu, finger_radius, 3);
-[flags, pose_log] = simulation_case.SimulationRollOut(1);
+flag_plot = 1;
+flag_stop_at_first_contact = 1;
+[flags, pose_log, twists, center_linear_vel] = simulation_case.SimulationRollOut(flag_plot, flag_stop_at_first_contact);
 flags
+twists
+center_linear_vel
 
 
 

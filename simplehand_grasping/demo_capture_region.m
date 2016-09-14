@@ -14,7 +14,8 @@ options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
 
 ls_coeff = [ 1.0276 
-    1.0381
+    %1.0381
+    1.0276
     5.1589
    -0.0300
     0.4683
@@ -33,13 +34,19 @@ ls_type = 'poly4';
 
 pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
 
-pitch_fun = @(t)(0);
+ls_coeff_quad = diag([1.1417, 1.0792, 2.4776]);
+ls_type_quad = 'quadratic';
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type_quad, ls_coeff_quad);
 
-mu = 0.5;
+
+pitch_fun = @(t)(3*pi);
+
+mu = 0.05;
 finger_radius = 0.002;
 ratio_uncertainty = 2.0
-num_init_pose_samples = 300;
-[all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples);
+num_init_pose_samples = 600;
+flag_stop_at_first_contact = 1;
+[all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples, flag_stop_at_first_contact);
 figure;
 hold on;
 for i = 1:1:length(all_results)
@@ -51,5 +58,6 @@ for i = 1:1:length(all_results)
         plot(0,0,'r+');
     end
 end
+title('post distribution');
 axis equal;
 toc;

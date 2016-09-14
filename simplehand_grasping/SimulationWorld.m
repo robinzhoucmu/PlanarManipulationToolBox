@@ -28,9 +28,12 @@ classdef SimulationWorld < handle
             obj.num_fingers = num_fingers;
         end
         
-        function [flags, pose_log] = SimulationRollOut(obj, flag_plot)
-            if (nargin == 1)
+        function [flags, pose_log, twist_contacts_global, linear_center_vel] = SimulationRollOut(obj, flag_plot, flag_stop_at_first_contact)
+            if (nargin < 2)
                 flag_plot = false;
+            end
+            if (nargin < 3)
+                flag_stop_at_first_contact = false;
             end
             % Default flags.
             flags.jammed = 0;
@@ -39,6 +42,8 @@ classdef SimulationWorld < handle
             
             flag_finish = false;
             pose_log = [];
+            twist_contacts_global = [];
+            linear_center_vel = [];
             maxT = max(obj.finger_traj.t);
             cur_t = 0;
             opts = odeset('RelTol',1e-6,...
@@ -50,6 +55,7 @@ classdef SimulationWorld < handle
             [cur_finger_pos,~] = obj.finger_traj.get_pos_and_vel(cur_t);
             if (flag_plot)
                 figure;
+                hold on;
             end
             k = 0;
             plot_interval_t = 0.02;
@@ -69,7 +75,9 @@ classdef SimulationWorld < handle
                 touch_values = obj.FingerTouchObjectEvent(cur_t, cur_finger_pos);
                 sol.ie = find(touch_values == 0);
                 num_finger_touches = length(sol.ie);
-
+                if (flag_stop_at_first_contact) & (num_finger_touches > 0)
+                    flag_finish = true;
+                end
                 % Get All fingers location and velocity.
                 for i = 1:1:obj.num_fingers
                     rot_angle = 2 * pi * (i - 1.0) / obj.num_fingers;
@@ -81,7 +89,7 @@ classdef SimulationWorld < handle
                 twist_fingers = twist_all_fingers(:, sol.ie);
                 if (flag_plot)
                     % Drawing
-                    if cur_t > k * plot_interval_t
+                    if cur_t >= k * plot_interval_t
                         drawCircle(obj.pushobj.pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
                         plot(obj.pushobj.pose(1), obj.pushobj.pose(2), 'k+');
                         hold on;
@@ -104,12 +112,14 @@ classdef SimulationWorld < handle
                       obj.pushobj.GetRoundFingerContactInfo(pt_fingers(:,1), obj.finger_radius, twist_fingers(:,1));
                     [twist_local, wrench_load_local, contact_mode] = ...
                         obj.pushobj.ComputeVelGivenPointRoundFingerPush(pt_contact, vel_contact, outward_normal_contact, obj.mu);
-                    %twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_local, obj.pushobj.pose(3));
+                    twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_local, obj.pushobj.pose);
+                    twist_contacts_global = [twist_contacts_global, twist_global];
+                    linear_center_vel =  [linear_center_vel,SE2Algebra.GetTwistMatrix(twist_global) * [obj.pushobj.pose(1:2);1]];
                     %mat_exp_twist =  SE2Algebra.GetExponentialMapGivenTwistVec(twist_global * dt);
                     homogT = SE2Algebra.GetExponentialMapGivenTwistVec(twist_local * dt_collision);
                     cur_homogT = SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * homogT;
                     obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(cur_homogT);
-                
+                    
                 elseif (num_finger_touches == 2)
                 % Otherwise if 2 fingers are involved, check if the object
                 % will be jammed or not. Also check if it's inside the
@@ -127,11 +137,13 @@ classdef SimulationWorld < handle
                         if (flag_jammed)
                             flags.jammed = 1;
                             flags.missed = 0;
+                            flags.grasped = 0;
                         else
                             [flag_cagged, flag_in, flag_on] = obj.pushobj.CheckForCagingGeometry(pt_all_fingers, obj.finger_radius);
                             if flag_cagged
                                 flags.grasped = 1;
                                 flags.missed = 0;
+                                flags.jammed = 0;
                             end
                         end
                         flag_finish = true;
@@ -148,6 +160,7 @@ classdef SimulationWorld < handle
                 if flag_cagged
                     flags.grasped = 1;
                     flags.missed = 0;
+                    flags.jammed = 0;
                 end
             end
             axis equal;

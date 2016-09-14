@@ -234,20 +234,22 @@ classdef PushedObject < handle
           % Output: flag_cagged, whether the object is being cagged or not.
           % flag_in: whether the object is inside the caging boundary.
           % flag_on: whether the object is on the caging boundary.
-         
           n_pts = size(pts, 2);
           flag_cagged = false;
           flag_in = false;
           flag_on = false;
           eps_dist = finger_radius / 4;
+          pts_tips = pts;
           % For now, let's start with 3 fingers caging a circle. 
           if (n_pts == 3 && strcmp(obj.shape_type, 'circle'))
             % Compute pairwise distance between the contact points.
-            dist_pts = pdist(pts');
+            dist_pts = pdist(pts_tips');
+            cage_tri_edge = 2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius);
             %2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius)
             % Check in the caging triangle is formed or not.
-            flag_triangle = ((sum(dist_pts <= ...
-                2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius + eps_dist))) == n_pts);
+            %flag_triangle = ((sum(dist_pts <= ...
+            %    2 * (obj.shape_parameters.radius + sqrt(3)/2.0 * finger_radius + eps_dist))) == n_pts);
+            flag_triangle = (sum(dist_pts <= cage_tri_edge) == n_pts);
             [flag_in, flag_on] = inpolygon(obj.pose(1), obj.pose(2), pts(1,:), pts(2,:));
             flag_cagged = flag_in & flag_triangle;
           end

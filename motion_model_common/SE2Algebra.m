@@ -42,7 +42,7 @@ classdef SE2Algebra < handle
             theta = cart_pose(3);
             R = [cos(theta), -sin(theta);
                 sin(theta), cos(theta)];
-            Adj = [R, [cart_pose(2); cart_pose(1)]; 0,0,1];
+            Adj = [R, [cart_pose(2); -cart_pose(1)]; 0,0,1];
             twist_global = Adj * twist_local;
         end
         
