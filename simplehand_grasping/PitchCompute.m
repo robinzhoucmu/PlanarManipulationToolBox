@@ -83,8 +83,12 @@ classdef PitchCompute
       end
  
       % Plot the path the spiral takes as computed by ode45
-      function plot(obj)
-        figure;plot(obj.p(1,:), obj.p(2,:));
+      function plot(obj, num_fingers)
+        if (nargin < 2)
+            num_fingers = 1;
+        end
+        figure;
+        plot(obj.p(1,:), obj.p(2,:));
         axis equal; axis([-obj.INITIAL_R,obj.INITIAL_R,-obj.INITIAL_R,obj.INITIAL_R]);
       end    
    end
@@ -94,8 +98,8 @@ classdef PitchCompute
       function v = compute_vels(obj, time, position)
           % Get how much rotation versus squeezing.
           pitch = obj.PitchFun(time);
-          if (pitch <= obj.MAX_PITCH) & (time > 4.5 | time < 0.5)
-          %if (pitch <= obj.MAX_PITCH) & (time > 5.0 | time < 0.55)
+          %if (pitch <= obj.MAX_PITCH) & (time > 4.5 | time < 0.5)
+          if (pitch <= obj.MAX_PITCH) & (time > 4 | time < 0.3)
              st = 1.0 / (eps + obj.PitchFun(time));
              x = position(1,:);
              y = position(2,:);
@@ -105,6 +109,14 @@ classdef PitchCompute
              v(2,:) = mags .* (x - st .* y);
           else
             v = obj.compute_vel_pure_rotation(time, position);
+%              testout_pitch = 4*pi;
+%              st = 1.0 / (eps + testout_pitch);
+%              x = position(1,:);
+%              y = position(2,:);
+%              mags = obj.MAX_VEL  ./(sqrt(1+st.^2) .* sqrt(x.^2 + y.^2));
+%              v = zeros(size(position));
+%              v(1,:) = mags .* (-y - x .* st);
+%              v(2,:) = mags .* (x - st .* y);
           end
       end
       

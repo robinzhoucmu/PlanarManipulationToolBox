@@ -50,7 +50,8 @@ if (flag_convex == 1)
     cvx_begin 
         cvx_precision high
         variable Q(9,9) semidefinite
-        variables v(15) xi(n) delta(n) s(n) Z(n,3) H(10,3)     
+        variable v(15) nonnegative
+        variables  xi(n) delta(n) s(n) Z(n,3) H(10,3)     
     minimize(lambda * norm(v) + beta * sum(xi)/n + gamma * sum(delta)/n)
     subject to 
         % Point Fitting Constraints.

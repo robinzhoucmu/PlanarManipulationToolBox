@@ -53,7 +53,7 @@ while (ct_samples < num_init_samples)
         ct_samples = ct_samples + 1;
         init_pose = [Pts(ct_samples, :)';0];
         % Set initial pose of the object.
-        simulation_inst.pushobj.pose = [init_pose;0];
+        simulation_inst.pushobj.pose = init_pose;
         [flags, pose_log, twist, center_linear_vel] = simulation_inst.SimulationRollOut(0, flag_stop_first_contact);
         all_results{ct_samples}.init_pose = init_pose;
         all_results{ct_samples}.result_flags = flags;
@@ -84,12 +84,16 @@ for i = 1:1:ct_samples
             length_ratio = 0.1;
             %plot([x, x + length_ratio * all_results{i}.center_linear_vel(1, end)], ...
             %    [y, y + length_ratio * all_results{i}.center_linear_vel(2, end)], 'r-');
-            h = quiver(x,y, all_results{i}.center_linear_vel(1, end), all_results{i}.center_linear_vel(2, end), length_ratio, 'b-');
-            set(h,'MaxHeadSize',100);
+            if (size(all_results{i}.center_linear_vel, 2) > 0)
+                h = quiver(x,y, all_results{i}.center_linear_vel(1, end), all_results{i}.center_linear_vel(2, end), length_ratio, 'b-');
+                set(h,'MaxHeadSize',200);
+                set(h, 'LineWidth', 1.75);
+            end
         end
         num_missed = num_missed + 1;
     end
 end
+axis equal;
 num_grasped, num_jammed, num_missed
 end
 
