@@ -44,7 +44,7 @@ pitch_fun = @(t)(0*pi);
 mu = 0.05;
 finger_radius = 0.002;
 ratio_uncertainty = 2.0
-num_init_pose_samples = 20;
+num_init_pose_samples = 5;
 flag_stop_at_first_contact = 0;
 [all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples, flag_stop_at_first_contact);
 figure;
