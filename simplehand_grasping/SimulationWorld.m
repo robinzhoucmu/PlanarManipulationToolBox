@@ -132,7 +132,7 @@ classdef SimulationWorld < handle
                     % If neither is breaking contact, check for jamming.
                     if (flag_contact(1) && flag_contact(2))
                         flag_jammed = obj.pushobj.CheckForTwoContactsJammingGeometry(...
-                            pt_contact, outward_normal_contact, [obj.mu;obj.mu]);
+                            pt_contact, outward_normal_contact, [obj.mu;obj.mu], flag_plot);
 
                         if (flag_jammed)
                             flags.jammed = 1;
@@ -163,7 +163,9 @@ classdef SimulationWorld < handle
                     flags.jammed = 0;
                 end
             end
-            axis equal;
+            if (flag_plot)
+                axis equal;
+            end
         end
         
         function [value, isterminal, direction] = FingerTouchObjectEvent(obj, t, x)

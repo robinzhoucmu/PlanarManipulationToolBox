@@ -195,7 +195,7 @@ classdef PushedObject < handle
         twist_local(3) = twist_local(3) / obj.pho;  
         
       end
-      function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus)
+      function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus, flag_plot)
         % This function checks for jamming given two contact points.
         % Here we assume the contacts are position-controlled and are able
         % to apply infinite force to the object. 
@@ -206,6 +206,9 @@ classdef PushedObject < handle
         % mus: the coefficient of frictions at the two contact points.
         % Output: boolean variable returning whether the object will be
         % jammed or not.
+        if nargin < 5
+            flag_plot = false;
+        end
         vec_pt_12 = pts(:,2) - pts(:,1);
         pho_dummy = 1;
         fc_edges = zeros(3,4);
@@ -221,8 +224,11 @@ classdef PushedObject < handle
                 flag_jammed = false;
             end
             arrow_length = obj.shape_parameters.radius * 0.5;
-            plot([pts(1,i), pts(1,i) + fc_edges(1,2*i-1) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i-1) * arrow_length], 'b-');
-            plot([pts(1,i), pts(1,i) + fc_edges(1,2*i) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i) * arrow_length], 'b-');
+            if (flag_plot)
+                hold on;
+                plot([pts(1,i), pts(1,i) + fc_edges(1,2*i-1) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i-1) * arrow_length], 'b-');
+                plot([pts(1,i), pts(1,i) + fc_edges(1,2*i) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i) * arrow_length], 'b-');
+            end
         end
         
       end

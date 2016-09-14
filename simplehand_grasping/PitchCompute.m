@@ -88,9 +88,17 @@ classdef PitchCompute
             num_fingers = 1;
         end
         figure;
-        plot(obj.p(1,:), obj.p(2,:));
-        axis equal; axis([-obj.INITIAL_R,obj.INITIAL_R,-obj.INITIAL_R,obj.INITIAL_R]);
-      end    
+        hold on;
+        for i = 1:1:num_fingers
+            angle = (i-1) * 2*pi / num_fingers;
+            R = [cos(angle), -sin(angle);
+                sin(angle), cos(angle)];
+            pts = R * obj.p;
+            plot(pts(1,:), pts(2,:), 'b-', 'LineWidth', 1.75);
+        end
+        axis equal; 
+        axis([-obj.INITIAL_R,obj.INITIAL_R,-obj.INITIAL_R,obj.INITIAL_R]);
+       end    
    end
    
    methods (Access = public)
@@ -99,7 +107,7 @@ classdef PitchCompute
           % Get how much rotation versus squeezing.
           pitch = obj.PitchFun(time);
           %if (pitch <= obj.MAX_PITCH) & (time > 4.5 | time < 0.5)
-          if (pitch <= obj.MAX_PITCH) & (time > 4 | time < 0.3)
+          if (pitch <= obj.MAX_PITCH) & (time > 5 | time < 0.5)
              st = 1.0 / (eps + obj.PitchFun(time));
              x = position(1,:);
              y = position(2,:);

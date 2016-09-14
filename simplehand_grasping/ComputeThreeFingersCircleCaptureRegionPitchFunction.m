@@ -15,7 +15,8 @@ finger_traj = PitchCompute(pitch_fun, ...
                            uncertainty_radius + finger_radius + eps_init_dist, ...
                            finger_movement_sample_dt);
 
-finger_traj.plot();
+finger_traj.plot(3);
+
 simulation_inst = SimulationWorld(pushobj, finger_traj, mu, finger_radius, 3);
 ct_samples = 0;
 
@@ -54,7 +55,8 @@ while (ct_samples < num_init_samples)
         init_pose = [Pts(ct_samples, :)';0];
         % Set initial pose of the object.
         simulation_inst.pushobj.pose = init_pose;
-        [flags, pose_log, twist, center_linear_vel] = simulation_inst.SimulationRollOut(0, flag_stop_first_contact);
+        flag_plot = 0;
+        [flags, pose_log, twist, center_linear_vel] = simulation_inst.SimulationRollOut(flag_plot, flag_stop_first_contact);
         all_results{ct_samples}.init_pose = init_pose;
         all_results{ct_samples}.result_flags = flags;
         all_results{ct_samples}.pose_log = pose_log;
