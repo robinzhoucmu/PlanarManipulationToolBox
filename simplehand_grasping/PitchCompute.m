@@ -107,7 +107,7 @@ classdef PitchCompute
           % Get how much rotation versus squeezing.
           pitch = obj.PitchFun(time);
           %if (pitch <= obj.MAX_PITCH) & (time > 4.5 | time < 0.5)
-          if (pitch <= obj.MAX_PITCH) & (time > 3 | time < 0.5)
+          if (pitch <= obj.MAX_PITCH) %& (time > 4.5 | time < 0.5)
              st = 1.0 / (eps + obj.PitchFun(time));
              x = position(1,:);
              y = position(2,:);

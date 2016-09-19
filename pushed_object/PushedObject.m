@@ -185,7 +185,7 @@ classdef PushedObject < handle
         % Change vel, pt and normal to local frame first. 
         vel_local = obj.GetVectorInLocalFrame(vel_global);        
         % Compute the point of contact.
-        pt_local = obj.GetVectorInLocalFrame(pt_global);
+        pt_local = obj.GetVectorInLocalFrame(pt_global - obj.pose(1:2));
         normal_local = obj.GetVectorInLocalFrame(outward_normal_global);
         
         [wrench_load_local, twist_local, contact_mode] = ComputeVelGivenSingleContactPtPush(vel_local, pt_local, ...

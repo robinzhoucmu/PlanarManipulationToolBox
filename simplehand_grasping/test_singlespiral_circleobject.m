@@ -3,10 +3,12 @@ cvx_startup;
 shape_info.shape_id = 'circle1';
 shape_info.shape_type = 'circle';
 shape_info.shape_parameters.radius = 0.02;
+%shape_info.shape_parameters.radius = 0.002;
 shape_info.pho = shape_info.shape_parameters.radius;
 
-options_support_pts.mode = 'circle';
-options_support_pts.range = shape_info.shape_parameters.radius;
+options_support_pts.mode = 'rim';
+ratio_support_rim = 0.1;
+options_support_pts.range = ratio_support_rim * shape_info.shape_parameters.radius;
 
 num_supports_pts = 200; 
 support_pts = GridSupportPoint(num_supports_pts, options_support_pts); % N*2.
@@ -33,7 +35,7 @@ ls_coeff = [    1.004487776488424
 ls_type = 'poly4';
 
 pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
-pushobj.FitLS('poly4', 400, 0);
+pushobj.FitLS('poly4', 400, 0.1);
 %ls_coeff_quad = diag([1.1417, 1.0792, 2.4776]);
 %ls_type_quad = 'quadratic';
 %pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type_quad, ls_coeff_quad);
@@ -42,7 +44,7 @@ pushobj.FitLS('poly4', 400, 0);
  pushobj.pose = [-shape_info.shape_parameters.radius * 0.3;
      shape_info.shape_parameters.radius * 0.7;
      0];
- pushobj.pose = [-0.01138; -0.01645; 0];
+ pushobj.pose = [0.0172; 0.0102; 0];
 %tmpangle = pi*2/3;
 %tmpangle = 0;
 %tmpPosition = [cos(tmpangle), - sin(tmpangle); sin(tmpangle), cos(tmpangle)] * cursor_info.Position';
@@ -63,8 +65,7 @@ flag_plot = 1;
 flag_stop_at_first_contact = 1;
 [flags, pose_log, twists, center_linear_vel] = simulation_case.SimulationRollOut(flag_plot, flag_stop_at_first_contact);
 flags
-twists
-center_linear_vel
+
 
 
 
