@@ -43,8 +43,8 @@ shape_info.pho = [norm(a),norm(b)]*pressure_weights;
 figure, plot(support_pts(:,1), support_pts(:,2), '^');
 axis equal;
 drawnow;
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
-pushobj.FitLS('poly4', 400, 0.1);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type, ls_coeff);
+%pushobj.FitLS('poly4', 400, 0.1);
 
  %ls_coeff_quad = diag([1.1417, 1.0792, 2.4776*10]);
  %ls_type_quad = 'quadratic';
@@ -53,11 +53,11 @@ pushobj.FitLS('poly4', 400, 0.1);
 
 pitch_fun = @(t)(0*pi);
 
-mu = 0;
+mu = 1.0;
 finger_radius = 0.002;
 ratio_uncertainty = 2.0;
 num_init_pose_samples = 200;
-flag_stop_at_first_contact = 0;
+flag_stop_at_first_contact = 1;
 [all_results, simulation_inst] = ComputeThreeFingersCircleCaptureRegionPitchFunction(...
     pushobj, pitch_fun, mu, ratio_uncertainty, finger_radius, num_init_pose_samples, flag_stop_at_first_contact);
 figure;

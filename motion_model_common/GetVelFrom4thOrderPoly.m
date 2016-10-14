@@ -1,10 +1,10 @@
-% Input: Given poly coefficients and direction of forces (3*N), 
+% Input: Given poly coefficients v and force (3*N), 
 % Output: Get direction of velocities (N*3).
 % Return 1*3 row vector.
-function [ dir_vel, vel ] = GetVelFrom4thOrderPoly(v, dir_f)
-x = dir_f(1,:);
-y = dir_f(2,:);
-z = dir_f(3,:);
+function [ dir_vel, vel ] = GetVelFrom4thOrderPoly(v, f)
+x = f(1,:);
+y = f(2,:);
+z = f(3,:);
 
 G = [x.^3; x.^2.*y; x.^2.*z; x.*y.^2; x.*y.*z; 
      x.*z.^2; y.^3; y.^2.*z; y.*z.^2; z.^3]';
