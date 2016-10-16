@@ -1,4 +1,4 @@
-classdef FingerTrajectoryInterp < handle
+classdef TrajectoryInterp < handle
     properties
         t
         p
@@ -55,7 +55,7 @@ classdef FingerTrajectoryInterp < handle
             ts = linspace(obj.t(1), obj.t(end), num_plot_pts);
             P = zeros(size(obj.p,1), num_plot_pts);
             for i = 1:1:num_plot_pts
-                [P(:,i), v] = obj.GetPositionVelocity(ts(i))
+                [P(:,i), v] = obj.GetPositionVelocity(ts(i));
             end
             plot(P(1,:), P(2,:), 'o-');
             axis equal;
@@ -70,7 +70,7 @@ end
 % x = R * cos(omega * t); y = R * sin(omega * t);
 % dotx = -R*omega*sin(omega*t);doty = R*omega*cos(omega*t);
 % p = [x;y]; v = [dotx;doty]; 
-% ft = FingerTrajectoryInterp();
+% ft = TrajectoryInterp();
 % ft.SetPositionVelocityOverTime(t, p, v);
 % ft.SetInterpMode('pchipd');
 % ft.GenerateInterpPolynomial();
