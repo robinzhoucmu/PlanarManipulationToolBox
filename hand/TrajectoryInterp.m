@@ -44,9 +44,11 @@ classdef TrajectoryInterp < handle
             obj.interp_poly_der = fnder(obj.interp_poly);
         end
         
-        function [p, v] = GetPositionVelocity(obj, t)
+        function [p] = GetPosition(obj, t)
             p = ppval(obj.interp_poly, t)';
-            v = ppval(obj.interp_poly_der, t)';
+        end
+        function [v] = GetVelocity(obj,t)
+             v = ppval(obj.interp_poly_der, t)';
         end
         
         function [h] = PlotTrajectory(obj)
@@ -75,3 +77,16 @@ end
 % ft.SetInterpMode('pchipd');
 % ft.GenerateInterpPolynomial();
 % ft.PlotTrajectory();
+
+%----------------------------------------------%
+% A slightly more complicated trajectory. Sqeeze and rotate a bit. 
+% x1 = 1:-0.05:0.5; y1 = 1:-0.05:0.5;
+% t1 = 0:0.05:0.5;
+% t2 = 0.55:0.05:1; x2 = 0.5*sqrt(2)*cos(pi*(t2 - 0.5) + pi/4);
+% y2 = 0.5*sqrt(2)*sin(pi*(t2 - 0.5) + pi/4);
+% xnew = [x1,x2]; ynew = [y1,y2];
+% pnew = [xnew;ynew];
+% tnew = [t1,t2];
+% ft.SetPositionOverTime(tnew, pnew);
+% ft.GenerateInterpPolynomial()
+% ft.PlotTrajectory()

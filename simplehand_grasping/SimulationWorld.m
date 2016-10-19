@@ -90,7 +90,7 @@ classdef SimulationWorld < handle
                 if (flag_plot)
                     % Drawing
                     if cur_t >= k * plot_interval_t
-                        drawCircle(obj.pushobj.pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
+                        drawCircle(obj.                                                                                                                                                              .pose(1), obj.pushobj.pose(2), obj.pushobj.shape_parameters.radius, 'k');
                         plot(obj.pushobj.pose(1), obj.pushobj.pose(2), 'k+');
                         hold on;
                         % Draw all fingers.
