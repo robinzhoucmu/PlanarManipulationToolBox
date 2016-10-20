@@ -9,8 +9,7 @@ classdef HandTraj < handle
         t % time. length = N. 
         interp_mode % interpolation mode. 
         traj_interp % trajectory interpolator. 
-        fun_fk % function pointer of forward kinematic in the local frame. 
-        % Input of the hand configuration, return each of the finger pose. 
+        
     end
         
     methods
@@ -50,17 +49,7 @@ classdef HandTraj < handle
         function [qdot] = GetHandConfigurationDot(obj, t)
             qdot = obj.traj_interp.GetVelocity(t);
         end
-        % For a hand consists of round point fingers, return the position
-        % of each finger. This requires user to specify the forward
-        % kinematics. 
-        function [finger_positions] = GetFingerPositions(obj, t)
-        
-        end
-        % For a hand consists of round point fingers, return the velocities
-        % of each finger.
-        function [finger_velocities] = GetFingerVelocities(obj, t)
-        
-        end
+
     end
     
 end
