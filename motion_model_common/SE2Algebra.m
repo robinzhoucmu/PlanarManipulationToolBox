@@ -59,6 +59,13 @@ classdef SE2Algebra < handle
             theta = atan2(mat_homogtransf(2,1), mat_homogtransf(1,1));
             cart_pose = [mat_homogtransf(1:2,3); theta];
         end
+        
+        function [cart_ac] = GetCartPoseABCChain(cart_ab, cart_bc)
+            % Give the cartesian pose of b w.r.t a and c w.r.t b
+            % Compute the cartesian pose c w.r.t a. 
+        end
+        
+        function [twist_ac] = GetTwist
     end
     
 end
