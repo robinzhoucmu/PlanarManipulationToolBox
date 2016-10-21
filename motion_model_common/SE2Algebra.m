@@ -60,12 +60,31 @@ classdef SE2Algebra < handle
             cart_pose = [mat_homogtransf(1:2,3); theta];
         end
         
-        function [cart_ac] = GetCartPoseABCChain(cart_ab, cart_bc)
+        function [cart_ac, g_ac] = GetCartPoseABCChain(cart_ab, cart_bc)
             % Give the cartesian pose of b w.r.t a and c w.r.t b
             % Compute the cartesian pose c w.r.t a. 
+            g_ac = GetHomogTransfFromCartesianPose(cart_ab) * GetHomogTransfFromCartesianPose(cart_bc);
+            cart_ac = GetCartesianPoseFromHomogTransf(g_ac);
         end
         
-        function [twist_ac] = GetTwist
+        function [twist_ac] = GetBodyTwistABCChain(twist_ab, twist_bc, cart_pose_bc)
+            % Body twist: V_{ac} = Ad_{g_bc}^{-1}V_{ab} + V_{bc}
+            R = [cos(cart_pose_bc(3)), -sin(cart_pose_bc(3));
+                sin(cart_pose_bc(3)), cos(cart_pose_bc(3))];
+            % Adjoint inverse: [R', -R'*[y;x]; 0,0,1];
+            Adj_bc_inv = [R', -R'*[cart_pose_bc(2); -cart_pose_bc(1)];
+                          0,0,1];
+            twist_ac = Adj_bc_inv * twist_ab + twist_bc;
+        end
+        
+        function [twist_ac] = GetGlobalTwistABCChain(twist_ab, twist_bc, cart_pose_ab)
+            % Spatial Twist: V_{ac} = Ad_{g_ab}V_{bc} + V_{ab}
+            R = [cos(cart_pose_ab(3)), -sin(cart_pose_ab(3));
+                sin(cart_pose_ab(3)), cos(cart_pose_ab(3))];
+            Adj_ab = [R, [twist_ab(2);-twist_ab(1)];0,0,1];
+            twist_ac = Adj_ab * twist_bc + twist_ab;
+        end
+        
     end
     
 end
