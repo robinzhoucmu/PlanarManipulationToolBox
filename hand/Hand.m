@@ -49,9 +49,15 @@ classdef Hand < handle
             finger_carts = obj.GetFingerCartesiansWrtHand();
             finger_twists = SE2Algebra.GetBodyTwistABCChain(hand_twists_wrt_inertia_body, finger_twists_wrt_hand_body, finger_carts);
         end
+         
+        function [hand_twist] = GetHandBodyTwistWrtInertiaFrame(obj)
+            % For body twist: the angular part is thetadot. 
+            % The linear part is R'*pdot. 
+            hand_twist = SE2Algebra.GetBodyTwistGivenQandQdot(obj.q, obj.qdot);
+        end
         
-        function [hand_twists] = GetHandBodyTwistsWrtInertiaFrame(obj)
-            
+        function [hand_twist] = GetHandGlobalTwistWrtInertiaFrame(obj)
+            hand_twist = SE2Algebra.GetGlobalTwistGivenQandQdot(obj.q, obj.qdot);
         end
     end
     

@@ -3,7 +3,7 @@ classdef SE2Algebra < handle
     properties
     end
     
-    methods(Static)
+    methods(Static) % By default, input are column based.
         
         function [mat_twist] = GetTwistMatrix(twist)
             % Given 3d vector representation of twist [vx;vy;omega] , 
@@ -83,6 +83,20 @@ classdef SE2Algebra < handle
                 sin(cart_pose_ab(3)), cos(cart_pose_ab(3))];
             Adj_ab = [R, [twist_ab(2);-twist_ab(1)];0,0,1];
             twist_ac = Adj_ab * twist_bc + twist_ab;
+        end
+        
+        function [twist] = GetBodyTwistGivenQandQdot(q, qdot)
+            % Given SE(2) configuration (x,y,theta wrt world frame) & dot (which is not really a velocity) 
+            % Compute the corresponding body twist. 
+            R = [cos(q(3)),-sin(q(3));
+                sin(q(3)), cos(q(3))];
+            twist = [R' * qdot(1:2);qdot(3)];
+        end
+        
+        function [twist] = GetGlobalTwistGivenQandQdot(q, qdot)
+            % Given SE(2) configuration & dot, compute spatial twist.
+            % linear part: -[qdot(3)]^ * q(1:2) + qdot(1:2)
+            twist = [qdot(3)*[q(2);-q(1)] + qdot(1:2); qdot(3)];
         end
         
     end
