@@ -45,7 +45,7 @@ classdef Hand < handle
         % Return the twists of each finger w.r.t the global inertia frame viewed from finger's own body frame.
         function [finger_twists] = GetFingerBodyTwistsWrtInertiaFrame(obj)
             finger_twists_wrt_hand_body = obj.GetFingerBodyTwistsWrtHand();
-            hand_twists_wrt_inertia_body = obj.GetHandBodyTwistsWrtInertiaFrame();
+            hand_twists_wrt_inertia_body = obj.GetHandBodyTwistWrtInertiaFrame();
             finger_carts = obj.GetFingerCartesiansWrtHand();
             finger_twists = SE2Algebra.GetBodyTwistABCChain(hand_twists_wrt_inertia_body, finger_twists_wrt_hand_body, finger_carts);
         end
