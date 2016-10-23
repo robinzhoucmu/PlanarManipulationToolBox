@@ -1,4 +1,4 @@
-classdef ForwardSimulation
+classdef ForwardSimulation < handle
     % Forward simulation of a single object subject to an hand trajectory.
     properties
         pushobj
@@ -6,29 +6,75 @@ classdef ForwardSimulation
         hand
         % Coefficient of friction between the object and the hand.
         mu
+        dt_collision
     end
     
     methods (Access = public)
-        function obj = ForwardSimulation(pushobj, hand_traj, mu)
-        
+        function obj = ForwardSimulation(pushobj, hand_traj, mu, dt_collision)
+            obj.pushobj = pushobj;
+            obj.hand_traj = hand_traj;
+            obj.mu = mu;
+            if (nargin < 4)
+                obj.dt_collision = 0.01;
+            else
+                obj.dt_collision = dt_collision;
+            end
         end
         
         function [results] = RollOut(obj)
-        
+            opts = odeset('RelTol',1e-6,...
+              'AbsTol', 1e-6,...
+              'Events', @obj.ContactEvent,...
+              %'Vectorized',true,...
+              'MaxStep',0.05);
+            
+            hand_configs = [];
+            obj_configs = [];
+            cur_t = 0;
+            cur_hand = obj.hand_traj.GetHandConfiguration(cur_t);
+            flag_finish = false;
+            % Simulate until jamming happens.
+            while ~flag_finish
+                horizon_max = 10;
+                t_range = [cur_t cur_t + horizon_max];
+                % Roll out the hand trajectory until contact happens.
+                sol = ode45(@obj.HandMotion, t_range, cur_hand, opts);
+                last_t = cur_t;
+                cur_t = sol.x(end);
+                cur_hand = sol.y(:,end);
+                t_eval = last_t:0.05:cur_t;
+                hand_configs(end+1:end+length(t_eval), :) = deval(sol, t_eval);
+                obj_configs(end+1:end+length(t_eval), :) = obj.pushobj.pose;
+                % Resolve contact. 
+                
+            end
         end
     end
     
     methods (Access = private)
         % velocity of the hand trajectory.
-        function dx = Hand_Motion(obj, t, x)
+        function dx = HandMotion(obj, t, x)
             dx = obj.hand_traj.GetHandConfigurationDot(t);
         end
         % Contact event detection.
-        function [value, isterminal, direction] = Contact_Event(obj, t, x)
-            
+        function [values, isterminal, direction] = ContactEvent(obj, t, hand_config)
+            %values = ones(obj.hand.num_fingers, 1);
+            isterminal = ones(obj.hand.num_fingers, 1);
+            direction = zeros(obj.hand.num_fingers, 1);
+            obj.hand.q = hand_config;
+            finger_poses = obj.hand.GetGlobalFingerPositions();
+            [pt_closest, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
+            values = max(dist - obj.hand.finger_radius, 0);
         end
+        
         % Resolves contact at time t.
-        function [contact_info] = Contact_Resolve(obj, t)
+        % 1) Compute the contact points and velocity.
+        % 2) If single point contact, call pushing model.
+        % 4) If multiple point contacts, detect if jammed or properly
+        % grasped. Otherwise, the object can be moved, return the movement
+        % of the object.
+        function [contact_info, twist_obj] = ContactResolution(obj, hand_config, obj_pose)
+            
         end
     end
     

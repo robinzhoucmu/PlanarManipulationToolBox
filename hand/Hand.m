@@ -1,9 +1,10 @@
 classdef Hand < handle
     % Hand class, contains hand kinematics and finger geometry.
     % We assume each finger is either a round circle or a polygon. 
+    % Current implementation only supports round finger.
     properties
         % Cell array of fingers storing the geometries. 
-        fingers
+        finger_radius
         num_fingers
         % The first 3 elements of q are cartesian pose w.r.t global frame.
         % The rest are configurations of the fingers.
@@ -59,6 +60,7 @@ classdef Hand < handle
         function [hand_twist] = GetHandGlobalTwistWrtInertiaFrame(obj)
             hand_twist = SE2Algebra.GetGlobalTwistGivenQandQdot(obj.q, obj.qdot);
         end
+        
     end
     
 end

@@ -3,7 +3,7 @@
 % until convergence.
 % Same input, output format as GetVelGivenStickingPtPushEllipsoidLC. 
 function [F, V] = GetVelGivenStickingPtPushPolyLC(Vp, Pt, LC_coeffs, pho)
-eps_deltaV = 1e-5;
+eps_deltaV = 1e-6;
 %eps_deltaV = 1e-2;
 % Initialize.
 V = [0;0;0];
@@ -36,6 +36,22 @@ F = ScaleForceToOneLevelSet(F, LC_coeffs);
 % B = [1, 0, -Pt(2)/pho;
 %      0, 1, Pt(1)/pho];
 % c = [-Pt(2)/pho, Pt(1)/pho, -1];
+% 
+% % Sample around F0 to get a smaller value.
+% n_samples = 20;
+% ct_samples = 0;
+% F0_min = F0;
+% fun_min = PointVelocityAlignmentResidualPoly4(F0_min, LC_coeffs, Vp, B);
+% while (ct_samples < n_samples)
+%     F = F0 + 0.1 * rand(3,1);
+%     fval = PointVelocityAlignmentResidualPoly4(F, LC_coeffs, Vp, B);
+%     if (fval < fun_min)
+%         F0_min = F;
+%         fun_min = fval;
+%     end
+%     ct_samples = ct_samples + 1;
+% end
+% F0 = F0_min;
 % % Interesting Note: trust region reflective get stuck in saddle points with
 % % 1/sqrt(3)*[1;1;1] initialization.
 % options = optimoptions('fmincon', 'Display', 'off', 'GradObj', 'on', 'Algorithm', 'trust-region-reflective', 'TolFun', 1e-8);

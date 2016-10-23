@@ -109,9 +109,10 @@ classdef PushedObject < handle
        end
            
        function [pt_closest, dist] = FindClosestPointAndDistanceWorldFrame(obj, pt)
-         % Input: pt is a 2*1 column vector. 
-         % Output: distance and the projected/closest point (2*1) on the object boundary.
-         dist = 0; pt_closest = [0;0];
+         % Input: pt is a 2*K column vector. 
+         % Output: distance and the projected/closest point (2*K) on the object boundary.
+         num_pts = size(pt, 2);
+         dist = zeros(num_pts, 1); pt_closest = zeros(2, num_pts);
          theta = obj.pose(3);
          R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
          if strcmp(obj.shape_type, 'polygon')
@@ -121,10 +122,11 @@ classdef PushedObject < handle
              pt_closest = pt_closest';
              
          elseif strcmp(obj.shape_type, 'circle')
-             dist = norm(pt - obj.pose(1:2));
-             pt_closest = obj.pose(1:2) + ...
-                 obj.shape_parameters.radius * (pt - obj.pose(1:2)) / dist;
-             dist = dist - obj.shape_parameters.radius;
+             %dist = norm(pt - obj.pose(1:2));
+             vec = bsxfun(@minus, pt, obj.pose(1:2));
+             dist = sqrt(sum(vec.^2));
+             pt_closest = obj.pose(1:2) + obj.shape_parameters.radius * bsxfun(@rdivide, vec, dist);
+             dist = bsxfun(@minus, dist, obj.shape_parameters.radius);
              
          elseif strcmp(obj.shape_type, 'ellipse')
          else
@@ -223,7 +225,8 @@ classdef PushedObject < handle
             if ~(k(2*i-1) >= 0 && k(2*i) <=0)
                 flag_jammed = false;
             end
-            arrow_length = obj.shape_parameters.radius * 0.5;
+            %arrow_length = obj.shape_parameters.radius * 0.5;
+            arrow_length = obj.pho * 0.5;
             if (flag_plot)
                 hold on;
                 plot([pts(1,i), pts(1,i) + fc_edges(1,2*i-1) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i-1) * arrow_length], 'b-');
