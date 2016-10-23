@@ -73,8 +73,21 @@ classdef ForwardSimulation < handle
         % 4) If multiple point contacts, detect if jammed or properly
         % grasped. Otherwise, the object can be moved, return the movement
         % of the object.
-        function [contact_info, twist_obj] = ContactResolution(obj, hand_config, obj_pose)
-            
+        function [contact_info, twist_obj] = ContactResolution(obj, hand_q, hand_qdot, obj_pose)
+            obj.hand.SetQandQdot(hand_q, hand_qdot);
+            % Get finger poses and twists in global frame. 
+            [finger_twists, finger_carts] = obj.hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
+            % Extract fingers that are in contact with the object.
+            contact_values = obj.ContactEvent([], hand_q);
+            contact_info.finger_index_contact = find(contact_values == 0);
+            contact_info.num_fingers_contact = length(finger_index_contact);
+            if (contact_info.num_fingers_contact == 1)
+                
+            elseif (contact_info.num_fingers_contact > 1)
+                % Multi-contact resolution.
+            else
+                error('ODE detects contact yet no contact has been identified.')
+            end
         end
     end
     

@@ -30,7 +30,7 @@ classdef Hand < handle
         end
         
         % Output: 3 * num_fingers of finger cartesian pose in global frame.
-        function [finger_carts_global] = GetGlobalFingerPositions(obj)
+        function [finger_carts_global] = GetGlobalFingerCartesians(obj)
             finger_carts_wrt_hand = obj.GetFingerCartesiansWrtHand();
             finger_carts_global = zeros(3, obj.num_fingers);
             for i = 1:1:obj.num_fingers
@@ -38,19 +38,30 @@ classdef Hand < handle
             end
         end
 
-        % Return the twists of each finger w.r.t the hand frame viewed from finger's own body frame.
+        % Return the twists (3 * num_fingers) of each finger w.r.t the hand frame viewed from finger's own body frame.
         function [finger_twists] = GetFingerBodyTwistsWrtHand(obj)
             finger_twists = obj.fun_fv(obj.q, obj.qdot);
         end
         
-        % Return the twists of each finger w.r.t the global inertia frame viewed from finger's own body frame.
+        % Return the twists (3*num_fingers) of each finger w.r.t 
+        % the global inertia frame viewed from finger's own body frame.
         function [finger_twists] = GetFingerBodyTwistsWrtInertiaFrame(obj)
             finger_twists_wrt_hand_body = obj.GetFingerBodyTwistsWrtHand();
             hand_twists_wrt_inertia_body = obj.GetHandBodyTwistWrtInertiaFrame();
             finger_carts = obj.GetFingerCartesiansWrtHand();
-            finger_twists = SE2Algebra.GetBodyTwistABCChain(hand_twists_wrt_inertia_body, finger_twists_wrt_hand_body, finger_carts);
+            finger_twists = zeros(3, obj.num_fingers);
+            for i = 1:1:obj.num_fingers
+                finger_twists(:, i) = SE2Algebra.GetBodyTwistABCChain(...
+                    hand_twists_wrt_inertia_body, finger_twists_wrt_hand_body(:, i), finger_carts);
+            end
         end
-         
+        
+        function [finger_twists, finger_carts] = GetFingerGlobalTwistsAndCartesianWrtInertiaFrame(obj)
+            finger_body_twists = obj.GetFingerBodyTwistsWrtInertiaFrame();
+            finger_carts = obj.GetGlobalFingerCartesians();
+            finger_twists = SE2Algebra.TransformTwistFromLocalToGlobal(finger_body_twists, finger_carts);
+        end
+        
         function [hand_twist] = GetHandBodyTwistWrtInertiaFrame(obj)
             % For body twist: the angular part is thetadot. 
             % The linear part is R'*pdot. 
