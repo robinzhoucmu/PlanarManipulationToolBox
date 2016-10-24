@@ -10,9 +10,10 @@ classdef ForwardSimulation < handle
     end
     
     methods (Access = public)
-        function obj = ForwardSimulation(pushobj, hand_traj, mu, dt_collision)
+        function obj = ForwardSimulation(pushobj, hand_traj, hand, mu, dt_collision)
             obj.pushobj = pushobj;
             obj.hand_traj = hand_traj;
+            obj.hand = hand;
             obj.mu = mu;
             if (nargin < 4)
                 obj.dt_collision = 0.01;
@@ -29,6 +30,7 @@ classdef ForwardSimulation < handle
               %'Vectorized',true,...
              
             dt_record = 0.05;
+            results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
             cur_t = 0;
@@ -46,9 +48,9 @@ classdef ForwardSimulation < handle
                 cur_hand_qdot = obj.hand_traj.GetHandConfigurationDot(cur_t);
                 
                 t_eval = last_t:dt_record:cur_t;
-                results.hand_configs(end+1:end+length(t_eval), :) = deval(sol, t_eval);
+                results.hand_configs(: , end+1:end+length(t_eval)) = deval(sol, t_eval);
                 % Till the contact, the object is remaining static.
-                results.obj_configs(end+1:end+length(t_eval), :) = obj.pushobj.pose;
+                results.obj_configs(:, end+1:end+length(t_eval)) = repmat(obj.pushobj.pose, 1, length(t_eval));
                 % Resolve contact. 
                 [contact_info] = obj.ContactResolution(cur_hand_q, cur_hand_qdot);
                 contact_info.t = cur_t;
@@ -96,21 +98,22 @@ classdef ForwardSimulation < handle
             % Extract fingers that are in contact with the object.
             contact_values = obj.ContactEvent([], hand_q);
             contact_info.finger_index_contact = find(contact_values == 0);
-            contact_info.num_fingers_contact = length(finger_index_contact);
-            contact_info.finger_carts_contact = finger_carts(contact_info.finger_index_contact);
-            contact_info.finger_twists_contact = finger_twists(contact_info.finger_index_contact);
+            contact_info.num_fingers_contact = length(contact_info.finger_index_contact);
+            contact_info.finger_carts_contact = finger_carts(:, contact_info.finger_index_contact);
+            contact_info.finger_twists_contact = finger_twists(:, contact_info.finger_index_contact);
             contact_info.pt_contact = zeros(2, contact_info.num_fingers_contact);
             contact_info.vel_contact = zeros(2, contact_info.num_fingers_contact);
             contact_info.outward_normal_contact = zeros(2, contact_info.num_fingers_contact);
             
             if (contact_info.num_fingers_contact == 1)
                 % Get the position, velocity and contact normal of the touching finger.
-                [flag_contact, contact_info.pt_contact, vel_contact, outward_normal_contact] = ...
-                obj.pushobj.GetRoundFingerContactInfo(contact_info.finger_carts_contact, obj.hand.finger_radius, contact_info.finger_twists_contact);
+                [flag_contact, contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact] = ...
+                obj.pushobj.GetRoundFingerContactInfo(contact_info.finger_carts_contact(1:2), obj.hand.finger_radius, contact_info.finger_twists_contact);
                 % Compute the object twist and contact mode using the
                 % pushing motion model.
                 [contact_info.twist_local, contact_info.wrench_local, contact_info.contact_mode] = ...
-                       obj.pushobj.ComputeVelGivenPointRoundFingerPush(pt_contact, vel_contact, outward_normal_contact, obj.mu);
+                       obj.pushobj.ComputeVelGivenPointRoundFingerPush(contact_info.pt_contact,  ...
+                       contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
                 contact_info.obj_status = 'pushed';
             elseif (contact_info.num_fingers_contact > 1)
                 % Multi-contact resolution.
@@ -121,9 +124,10 @@ classdef ForwardSimulation < handle
             % Update the object pose.
             contact_info.twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(contact_info.twist_local, obj.pushobj.pose);
             contact_info.obj_center_vel = SE2Algebra.GetTwistMatrix(contact_info.twist_global) * [obj.pushobj.pose(1:2);1];
-            nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * SE2Algebra.GetExponentialMapGivenTwistVec(twist_local * obj.dt_collision);
+            nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * ...
+                SE2Algebra.GetExponentialMapGivenTwistVec(contact_info.twist_local * obj.dt_collision);
             obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(nxt_homog_trans);
-            contact_info.obj_pose_nxt = obj.pushobh.pose;
+            contact_info.obj_pose_nxt = obj.pushobj.pose;
         end
         
     end

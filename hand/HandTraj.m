@@ -1,11 +1,11 @@
 classdef HandTraj < handle
     % Class of a hand trajectory.
     properties
-        % configurations of hand over t in global frame. 2*N; 
+        % configurations of hand over t in global frame. d*N; 
         % We follow the convention that the first 3 elements of q is the
         % local frame (x,y,theta) w.r.t the global frame.
         q 
-        qdot % (optional) config velocities over t in global frame. 2*N;
+        qdot % (optional) config velocities over t in global frame. d*N;
         t % time. length = N. 
         interp_mode % interpolation mode. 
         traj_interp % trajectory interpolator. 
@@ -29,7 +29,13 @@ classdef HandTraj < handle
             if (strcmp(obj.interp_mode, 'pchipd')) && ~(isfield(opts,'qdot'))
                 error('The velocities need to be specified for pchipd method');
             end
-            obj.qdot = opts.qdot;
+            if isfield(opts,'qdot')
+                obj.qdot = opts.qdot;
+            end
+            obj.GenerateInterpolation();
+        end
+        
+        function [obj] = GenerateInterpolation(obj)
             % Create the trajectory interpolator in hand configuration
             % space. 
             obj.traj_interp = TrajectoryInterp();
@@ -38,16 +44,18 @@ classdef HandTraj < handle
                 obj.traj_interp.SetPositionVelocityOverTime(obj.t, obj.q, obj.qdot);
             else
                 obj.traj_interp.SetPositionOverTime(obj.t, obj.q);
-            end
-            
+            end 
+            % Generate interpolation coefficients.
+            obj.traj_interp.GenerateInterpPolynomial();
         end
+        
         % Get the configuration of the hand at time t. 
         function [qt] = GetHandConfiguration(obj, t)
-            qt = obj.traj_interp.GetPosition(t);
+            qt = obj.traj_interp.GetPosition(t)';
         end
         % Get the configuration dot of the hand at time t. 
         function [qdot] = GetHandConfigurationDot(obj, t)
-            qdot = obj.traj_interp.GetVelocity(t);
+            qdot = obj.traj_interp.GetVelocity(t)';
         end
 
     end

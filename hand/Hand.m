@@ -14,7 +14,8 @@ classdef Hand < handle
         % Input of the hand configuration, return each of the finger cartesian 
         % pose w.r.t the hand frame.
         fun_fk
-        % function pointer of returning the twists of fingers given q and qdot.
+        % function pointer of returning the body twists of fingers given q and qdot
+        % with respect to the hand frame.
         fun_fv
     end
     
@@ -35,7 +36,7 @@ classdef Hand < handle
             finger_carts_wrt_hand = obj.GetFingerCartesiansWrtHand();
             finger_carts_global = zeros(3, obj.num_fingers);
             for i = 1:1:obj.num_fingers
-                finger_carts_global(:, i) = SE2Algebra.GetCartPoseABCChain(obj.q(1:3), finger_carts_wrt_hand); 
+                finger_carts_global(:, i) = SE2Algebra.GetCartPoseABCChain(obj.q(1:3), finger_carts_wrt_hand(:, i)); 
             end
         end
 
