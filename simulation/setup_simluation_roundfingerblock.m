@@ -6,7 +6,9 @@ shape_info.shape_type = 'polygon';
 le = 0.02;
 shape_info.shape_vertices = [-le,le,le,-le;
                                                 -le,-le,le,le];
-                         
+shape_info.pho = le;                                            
+% Uniformly sample points in the polygon area 
+% and 
 options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
 num_support_pts = 20;
@@ -21,22 +23,16 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 400, 0.1);
+% Uncomment the following two lines if you first run this file. 
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+pushobj.FitLS(ls_type, 400, 0.1);
 
 % put the object initially at the origin.
+pushobj.pose= [0;0;0];
 
 %% Construct hand.
-
-fun_fk_hand_single_finger = @(q)([0;0;0]); 
-fun_fv_hand_single_finger = @(q, qdot)([0;0;0]);
-
-hand_single_finger = Hand();
-hand_single_finger.num_fingers = 1;
-hand_single_finger.finger_radius = 0.005;
-hand_single_finger.fun_fk = fun_fk_hand_single_finger;
-hand_single_finger.fun_fv = fun_fv_hand_single_finger;
-
+finger_radius = 0.005;
+hand_single_finger = ConstructSingleRoundFingerHand(finger_radius);
 %% Specify hand trajectory.
 % Way points
 q_start = [0; -le * 2; 0];

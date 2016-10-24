@@ -16,7 +16,7 @@ function [object_pose, tip_pose, wrench] = get_and_plot_data(filename, shape_id,
 % 'hex', 1);
 %
 
-addpath(strcat(pwd,'/Json/fsroot/jsonlab'));
+%addpath(strcat(pwd,'/Json/fsroot/jsonlab'));
 
 data = loadjson(filename);
 object_pose = data.object_pose; 
@@ -31,7 +31,7 @@ if do_plot
     subplot(1,2,1); hold on;
     tip_radius = 0.00475;
     gamma = linspace(0,2*pi);
-    plot_interval = 5;
+    plot_interval = 25;
     for i = 1:plot_interval:length(tip_pose(:,1))
          plot(tip_radius*cos(gamma)+tip_pose(i,2),tip_radius*sin(gamma)+tip_pose(i,3), 'k'); 
     end
