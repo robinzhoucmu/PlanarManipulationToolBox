@@ -63,8 +63,8 @@ classdef SE2Algebra < handle
         function [cart_ac, g_ac] = GetCartPoseABCChain(cart_ab, cart_bc)
             % Give the cartesian pose of b w.r.t a and c w.r.t b
             % Compute the cartesian pose c w.r.t a. 
-            g_ac = GetHomogTransfFromCartesianPose(cart_ab) * GetHomogTransfFromCartesianPose(cart_bc);
-            cart_ac = GetCartesianPoseFromHomogTransf(g_ac);
+            g_ac = SE2Algebra.GetHomogTransfFromCartesianPose(cart_ab) * SE2Algebra.GetHomogTransfFromCartesianPose(cart_bc);
+            cart_ac = SE2Algebra.GetCartesianPoseFromHomogTransf(g_ac);
         end
         
         function [twist_ac] = GetBodyTwistABCChain(twist_ab, twist_bc, cart_pose_bc)
@@ -91,11 +91,18 @@ classdef SE2Algebra < handle
             R = [cos(q(3)),-sin(q(3));
                 sin(q(3)), cos(q(3))];
             twist = [R' * qdot(1:2);qdot(3)];
+            % The following computation is wrong. Qdot is the exact change
+            % of configuration x,y.
+            %twist = [R' * (qdot(3) * [-q(2); q(1)] + qdot(1:2)); qdot(3)];
+            
+            
         end
         
         function [twist] = GetGlobalTwistGivenQandQdot(q, qdot)
             % Given SE(2) configuration & dot, compute spatial twist.
             % linear part: -[qdot(3)]^ * q(1:2) + qdot(1:2)
+            % The linear part is speed of the origin point as if connected 
+            % the rigid body. 
             twist = [qdot(3)*[q(2);-q(1)] + qdot(1:2); qdot(3)];
         end
         

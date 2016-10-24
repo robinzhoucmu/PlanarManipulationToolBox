@@ -11,7 +11,8 @@ classdef Hand < handle
         q
         qdot
         % function pointer of forward kinematic in the local frame. 
-        % Input of the hand configuration, return each of the finger pose.
+        % Input of the hand configuration, return each of the finger cartesian 
+        % pose w.r.t the hand frame.
         fun_fk
         % function pointer of returning the twists of fingers given q and qdot.
         fun_fv
@@ -47,12 +48,12 @@ classdef Hand < handle
         % the global inertia frame viewed from finger's own body frame.
         function [finger_twists] = GetFingerBodyTwistsWrtInertiaFrame(obj)
             finger_twists_wrt_hand_body = obj.GetFingerBodyTwistsWrtHand();
-            hand_twists_wrt_inertia_body = obj.GetHandBodyTwistWrtInertiaFrame();
+            hand_bodytwists_wrt_inertia_body = obj.GetHandBodyTwistWrtInertiaFrame();
             finger_carts = obj.GetFingerCartesiansWrtHand();
             finger_twists = zeros(3, obj.num_fingers);
             for i = 1:1:obj.num_fingers
                 finger_twists(:, i) = SE2Algebra.GetBodyTwistABCChain(...
-                    hand_twists_wrt_inertia_body, finger_twists_wrt_hand_body(:, i), finger_carts);
+                    hand_bodytwists_wrt_inertia_body, finger_twists_wrt_hand_body(:, i), finger_carts);
             end
         end
         

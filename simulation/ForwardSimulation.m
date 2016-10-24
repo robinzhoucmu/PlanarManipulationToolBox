@@ -29,8 +29,8 @@ classdef ForwardSimulation < handle
               %'Vectorized',true,...
              
             dt_record = 0.05;
-            hand_configs = [];
-            obj_configs = [];
+            results.hand_configs = [];
+            results.obj_configs = [];
             cur_t = 0;
             cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
             flag_finish = false;
@@ -46,8 +46,9 @@ classdef ForwardSimulation < handle
                 cur_hand_qdot = obj.hand_traj.GetHandConfigurationDot(cur_t);
                 
                 t_eval = last_t:dt_record:cur_t;
-                hand_configs(end+1:end+length(t_eval), :) = deval(sol, t_eval);
-                obj_configs(end+1:end+length(t_eval), :) = obj.pushobj.pose;
+                results.hand_configs(end+1:end+length(t_eval), :) = deval(sol, t_eval);
+                % Till the contact, the object is remaining static.
+                results.obj_configs(end+1:end+length(t_eval), :) = obj.pushobj.pose;
                 % Resolve contact. 
                 [contact_info] = obj.ContactResolution(cur_hand_q, cur_hand_qdot);
                 contact_info.t = cur_t;
@@ -58,6 +59,7 @@ classdef ForwardSimulation < handle
                     flag_finish = true;
                 end
             end
+            
         end
     end
     
@@ -72,7 +74,7 @@ classdef ForwardSimulation < handle
             isterminal = ones(obj.hand.num_fingers, 1);
             direction = zeros(obj.hand.num_fingers, 1);
             obj.hand.q = hand_config;
-            finger_poses = obj.hand.GetGlobalFingerPositions();
+            finger_poses = obj.hand.GetGlobalFingerCartesians();
             [pt_closest, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
             values = max(dist - obj.hand.finger_radius, 0);
         end
