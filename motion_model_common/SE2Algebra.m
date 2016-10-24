@@ -94,8 +94,6 @@ classdef SE2Algebra < handle
             % The following computation is wrong. Qdot is the exact change
             % of configuration x,y.
             %twist = [R' * (qdot(3) * [-q(2); q(1)] + qdot(1:2)); qdot(3)];
-            
-            
         end
         
         function [twist] = GetGlobalTwistGivenQandQdot(q, qdot)
@@ -106,7 +104,15 @@ classdef SE2Algebra < handle
             twist = [qdot(3)*[q(2);-q(1)] + qdot(1:2); qdot(3)];
         end
         
-    end
+        function [pt_global] = GetPointsInGlobalFrame(pt, cart)
+            % Input: points in local frame (2 * N) and the cartesian pose
+            % of the local frame w.r.t the global frame.
+            % Output: points in global frame. 2 * N.
+            R = [cos(cart(3)), -sin(cart(3));
+                    sin(cart(3)), cos(cart(3))];
+            pt_global = bsxfun(@plus, R * pt, cart(1:2)); 
+        end
     
+    end
 end
 

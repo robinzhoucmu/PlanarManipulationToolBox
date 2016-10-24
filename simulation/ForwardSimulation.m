@@ -51,14 +51,16 @@ classdef ForwardSimulation < handle
                 results.hand_configs(: , end+1:end+length(t_eval)) = deval(sol, t_eval);
                 % Till the contact, the object is remaining static.
                 results.obj_configs(:, end+1:end+length(t_eval)) = repmat(obj.pushobj.pose, 1, length(t_eval));
-                % Resolve contact. 
-                [contact_info] = obj.ContactResolution(cur_hand_q, cur_hand_qdot);
-                contact_info.t = cur_t;
-                results.all_contact_info{end+1} = contact_info;
-                % If object cannot be moved (i.e., jammed or grasped), then
-                % we terminate the rollout.
-                if (~strcmp(contact_info.obj_status, 'pushed'))
-                    flag_finish = true;
+                if (cur_t < t_max)
+                    % Resolve contact. 
+                    [contact_info] = obj.ContactResolution(cur_hand_q, cur_hand_qdot);
+                    contact_info.t = cur_t;
+                    results.all_contact_info{end+1} = contact_info;
+                    % If object cannot be moved (i.e., jammed or grasped), then
+                    % we terminate the rollout.
+                    if (~strcmp(contact_info.obj_status, 'pushed'))
+                        flag_finish = true;
+                    end
                 end
             end
             

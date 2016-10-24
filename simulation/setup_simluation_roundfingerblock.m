@@ -15,14 +15,14 @@ support_pts = GridSupportPoint(num_supports_pts, options_support_pts); % N*2.
 num_supports_pts = size(support_pts, 1);
 options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
-figure, plot(support_pts(:,1), support_pts(:,2), '^');
-axis equal;
-drawnow;
+%figure, plot(support_pts(:,1), support_pts(:,2), '^');
+%axis equal;
+%drawnow;
 
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-pushobj.FitLS(ls_type, 400, 0.1);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+%pushobj.FitLS(ls_type, 400, 0.1);
 
 % put the object initially at the origin.
 
@@ -40,7 +40,7 @@ hand_single_finger.fun_fv = fun_fv_hand_single_finger;
 %% Specify hand trajectory.
 % Way points
 q_start = [0; -le * 2; 0];
-q_end = [le; le*4; pi/6];
+q_end = [le; le*4; 0];
 num_way_q = 20;
 dim_q = length(q_start);
 waypoints_hand_q = zeros(dim_q, num_way_q);
@@ -55,5 +55,5 @@ hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
 %% Set simulation.
-mu = 0.25;
+mu = 0.5;
 dt_collision = 0.05;
