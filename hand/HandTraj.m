@@ -50,6 +50,7 @@ classdef HandTraj < handle
         end
         
         % Get the configuration of the hand at time t. 
+        % Output column vector.
         function [qt] = GetHandConfiguration(obj, t)
             qt = obj.traj_interp.GetPosition(t)';
         end

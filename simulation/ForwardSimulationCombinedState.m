@@ -1,4 +1,4 @@
-classdef ForwardSimulation < handle
+classdef ForwardSimulationCombinedState < handle
     % Forward simulation of a single object subject to an hand trajectory.
     properties
         pushobj
@@ -10,7 +10,7 @@ classdef ForwardSimulation < handle
     end
     
     methods (Access = public)
-        function obj = ForwardSimulation(pushobj, hand_traj, hand, mu, dt_collision)
+        function obj = ForwardSimulationCombinedState(pushobj, hand_traj, hand, mu, dt_collision)
             obj.pushobj = pushobj;
             obj.hand_traj = hand_traj;
             obj.hand = hand;
@@ -25,9 +25,7 @@ classdef ForwardSimulation < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
-              'Events', @obj.ContactEvent,...
               'MaxStep',0.1);
-              %'Vectorized',true,...
              
             dt_record = 0.02;
             results.all_contact_info = {};
@@ -35,53 +33,39 @@ classdef ForwardSimulation < handle
             results.obj_configs = [];
             cur_t = 0;
             cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
-            cur_hand_qdot = obj.hand_traj.GetHandConfigurationDot(cur_t);
-            flag_finish = false;
             t_max =  max(obj.hand_traj.t);
             % Simulate until jamming happens.
-            while ~flag_finish && cur_t < t_max
-                % First check if already in penetration. If already in
-                % penentration, keep calling contactresolution until outof
-                % contact.
-                while ~(isempty(find(obj.ContactEvent(cur_t, cur_hand_q) == 0)))
-                    obj.ContactResolution(cur_hand_q, cur_hand_qdot);
-                end
-                t_range = [cur_t t_max];
-                % Roll out the hand trajectory until contact happens.
-                sol = ode45(@obj.HandMotion, t_range, cur_hand_q, opts);
-                last_t = cur_t;
-                cur_t = sol.x(end);
-                cur_hand_q = sol.y(:,end);
-                cur_hand_qdot = obj.hand_traj.GetHandConfigurationDot(cur_t);
-                
-                t_eval = last_t:dt_record:cur_t;
-                results.hand_configs(: , end+1:end+length(t_eval)) = deval(sol, t_eval);
-                % Till the contact, the object is remaining static.
-                results.obj_configs(:, end+1:end+length(t_eval)) = repmat(obj.pushobj.pose, 1, length(t_eval));
-                if (cur_t < t_max)
-                    % Resolve contact. 
-                    [contact_info] = obj.ContactResolution(cur_hand_q, cur_hand_qdot);
-                    contact_info.t = cur_t;
-                    results.all_contact_info{end+1} = contact_info;
-                    % If object cannot be moved (i.e., jammed or grasped), then
-                    % we terminate the rollout.
-                    if (~strcmp(contact_info.obj_status, 'pushed'))
-                        flag_finish = true;
-                    end
-                end
-            end
+            t_range = [0 t_max];
+            % Roll out the hand trajectory until contact happens.
+            sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
+            t_eval = 0:dt_record:t_max;
+            all_x = deval(sol, t_eval);
+            results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
+            % Till the contact, the object is remaining static.
+            results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
             
         end
     end
     
     methods (Access = private)
-        % velocity of the hand trajectory.
-        function dx = HandMotion(obj, t, x)
-            dx = obj.hand_traj.GetHandConfigurationDot(t);
+        % velocity of the hand trajectory and the object. 
+        % x is the combined state of object and hand.
+        function dx = ObjectHandMotion(obj, t, x)
+            dx = zeros(size(x));
+            dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);
+            obj.pushobj.pose = x(1:3);
+            obj.hand.q = x(4:end);
+            % Check for contact or not. 
+            finger_poses = obj.hand.GetGlobalFingerCartesians();
+            [ ~, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
+            dist = bsxfun(@minus, dist, obj.hand.finger_radius);
+            if min(dist) < 0
+                [contact_info] = ContactResolution(obj, x(4:end), dx(4:end), dist);
+                dx(1:3) = contact_info.obj_config_dot;
+            end
         end
         % Contact event detection.
         function [values, isterminal, direction] = ContactEvent(obj, t, hand_config)
-            %values = ones(obj.hand.num_fingers, 1);
             isterminal = ones(obj.hand.num_fingers, 1);
             direction = zeros(obj.hand.num_fingers, 1);
             obj.hand.q = hand_config;
@@ -96,7 +80,7 @@ classdef ForwardSimulation < handle
         % 3) If multiple point contacts, detect if jammed or properly
         % grasped. Otherwise, the object can be moved, return the movement
         % of the object.
-        function [contact_info] = ContactResolution(obj, hand_q, hand_qdot)
+        function [contact_info] = ContactResolution(obj, hand_q, hand_qdot, contact_values)
             contact_info.hand_q = hand_q;
             contact_info.hand_qdot = hand_qdot;
             % Object pose at the momemnt of contact.
@@ -105,7 +89,7 @@ classdef ForwardSimulation < handle
             % Get finger poses and twists in global frame. 
             [finger_twists, finger_carts] = obj.hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
             % Extract fingers that are in contact with the object.
-            contact_values = obj.ContactEvent([], hand_q);
+            %contact_values = obj.ContactEvent([], hand_q);
             %contact_info.finger_index_contact = find(contact_values == 0);
             % Use a small value instead. Sometimes ode returns a really
             % small number. 
@@ -126,23 +110,26 @@ classdef ForwardSimulation < handle
                        obj.pushobj.ComputeVelGivenPointRoundFingerPush(contact_info.pt_contact,  ...
                        contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
                 contact_info.obj_status = 'pushed';
-                
-               % Update the object pose.
-                contact_info.twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(contact_info.twist_local, obj.pushobj.pose);
-                contact_info.obj_center_vel = SE2Algebra.GetTwistMatrix(contact_info.twist_global) * [obj.pushobj.pose(1:2);1];
-                nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * ...
-                    SE2Algebra.GetExponentialMapGivenTwistVec(contact_info.twist_local * obj.dt_collision);
-                obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(nxt_homog_trans);
-                contact_info.obj_pose_nxt = obj.pushobj.pose;
+                contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
+
             elseif (contact_info.num_fingers_contact > 1)
                 % Multi-contact resolution.
             else
                 %error('ODE detects contact yet no contact has been identified.')
             end
-            
-
+        end
+        % Update object pose given object body twist, dt equals dt_collision.
+        function [obj] = UpdateObjectPoseGivenBodyTwist(obj, twist_body)
+              nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * ...
+              SE2Algebra.GetExponentialMapGivenTwistVec(twist_body * obj.dt_collision);
+              obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(nxt_homog_trans);
         end
         
+        function [qdot] = GetObjectQDotGivenBodyTwist(obj, twist_body) 
+            twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_body, obj.pushobj.pose);
+            obj_center_vel = SE2Algebra.GetTwistMatrix(twist_global) * [obj.pushobj.pose(1:2);1];
+            qdot = [obj_center_vel(1:2); twist_body(3)];
+        end
     end
     
 end
