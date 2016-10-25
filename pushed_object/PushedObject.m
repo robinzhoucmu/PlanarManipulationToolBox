@@ -150,13 +150,14 @@ classdef PushedObject < handle
           % Output: flag_contact: whether any point of the round finger
           % will be in contact with the object.
           % pt_contact: the point (in world frame) that contacts the object.  
-          % vel_contact: contact point linear velocity.
+          % vel_contact: contact point linear velocity in world frame.
+          % outward_normal: contact normal in world frame.
           pt_contact = zeros(2,1);
           vel_contact = zeros(2,1);
           outward_normal_contact = zeros(2,1);
 
           [pt_closest, dist] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
-          r_blem = 1.00;
+          r_blem = 1.00 + 1e-3;
           if (dist <= finger_radius * r_blem)
             flag_contact = 1;
             pt_contact = pt_closest;
