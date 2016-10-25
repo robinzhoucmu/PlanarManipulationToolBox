@@ -25,8 +25,7 @@ classdef ForwardSimulationCombinedState < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
-              'MaxStep',0.1);
-             
+              'MaxStep',0.1);             
             dt_record = 0.02;
             results.all_contact_info = {};
             results.hand_configs = [];
@@ -63,17 +62,7 @@ classdef ForwardSimulationCombinedState < handle
                 [contact_info] = ContactResolution(obj, x(4:end), dx(4:end), dist);
                 dx(1:3) = contact_info.obj_config_dot;
             end
-        end
-        % Contact event detection.
-        function [values, isterminal, direction] = ContactEvent(obj, t, hand_config)
-            isterminal = ones(obj.hand.num_fingers, 1);
-            direction = zeros(obj.hand.num_fingers, 1);
-            obj.hand.q = hand_config;
-            finger_poses = obj.hand.GetGlobalFingerCartesians();
-            [pt_closest, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
-            values = max(dist - obj.hand.finger_radius, 0);
-        end
-        
+        end        
         % Resolves contact at time t.
         % 1) Compute the contact points and velocity.
         % 2) If single point contact, call pushing model.
@@ -89,10 +78,6 @@ classdef ForwardSimulationCombinedState < handle
             % Get finger poses and twists in global frame. 
             [finger_twists, finger_carts] = obj.hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
             % Extract fingers that are in contact with the object.
-            %contact_values = obj.ContactEvent([], hand_q);
-            %contact_info.finger_index_contact = find(contact_values == 0);
-            % Use a small value instead. Sometimes ode returns a really
-            % small number. 
             contact_info.finger_index_contact = find(contact_values <= 1e-6);
             contact_info.num_fingers_contact = length(contact_info.finger_index_contact);
             contact_info.finger_carts_contact = finger_carts(:, contact_info.finger_index_contact);
@@ -103,7 +88,7 @@ classdef ForwardSimulationCombinedState < handle
             
             if (contact_info.num_fingers_contact == 1)
                 % Get the position, velocity and contact normal of the touching finger.
-                [flag_contact, contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact] = ...
+                [~, contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact] = ...
                 obj.pushobj.GetRoundFingerContactInfo(contact_info.finger_carts_contact(1:2), obj.hand.finger_radius, contact_info.finger_twists_contact);
                 % Compute the object twist and contact mode using the pushing motion model.
                 [contact_info.twist_local, contact_info.wrench_local, contact_info.contact_mode] = ...
@@ -118,6 +103,13 @@ classdef ForwardSimulationCombinedState < handle
                 %error('ODE detects contact yet no contact has been identified.')
             end
         end
+             
+        function [qdot] = GetObjectQDotGivenBodyTwist(obj, twist_body) 
+            twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_body, obj.pushobj.pose);
+            obj_center_vel = SE2Algebra.GetTwistMatrix(twist_global) * [obj.pushobj.pose(1:2);1];
+            qdot = [obj_center_vel(1:2); twist_body(3)];
+        end
+        
         % Update object pose given object body twist, dt equals dt_collision.
         function [obj] = UpdateObjectPoseGivenBodyTwist(obj, twist_body)
               nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * ...
@@ -125,11 +117,16 @@ classdef ForwardSimulationCombinedState < handle
               obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(nxt_homog_trans);
         end
         
-        function [qdot] = GetObjectQDotGivenBodyTwist(obj, twist_body) 
-            twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_body, obj.pushobj.pose);
-            obj_center_vel = SE2Algebra.GetTwistMatrix(twist_global) * [obj.pushobj.pose(1:2);1];
-            qdot = [obj_center_vel(1:2); twist_body(3)];
+         % Contact event detection.
+        function [values, isterminal, direction] = ContactEvent(obj, t, hand_config)
+            isterminal = ones(obj.hand.num_fingers, 1);
+            direction = zeros(obj.hand.num_fingers, 1);
+            obj.hand.q = hand_config;
+            finger_poses = obj.hand.GetGlobalFingerCartesians();
+            [~, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
+            values = max(dist - obj.hand.finger_radius, 0);
         end
+        
     end
     
 end
