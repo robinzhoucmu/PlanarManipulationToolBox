@@ -81,7 +81,7 @@ classdef SE2Algebra < handle
             % Spatial Twist: V_{ac} = Ad_{g_ab}V_{bc} + V_{ab}
             R = [cos(cart_pose_ab(3)), -sin(cart_pose_ab(3));
                 sin(cart_pose_ab(3)), cos(cart_pose_ab(3))];
-            Adj_ab = [R, [twist_ab(2);-twist_ab(1)];0,0,1];
+            Adj_ab = [R, [cart_pose_ab(2);-cart_pose_ab(1)];0,0,1];
             twist_ac = Adj_ab * twist_bc + twist_ab;
         end
         
@@ -112,7 +112,14 @@ classdef SE2Algebra < handle
                     sin(cart(3)), cos(cart(3))];
             pt_global = bsxfun(@plus, R * pt, cart(1:2)); 
         end
-    
+        
+        function [Jacobian] = GetGlobalPointJacobianWrtConfig(pt, q)
+            % Given configuration of the object in global frame and a point
+            % in global frame. Return the Jacobian (2*#q) of the point in global frame.
+            % Derivation:  velocity = V_s(q,qdot) * [p_x;p_y;1]. Use the
+            % identity: R*[w]^*R' = [R*w]^, and in 2d is simply just [w]^. 
+            Jacobian = [eye(2,2), [-pt(2) + q(2); pt(1) - q(1)]];
+        end
     end
 end
 
