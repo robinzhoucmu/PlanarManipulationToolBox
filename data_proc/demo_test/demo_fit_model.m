@@ -1,8 +1,9 @@
 addpath('~/Downloads/cvx/');
 cvx_startup;
-folder_name = '~/Pushing/pushing_data'; query_info.surface='plywood'; 
-query_info.shape = 'rect2'; query_info.velocity = 20; num_samples_perfile = 25; 
-%[all_wrenches_local, all_twists_local] = read_json_files(folder_name, query_info, num_samples_perfile);
+folder_name = '~/pushing_data'; query_info.surface='plywood'; 
+query_info.shape = 'rect1'; query_info.velocity = 10; 
+num_samples_perfile = 20; 
+[all_wrenches_local, all_twists_local] = read_json_files(folder_name, query_info, num_samples_perfile);
 all_twists_local_normalized = UnitNormalize(all_twists_local);
 rng(1);
 num_sample_pairs = 400;
