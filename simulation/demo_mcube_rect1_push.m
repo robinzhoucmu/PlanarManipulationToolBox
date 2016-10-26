@@ -2,9 +2,9 @@ file_name_1 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.3
 file_name_2 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=1.000_s=0.300_t=0.000.json';
 file_name_3 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=2.000_s=0.200_t=0.698.json';
 
-flag_plot = 0;
+flag_plot = 1;
 shape_id = 'rect1';
-[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_3, shape_id, flag_plot);
+[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_1, shape_id, flag_plot);
 N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.1);
 [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
 tip_pose = [tip_pt,zeros(length(t_q), 1)];
@@ -49,7 +49,7 @@ hand_traj = HandTraj(hand_traj_opts);
 
 %% Simulation.
 tic;
-mu = 1.0;
+mu = 0.4;
 dt_collision = 0.05;
 pushobj.pose = object_pose(1,:)';
 %sim_inst = ForwardSimulation(pushobj, hand_traj, hand_single_finger, mu, dt_collision);
