@@ -1,8 +1,7 @@
-classdef ForwardSimulationCombinedState < handle
+classdef ForwardSimulationCombinedStateCloseLoop < handle
     % Forward simulation of a single object subject to an hand trajectory.
     properties
         pushobj
-        hand_traj
         controller
         hand
         % Coefficient of friction between the object and the hand.
@@ -10,25 +9,32 @@ classdef ForwardSimulationCombinedState < handle
     end
     
     methods (Access = public)
-        function obj = ForwardSimulationCombinedState(pushobj, hand_traj, hand, mu)
+        function obj = ForwardSimulationCombinedStateCloseLoop(pushobj, controller, hand, mu)
             obj.pushobj = pushobj;
-            obj.hand_traj = hand_traj;
+            obj.controller = controller;
             obj.hand = hand;
             obj.mu = mu;
-
         end
         
-        function [results] = RollOut(obj)
+        function [results] = RollOut(obj, t_max_, dt_record_)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
               'MaxStep',0.1);             
-            dt_record = 0.02;
+            
             results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
-            cur_t = 0;
-            cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
-            t_max =  max(obj.hand_traj.t);
+            cur_hand_q = obj.hand.q;
+            if (nargin < 2)
+                t_max = 10;
+            else
+                t_max = t_max_;
+            end
+            if (nargin < 3)
+                dt_record = 0.01;
+            else
+                dt_record = dt_record_;
+            end
             % Simulate until jamming happens.
             t_range = [0 t_max];
             % Roll out the hand trajectory until contact happens.
@@ -47,7 +53,10 @@ classdef ForwardSimulationCombinedState < handle
         % x is the combined state of object and hand.
         function dx = ObjectHandMotion(obj, t, x)
             dx = zeros(size(x));
-            dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
+            % close loop controller (point finger for now).
+            u = obj.controller.ControlOutput(t, x(1:3));
+            dx(4:end) = [u;0];
+            
             obj.pushobj.pose = x(1:3);
             obj.hand.q = x(4:end);
             % Check for contact or not. 
@@ -106,7 +115,7 @@ classdef ForwardSimulationCombinedState < handle
             qdot = [obj_center_vel(1:2); twist_body(3)];
         end
         
-%         % Update object pose given object body twist, dt equals dt_collision.
+        % Update object pose given object body twist, dt equals dt_collision.
 %         function [obj] = UpdateObjectPoseGivenBodyTwist(obj, twist_body)
 %               nxt_homog_trans =  SE2Algebra.GetHomogTransfFromCartesianPose(obj.pushobj.pose) * ...
 %               SE2Algebra.GetExponentialMapGivenTwistVec(twist_body * obj.dt_collision);
