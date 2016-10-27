@@ -22,8 +22,8 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 200, 0.1);
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+pushobj.FitLS(ls_type, 200, 0.1);
 
 % put the object initially at the origin.
 pushobj.pose= [0;0;0];
