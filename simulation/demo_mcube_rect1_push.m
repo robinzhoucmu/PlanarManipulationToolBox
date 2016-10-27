@@ -4,7 +4,7 @@ file_name_3 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=2.000_s=0.200_t=0.6
 
 flag_plot = 1;
 shape_id = 'rect1';
-[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_1, shape_id, flag_plot);
+[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_2, shape_id, flag_plot);
 N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.1);
 [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
 tip_pose = [tip_pt,zeros(length(t_q), 1)];
