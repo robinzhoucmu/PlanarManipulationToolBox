@@ -1,6 +1,6 @@
 % Input: 
-% pt_contacts: [x1,x2;y1,y2];  column vectors.
-% pt_outward_normals: [nx1,nx2;ny1,ny2];
+% pt_contacts: column vectors.
+% pt_outward_normals: column vectors;
 % mu: coefficient of friction at point of contacts, assume same for both contact points.
 % pho: charateristic length. 
 % Output: 

@@ -13,8 +13,8 @@ options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
 num_support_pts = 20;
 
-support_pts = GridSupportPoint(num_supports_pts, options_support_pts); % N*2.
-num_supports_pts = size(support_pts, 1);
+support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
+num_support_pts = size(support_pts, 1);
 options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
 %figure, plot(support_pts(:,1), support_pts(:,2), '^');
