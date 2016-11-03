@@ -144,29 +144,38 @@ classdef PushedObject < handle
             
       function [flag_contact, pt_contact, vel_contact, outward_normal_contact] = ...
           GetRoundFingerContactInfo(obj, pt_finger_center, finger_radius, twist)
-          % Input: pt_center (2*1): center of round finger in world frame. 
+          % Input: pt_center (2*K): center of round fingers in world frame. 
           % finger_radius: radius of the round finger in meter.
-          % twist ([vx,vy,omega]) of the finger body.
+          % global twist (3*K) ([vx,vy,omega]) of the finger body w.r.t world frame.
           % Output: flag_contact: whether any point of the round finger
           % will be in contact with the object.
           % pt_contact: the point (in world frame) that contacts the object.  
           % vel_contact: contact point linear velocity in world frame.
           % outward_normal: contact normal in world frame.
-          pt_contact = zeros(2,1);
-          vel_contact = zeros(2,1);
-          outward_normal_contact = zeros(2,1);
-
+          num_fingers = size(pt_finger_center, 2);
+          flag_contact = zeros(num_fingers, 1);
+          pt_contact = zeros(2, num_fingers);
+          vel_contact = zeros(2, num_fingers);
+          outward_normal_contact = zeros(2, num_fingers);
+ 
           [pt_closest, dist] = obj.FindClosestPointAndDistanceWorldFrame(pt_finger_center); 
           r_blem = 1.00 + 1e-3;
-          if (dist <= finger_radius * r_blem)
-            flag_contact = 1;
-            pt_contact = pt_closest;
-            vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
-            outward_normal_contact = pt_finger_center - pt_contact; 
-            outward_normal_contact = outward_normal_contact / ( eps + norm(outward_normal_contact));
-          else
-            flag_contact = 0;
-          end
+          indices_contact = dist < (finger_radius * r_blem);
+          flag_contact(indices_contact) = 1;
+          pt_contact(:, indices_contact) = pt_closest(:, indices_contact);
+          vel_contact(:, indices_contact) = twist(1:2, indices_contact) + bsxfun(@times, twist(3,indices_contact), [-pt_contact(2,indices_contact); pt_contact(1,indices_contact)]);
+          outward_normal_contact(:, indices_contact) = pt_finger_center(:, indices_contact) - pt_contact(:, indices_contact);
+          outward_normal_contact(:, indices_contact) = bsxfun(@rdivide, outward_normal_contact(:, indices_contact), sqrt(sum(outward_normal_contact(:, indices_contact).^2)) + eps);
+% -----------------------------------------------          
+%           if (dist <= finger_radius * r_blem)
+%             flag_contact = 1;
+%             pt_contact = pt_closest;
+%             vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
+%             outward_normal_contact = pt_finger_center - pt_contact; 
+%             outward_normal_contact = outward_normal_contact / ( eps + norm(outward_normal_contact));
+%           else
+%             flag_contact = 0;
+%           end
       end
           
       function [twist_local, wrench_load_local, contact_mode] = ComputeVelGivenPointRoundFingerPush(obj, ...
