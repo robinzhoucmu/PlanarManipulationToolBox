@@ -207,6 +207,12 @@ classdef PushedObject < handle
         twist_local(3) = twist_local(3) / obj.pho;  
         
       end
+      
+      function [twist, wrench, contact_modes] = ComputeVelGivenMultiPointRoundFingerPush(obj, ...
+              pts_global, vels_global, outward_normals_global, mu)
+        % The multi-contact 
+      end
+      
       function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus, flag_plot)
         % This function checks for jamming given two contact points.
         % Here we assume the contacts are position-controlled and are able
