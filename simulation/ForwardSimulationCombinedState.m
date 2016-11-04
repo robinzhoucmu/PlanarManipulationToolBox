@@ -102,6 +102,9 @@ classdef ForwardSimulationCombinedState < handle
                 % objects will be jammed. 
                 [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
                  contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                if ~flag_converged
+                    fprintf('The multi-contact complementarity problem did not converge!\n');
+                end
                 if ~flag_jammed
                     contact_info.obj_status = 'pushed';
                     contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
