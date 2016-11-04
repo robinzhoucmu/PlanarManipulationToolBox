@@ -3,6 +3,11 @@
 % contact outward normal Ct_normal (2*K) and parameter for limit surface, this function computes 
 % the body twist V and applied load F, both normalized by characteristic length pho.
 % Vp, Pt, Ct_normal: column vectors.
-function [F, V, Ct_Modes] = ComputeVelGivenMultiContactPtPush(vps, pts, outnormals, mu, pho, ls_coeffs, ls_type)
+function [F, V, flag_jammed, flag_converged] = ComputeVelGivenMultiContactPtPush(vps, pts, outnormals, mu, pho, ls_coeffs, ls_type)
+if strcmp(ls_type, 'quadratic')
+
+elseif strcmp(ls_type, 'poly4')
+
+end
 end
 

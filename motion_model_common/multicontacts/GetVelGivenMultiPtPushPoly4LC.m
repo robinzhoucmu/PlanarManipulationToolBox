@@ -8,7 +8,8 @@
 % F: wrench (third component normalized) whose gradient (without scaling factor) equals the V.
 % V: twist (third component normalized)
 % flag_sol: if 1 then exists a feasible solution; 0 implies jamming and F,V will be all zero vectors. 
-
+% flag_converged: whether the iterative algorithm converged or exceeded
+% maximum iteration steps.
 function [F, V, flag_sol, flag_converged] = GetVelGivenMultiPtPushPoly4LC(vps, pts, outnormals, mu, pho, coeffs)
 flag_sol = 0;
 flag_converged = 0;
