@@ -7,14 +7,21 @@
 
 function [F, V, flag_jammed, flag_converged] = ComputeVelGivenMultiContactPtPush(vps, pts, outnormals, mu, pho, ls_coeffs, ls_type)
 if strcmp(ls_type, 'quadratic')
-    [F, V, flag_jammed] = GetVelGivenMultiPtPushEllipsoidLC(vps, pts, outnormals, mu, pho, ls_coeffs);
+    [F, V, flag_sol] = GetVelGivenMultiPtPushEllipsoidLC(vps, pts, outnormals, mu, pho, ls_coeffs);
     s = F'*ls_coeffs*F;
     F = F / (sqrt(s));
+    flag_jammed = ~flag_sol;
+    flag_converged = 1;
 elseif strcmp(ls_type, 'poly4')
-    [F, V, flag_jammed, flag_converged] = GetVelGivenMultiPtPushPoly4LC(vps, pts, outnormals, mu, pho, ls_coeffs);
+    [F, V, flag_sol, flag_converged] = GetVelGivenMultiPtPushPoly4LC(vps, pts, outnormals, mu, pho, ls_coeffs);
+    flag_jammed = ~flag_sol;
     F = ScaleForceToOneLevelSet(F, ls_coeffs);
 else
     fprintf('Limit surface %s type not recognized\n', ls_type);
+    F = zeros(3,1);
+    V = zeros(3,1);
+    flag_jammed = 0;
+    flag_converged = 0;
 end
 end
 

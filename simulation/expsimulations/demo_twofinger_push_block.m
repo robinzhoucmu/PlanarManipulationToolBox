@@ -23,9 +23,54 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-pushobj.FitLS(ls_type, 400, 0.1);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+%pushobj.FitLS(ls_type, 400, 0.1);
 
 % put the object initially at the origin.
 pushobj.pose= [0;0;0];
 
+%% Construct hand.
+finger_radius = 0.005;
+hand_two_finger = ConstructTwoFingersGripperHand(finger_radius);
+%% Specify hand trajectory.
+% Way points
+depth = le ;
+q_start = [le + finger_radius; 0; 0; depth];
+q_end = [-2*le; le; 0; depth];
+num_way_q = 100;
+dim_q = length(q_start);
+waypoints_hand_q = zeros(dim_q, num_way_q);
+for i = 1:1:dim_q
+    waypoints_hand_q(i,:) = linspace(q_start(i), q_end(i), num_way_q);
+end
+t_max = 4;
+t_q = linspace(0, t_max, num_way_q);
+hand_traj_opts.q = waypoints_hand_q;
+hand_traj_opts.t = t_q;
+hand_traj_opts.interp_mode = 'spline';
+hand_traj = HandTraj(hand_traj_opts);
+
+%% Set simulation.
+mu = 10;
+dt_collision = 0.05;
+
+sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_two_finger, mu);
+sim_results = sim_inst.RollOut();
+
+num_rec_configs = size(sim_results.obj_configs, 2);
+figure;
+hold on;
+seg_size = 5;
+for i = 1:1:num_rec_configs
+    if mod(i, seg_size) == 1
+    % Plot the square object.
+        plot(sim_results.obj_configs(1, i), sim_results.obj_configs(2,i), 'b+');
+        vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj.shape_vertices, sim_results.obj_configs(:,i));
+        vertices(:,end+1) = vertices(:,1);
+        plot(vertices(1,:), vertices(2,:), 'r-');
+     % Plot the round point pusher.
+        drawCircle(sim_results.hand_configs(1,i), sim_results.hand_configs(2,i)+depth/2, finger_radius, 'k');
+        drawCircle(sim_results.hand_configs(1,i), sim_results.hand_configs(2,i)-depth/2, finger_radius, 'k');
+    end
+end
+axis equal;

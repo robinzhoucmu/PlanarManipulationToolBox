@@ -21,7 +21,7 @@ classdef ForwardSimulationCombinedState < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
-              'MaxStep',0.1);             
+              'MaxStep',0.01);             
             dt_record = 0.02;
             results.all_contact_info = {};
             results.hand_configs = [];
@@ -58,6 +58,7 @@ classdef ForwardSimulationCombinedState < handle
                 [contact_info] = ContactResolution(obj, x(4:end), dx(4:end), dist);
                 dx(1:3) = contact_info.obj_config_dot;
             end
+            %dx
         end        
         % Resolves contact at time t.
         % 1) Compute the contact points and velocity.
@@ -98,23 +99,28 @@ classdef ForwardSimulationCombinedState < handle
                 % Get the position, velocity and contact normal of the touching fingers. 
                 [~, contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact] = ...
                 obj.pushobj.GetRoundFingerContactInfo(contact_info.finger_carts_contact(1:2, :), obj.hand.finger_radius, contact_info.finger_twists_contact);
+                %contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact
                 % Compute the twist, wrench if objects will move or knowing
                 % objects will be jammed. 
                 [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
                  contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                %contact_info.twist_local
                 if ~flag_converged
                     fprintf('The multi-contact complementarity problem did not converge!\n');
                 end
                 if ~flag_jammed
                     contact_info.obj_status = 'pushed';
                     contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
-                elseif contact_info.num_finger_contact == obj.hand.num_fingers
+                    %contact_info.obj_config_dot
+                elseif contact_info.num_fingers_contact == obj.hand.num_fingers
                     contact_info.obj_status = 'grasped';
                     contact_info.obj_config_dot = zeros(3,1);
                 else
-                    contact_info.obj_status = 'jammed';
+                    contact_info.obj_status = 'jammed'
                     contact_info.obj_config_dot = zeros(3,1);
                 end
+                contact_info.obj_status
+                contact_info.obj_config_dot
             else
                 %error('ODE detects contact yet no contact has been identified.')
             end

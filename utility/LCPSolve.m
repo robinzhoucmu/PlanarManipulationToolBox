@@ -86,6 +86,7 @@ else
         loopcount = loopcount + 1;
         eMs = tableau(:,cand); % This is used to check convergence (pivtol)
         missmask = eMs <= 0;  % Check if elements of eMs are less than zero
+        %missmask = eMs <= 1e-4;
         quots = tableau(:,2*dimen+2)./eMs;
         quots(missmask) = Inf;
         [~,locat] = min(quots);
@@ -105,6 +106,8 @@ else
                 cand = oldVar + dimen;
             end
         else
+%            sum(missmask),dimen 
+%            abs(eMs(locat))
             rayTerm = true; % Problem was solved
             break % Break out of the while loop
         end
