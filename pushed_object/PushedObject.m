@@ -135,7 +135,7 @@ classdef PushedObject < handle
       end
       
       function [vec_local] = GetVectorInLocalFrame(obj, vec) 
-           % Input: a column vector 2*1 in world frame.
+           % Input: column vectors 2*K in world frame.
            % Output: rotated to local frame.
            theta = obj.pose(3);
            R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
@@ -208,9 +208,18 @@ classdef PushedObject < handle
         
       end
       
-      function [twist, wrench, contact_modes] = ComputeVelGivenMultiPointRoundFingerPush(obj, ...
+      function [twist, wrench, flag_jammed, flag_converged] = ComputeVelGivenMultiPointRoundFingerPush(obj, ...
               pts_global, vels_global, outward_normals_global, mu)
-        % The multi-contact 
+        % The multi-contact solution by solving a (iterated) LCP problem.
+        % Change to local object frame.
+        % Output un-normalized. 3rd component of wrench is Nm. 3rd of twist
+        % is radian/s. 
+        vels_local = obj.GetVectorInLocalFrame(vels_global);
+        pts_local = obj.GetVectorInLocalFrame(bsxfun(@minus, pts_global, obj.pose(1:2)));
+        outward_normals_local = obj.GetVectorInLocalFrame(outward_normals_global);
+        [wrench, twist, flag_jammed, flag_converged] = ComputeVelGivenMultiContactPtPush(...
+            vels_local, pts_local, outward_normals_local, mu, obj.pho, obj.ls_coeffs, obj.ls_type);
+        
       end
       
       function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus, flag_plot)

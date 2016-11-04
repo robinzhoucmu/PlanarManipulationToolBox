@@ -95,6 +95,23 @@ classdef ForwardSimulationCombinedState < handle
 
             elseif (contact_info.num_fingers_contact > 1)
                 % Multi-contact resolution.
+                % Get the position, velocity and contact normal of the touching fingers. 
+                [~, contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact] = ...
+                obj.pushobj.GetRoundFingerContactInfo(contact_info.finger_carts_contact(1:2, :), obj.hand.finger_radius, contact_info.finger_twists_contact);
+                % Compute the twist, wrench if objects will move or knowing
+                % objects will be jammed. 
+                [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
+                 contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                if ~flag_jammed
+                    contact_info.obj_status = 'pushed';
+                    contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
+                elseif contact_info.num_finger_contact == obj.hand.num_fingers
+                    contact_info.obj_status = 'grasped';
+                    contact_info.obj_config_dot = zeros(3,1);
+                else
+                    contact_info.obj_status = 'jammed';
+                    contact_info.obj_config_dot = zeros(3,1);
+                end
             else
                 %error('ODE detects contact yet no contact has been identified.')
             end
