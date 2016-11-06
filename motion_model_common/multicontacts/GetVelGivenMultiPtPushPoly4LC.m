@@ -13,13 +13,13 @@
 function [F, V, flag_sol, flag_converged] = GetVelGivenMultiPtPushPoly4LC(vps, pts, outnormals, mu, pho, coeffs)
 flag_sol = 0;
 flag_converged = 0;
-eps_deltaV = 1e-6;
+eps_deltaV = 1e-4;
 % Initialize.
 V = [0;0;0];
 cur_F = 1/sqrt(3)*[1;1;1];
 norm_deltaV = 1e+5;
-eta = 0.5;
-max_iters = 1e+4;
+eta = 0.9;
+max_iters = 1e+3;
 count_iter = 0;
 while (norm_deltaV > eps_deltaV) & (count_iter < max_iters)
     A = GetHessianPoly4(cur_F(1), cur_F(2), cur_F(3), coeffs);
@@ -32,7 +32,7 @@ while (norm_deltaV > eps_deltaV) & (count_iter < max_iters)
     count_iter = count_iter + 1;
 end
 F = cur_F;
-if (norm_deltaV <= eps_deltaV)
+if (norm_deltaV <= eps_deltaV) || ~flag_sol
     flag_converged = 1;
 end
 end

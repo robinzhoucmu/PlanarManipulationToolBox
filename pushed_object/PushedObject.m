@@ -219,7 +219,9 @@ classdef PushedObject < handle
         outward_normals_local = obj.GetVectorInLocalFrame(outward_normals_global);
         [wrench, twist, flag_jammed, flag_converged] = ComputeVelGivenMultiContactPtPush(...
             vels_local, pts_local, outward_normals_local, mu, obj.pho, obj.ls_coeffs, obj.ls_type);
-        
+        % Un-normalize the third components.
+        wrench(3) = wrench(3) * obj.pho;
+        twist(3) = twist(3) / obj.pho;
       end
       
       function [flag_jammed] = CheckForTwoContactsJammingGeometry(obj, pts, out_normals, mus, flag_plot)

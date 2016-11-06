@@ -24,19 +24,22 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
 %pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 400, 0.1);
+%pushobj.FitLS(ls_type, 200, 0.1);
 
 % put the object initially at the origin.
-pushobj.pose= [0;0;0];
+pushobj.pose= [le/3;le/10;pi/6];
 
 %% Construct hand.
-finger_radius = 0.005;
+finger_radius = 0.002;
 hand_two_finger = ConstructTwoFingersGripperHand(finger_radius);
 %% Specify hand trajectory.
 % Way points
 depth = le ;
-q_start = [le + finger_radius; 0; 0; depth];
-q_end = [-2*le; le; 0; depth];
+%q_start = [le + finger_radius; 0; 0; depth];
+%q_end = [-2*le; le; 0; depth];
+q_start = [0; 0; -pi/2; 3*sqrt(2) * le + finger_radius *2];
+q_end = [0; 0; -pi/2; 2*le + finger_radius * 2];
+
 num_way_q = 100;
 dim_q = length(q_start);
 waypoints_hand_q = zeros(dim_q, num_way_q);
@@ -51,7 +54,7 @@ hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
 %% Set simulation.
-mu = 10;
+mu = 0.1;
 dt_collision = 0.05;
 
 sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_two_finger, mu);
@@ -69,8 +72,13 @@ for i = 1:1:num_rec_configs
         vertices(:,end+1) = vertices(:,1);
         plot(vertices(1,:), vertices(2,:), 'r-');
      % Plot the round point pusher.
-        drawCircle(sim_results.hand_configs(1,i), sim_results.hand_configs(2,i)+depth/2, finger_radius, 'k');
-        drawCircle(sim_results.hand_configs(1,i), sim_results.hand_configs(2,i)-depth/2, finger_radius, 'k');
+        theta = sim_results.hand_configs(3,i);
+        d = sim_results.hand_configs(4,i);
+        R = [cos(theta), -sin(theta);
+                sin(theta), cos(theta)];
+        vec_f1 = R * [0;d/2];
+        drawCircle(sim_results.hand_configs(1,i) + vec_f1(1), sim_results.hand_configs(2,i)+ vec_f1(2), finger_radius, 'k');
+        drawCircle(sim_results.hand_configs(1,i) - vec_f1(1), sim_results.hand_configs(2,i) - vec_f1(2), finger_radius, 'k');
     end
 end
 axis equal;

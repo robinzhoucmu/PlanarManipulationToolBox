@@ -21,7 +21,7 @@ classdef ForwardSimulationCombinedState < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
-              'MaxStep',0.01);             
+              'MaxStep',0.05);             
             dt_record = 0.02;
             results.all_contact_info = {};
             results.hand_configs = [];
@@ -36,7 +36,6 @@ classdef ForwardSimulationCombinedState < handle
             t_eval = 0:dt_record:t_max;
             all_x = deval(sol, t_eval);
             results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
-            % Till the contact, the object is remaining static.
             results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
             
         end
@@ -57,6 +56,9 @@ classdef ForwardSimulationCombinedState < handle
             if min(dist) < 0
                 [contact_info] = ContactResolution(obj, x(4:end), dx(4:end), dist);
                 dx(1:3) = contact_info.obj_config_dot;
+                if ~strcmp(contact_info.obj_status, 'pushed')
+                    dx = zeros(size(x));
+                end
             end
             %dx
         end        
@@ -75,7 +77,7 @@ classdef ForwardSimulationCombinedState < handle
             % Get finger poses and twists in global frame. 
             [finger_twists, finger_carts] = obj.hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
             % Extract fingers that are in contact with the object.
-            contact_info.finger_index_contact = find(contact_values <= 1e-6);
+            contact_info.finger_index_contact = find(contact_values <= 0);
             contact_info.num_fingers_contact = length(contact_info.finger_index_contact);
             contact_info.finger_carts_contact = finger_carts(:, contact_info.finger_index_contact);
             contact_info.finger_twists_contact = finger_twists(:, contact_info.finger_index_contact);
@@ -116,11 +118,12 @@ classdef ForwardSimulationCombinedState < handle
                     contact_info.obj_status = 'grasped';
                     contact_info.obj_config_dot = zeros(3,1);
                 else
-                    contact_info.obj_status = 'jammed'
+                    contact_info.obj_status = 'jammed';
                     contact_info.obj_config_dot = zeros(3,1);
                 end
                 contact_info.obj_status
                 contact_info.obj_config_dot
+                obj.pushobj.pose
             else
                 %error('ODE detects contact yet no contact has been identified.')
             end
