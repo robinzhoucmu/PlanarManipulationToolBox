@@ -2,7 +2,7 @@
 % It samples 100 points uniformly inside the polygonal area and then
 % samples (around) 300 wrench-twist pairs to fit the limit surface specified by
 % ls_type.
-function [pushobj_polygon] = CreateNSidedPolygonPushObject(num_edges, len_edge, ls_type)
+function [pushobj_polygon, shape_info] = CreateNSidedPolygonPushObject(num_edges, len_edge, ls_type)
     shape_info.shape_vertices = zeros(2, num_edges);
     shape_info.shape_type = 'polygon';
     shape_info.shape_id = strcat('polygon', num2str(num_edges));
