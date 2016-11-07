@@ -74,6 +74,26 @@ classdef Hand < handle
             hand_twist = SE2Algebra.GetGlobalTwistGivenQandQdot(obj.q, obj.qdot);
         end
         
+        function [] = Draw(obj, h, q, c)
+            % Draw round fingers given (optional) configuration q and
+            % color.
+            if (nargin < 3)
+                q = obj.q;
+            end
+            if (nargin < 4)
+                c = 'k';
+            end
+            figure(h);
+            hold on;
+            q_tmp = obj.q;
+            obj.q = q;
+            finger_carts_global = obj.GetGlobalFingerCartesians();
+            for i = 1:1:obj.num_fingers
+                drawCircle(finger_carts_global(1,i), finger_carts_global(2,i), obj.finger_radius, 'color', c);
+            end
+            obj.q = q_tmp;
+        end
+        
     end
     
 end

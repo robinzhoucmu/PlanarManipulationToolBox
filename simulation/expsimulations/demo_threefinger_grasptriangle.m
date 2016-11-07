@@ -1,45 +1,41 @@
 rng(1);
-tic;
 %% Construct pushobj.
 % shape and support points.
-shape_info.shape_id = 'polygon1';
+shape_info.shape_id = 'tri1';
 shape_info.shape_type = 'polygon';
 le = 0.02;
-shape_info.shape_vertices = [-le,le,le,-le;-le,-le,le,le];
-shape_info.pho = le;                                            
+% right, upper, left. ccw.
+shape_info.shape_vertices = [le/2,0,-le/2;-le/sqrt(3)/2, le/sqrt(3), -le/sqrt(3)/2];
+shape_info.pho = le / sqrt(3);                                            
 % Uniformly sample points in the polygon area 
 options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
-num_support_pts = 20;
+num_support_pts = 100;
 
 support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
 num_support_pts = size(support_pts, 1);
 options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
-%figure, plot(support_pts(:,1), support_pts(:,2), '^');
-%axis equal;
-%drawnow;
+% figure, plot(support_pts(:,1), support_pts(:,2), '^');
+% axis equal;
+% drawnow;
 
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
 %pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 200, 0.1);
+%pushobj.FitLS(ls_type, 300, 0.1);
 
 % put the object initially at the origin.
-pushobj.pose= [le/3;0;0];
+pushobj.pose= [le/4;le/4;pi/6];
 
 %% Construct hand.
 finger_radius = 0.002;
-hand_two_finger = ConstructTwoFingersGripperHand(finger_radius);
+hand_three_finger = ConstructThreeFingersOneDofHand(finger_radius);
 %% Specify hand trajectory.
 % Way points
-% Pushing while closing gripper. 
-q_start = [1.5*le; 0; 0; 1.5*le];
-q_end = [0.1*le; 0; 0; 2*finger_radius];
-% Squeezing.
-%q_start = [0; 0; -pi/2; 3*sqrt(2) * le + finger_radius *2];
-%q_end = [0; 0; -pi/2; 2*le + finger_radius * 2];
+q_start = [0; 0; pi/3;  0.75 * le + finger_radius];
+q_end = [0; 0; pi/3; le/4 + finger_radius];
 
 num_way_q = 100;
 dim_q = length(q_start);
@@ -55,16 +51,16 @@ hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
 %% Set simulation.
-mu = 10;
+mu = 0.1;
 dt_collision = 0.05;
 
-sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_two_finger, mu);
+sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_three_finger, mu);
 sim_results = sim_inst.RollOut();
-toc;
+
 num_rec_configs = size(sim_results.obj_configs, 2);
-figure;
+h = figure;
 hold on;
-seg_size = 5;
+seg_size = 10;
 for i = 1:1:num_rec_configs
     if mod(i, seg_size) == 1
     % Plot the square object.
@@ -72,14 +68,12 @@ for i = 1:1:num_rec_configs
         vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj.shape_vertices, sim_results.obj_configs(:,i));
         vertices(:,end+1) = vertices(:,1);
         plot(vertices(1,:), vertices(2,:), 'r-');
-     % Plot the round point pusher.
-        theta = sim_results.hand_configs(3,i);
-        d = sim_results.hand_configs(4,i);
-        R = [cos(theta), -sin(theta);
-                sin(theta), cos(theta)];
-        vec_f1 = R * [0;d/2];
-        drawCircle(sim_results.hand_configs(1,i) + vec_f1(1), sim_results.hand_configs(2,i)+ vec_f1(2), finger_radius, 'k');
-        drawCircle(sim_results.hand_configs(1,i) - vec_f1(1), sim_results.hand_configs(2,i) - vec_f1(2), finger_radius, 'k');
+        if (i == 1) || (i + seg_size > num_rec_configs)
+            c = 'k';
+        else
+            c = 'g';
+        end
+        hand_three_finger.Draw(h, sim_results.hand_configs(:, i), c);
     end
 end
 axis equal;
