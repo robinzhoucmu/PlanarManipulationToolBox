@@ -37,24 +37,24 @@ lcp_M = [N*A*N', N*A*L', zeros(num_cts, num_cts);
                L*A*N', L*A*L', E;
                Mus, -E', zeros(num_cts, num_cts)];
 %vps, pts, outnormals
-% val_pivot = 1e-5;
-% val_miters = 1e+4;
-% [w, z, retcode] = LCPSolve(lcp_M, q, val_pivot, val_miters);
-% norm(w - lcp_M * z - q)
-% if retcode(1) == 1
-%     flag_sol = 1;
-% elseif (norm(w - lcp_M * z - q) < 1e-3) & (sum(w<0) == 0) & (sum(z<0) == 0) & (w'*z == 0)
-%     flag_sol = 1;
-% else
-%     flag_sol = 0;
-% end
-z = LCP(lcp_M,q);
-w = lcp_M * z + q;
-if (norm(w - lcp_M * z - q) < 1e-3) & (sum(w < -1e-3) == 0) & (sum(z < -1e-3) == 0) & (abs(w'*z) <= 1e-3)
+val_pivot = 1e-5;
+val_miters = 1e+4;
+[w, z, retcode] = LCPSolve(lcp_M, q, val_pivot, val_miters);
+%norm(w - lcp_M * z - q)
+if retcode(1) == 1
+    flag_sol = 1;
+elseif (norm(w - lcp_M * z - q) < 1e-3) & (sum(w<0) == 0) & (sum(z<0) == 0) & (w'*z == 0)
     flag_sol = 1;
 else
     flag_sol = 0;
 end
+% z = LCP(lcp_M,q);
+% w = lcp_M * z + q;
+% if (norm(w - lcp_M * z - q) < 1e-3) & (sum(w < -1e-3) == 0) & (sum(z < -1e-3) == 0) & (abs(w'*z) <= 1e-3)
+%     flag_sol = 1;
+% else
+%     flag_sol = 0;
+% end
 if (flag_sol)
     fns = z(1:num_cts);
    fts = z(num_cts+1:3*num_cts);

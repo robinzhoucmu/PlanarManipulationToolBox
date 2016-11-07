@@ -1,31 +1,32 @@
 rng(1);
+tic;
 %% Construct pushobj.
 % shape and support points.
-shape_info.shape_id = 'tri1';
-shape_info.shape_type = 'polygon';
-le = 0.02;
-% right, upper, left. ccw.
-shape_info.shape_vertices = [le/2,0,-le/2;-le/sqrt(3)/2, le/sqrt(3), -le/sqrt(3)/2];
-shape_info.pho = le / sqrt(3);                                            
-% Uniformly sample points in the polygon area 
-options_support_pts.mode = 'polygon';
-options_support_pts.vertices = shape_info.shape_vertices';
-num_support_pts = 100;
-
-support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
-num_support_pts = size(support_pts, 1);
-options_pressure.mode = 'uniform';
-pressure_weights = AssignPressure(support_pts, options_pressure);
-% figure, plot(support_pts(:,1), support_pts(:,2), '^');
-% axis equal;
-% drawnow;
-
-% limit surface fitting based on pressure distribution.
-ls_type = 'quadratic';
+% shape_info.shape_id = 'tri1';
+% shape_info.shape_type = 'polygon';
+ le = 0.02;
+% % right, upper, left. ccw.
+% shape_info.shape_vertices = [le/2,0,-le/2;-le/sqrt(3)/2, le/sqrt(3), -le/sqrt(3)/2];
+% shape_info.pho = le / sqrt(3);                                            
+% % Uniformly sample points in the polygon area 
+% options_support_pts.mode = 'polygon';
+% options_support_pts.vertices = shape_info.shape_vertices';
+% num_support_pts = 100;
+% 
+% support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
+% num_support_pts = size(support_pts, 1);
+% options_pressure.mode = 'uniform';
+% pressure_weights = AssignPressure(support_pts, options_pressure);
+% % figure, plot(support_pts(:,1), support_pts(:,2), '^');
+% % axis equal;
+% % drawnow;
+% 
+% % limit surface fitting based on pressure distribution.
+% ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
 %pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
 %pushobj.FitLS(ls_type, 300, 0.1);
-
+pushobj = CreateNSidedPolygonPushObject(3, le, 'quadratic');
 % put the object initially at the origin.
 pushobj.pose= [le/4;le/4;pi/6];
 
@@ -77,3 +78,4 @@ for i = 1:1:num_rec_configs
     end
 end
 axis equal;
+toc;
