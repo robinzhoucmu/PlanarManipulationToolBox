@@ -1,3 +1,4 @@
+rng(1);
 sim_results_all = cell(3, 1);
 p = gcp;
 if (isempty(p))
@@ -24,14 +25,15 @@ t_q = linspace(0, t_max, num_way_q);
 hand_traj_opts.q = waypoints_hand_q;
 hand_traj_opts.t = t_q;
 hand_traj_opts.interp_mode = 'spline';
-[pushobj_tri,shape_info] = CreateNSidedPolygonPushObject(3, le, 'poly4');
+[pushobj_tri,shape_info] = CreateNSidedPolygonPushObject(3, le, 'quadratic');
 
 tic;
 num_poses = 1000;
 parfor ind_pose = 1:1:num_poses
     pushobj = PushedObject(pushobj_tri.support_pts, pushobj_tri.pressure_weights, ...
         shape_info, pushobj_tri.ls_type, pushobj_tri.ls_coeffs);
-    pushobj.pose = [ind_pose* le/4; ind_pose*le/4; ind_pose*pi/6];
+    %pushobj.pose = [ind_pose* le/4 /num_poses; ind_pose*le/4/num_poses; ind_pose*pi/2/num_poses];
+    pushobj.pose = [le/4 * 2*(rand() - 0.5); le/4 * 2*(rand() - 0.5); 2*pi/3 * rand()];
     hand_three_finger = ConstructThreeFingersOneDofHand(finger_radius);
     hand_traj = HandTraj(hand_traj_opts);
     sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_three_finger, mu);
@@ -40,7 +42,7 @@ end
 toc;
 
 % hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
-% for ind_pose = 1:1:3
+% for ind_pose = 1:1:num_poses
 %     sim_results = sim_results_all{ind_pose};
 %     num_rec_configs = size(sim_results.obj_configs, 2);
 %     h = figure;
