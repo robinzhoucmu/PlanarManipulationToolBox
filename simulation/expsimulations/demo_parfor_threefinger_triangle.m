@@ -33,7 +33,8 @@ num_poses_xy = 100;
 num_poses_theta = 10; 
 num_poses = num_poses_xy * num_poses_theta;
 sample_radius = le / 2;
-sampled_ic_poses = cylindricalsampling(sample_radius, num_poses_xy, num_poses_theta);
+sample_angle = pi * 2 / 3;
+sampled_ic_poses = cylindricalsampling(sample_radius, sample_angle, num_poses_xy, num_poses_theta);
 sd = num_poses^(1/3);
 sim_results_all = cell(num_poses, 1);
 parfor ind_pose = 1:1:num_poses
@@ -52,15 +53,17 @@ parfor ind_pose = 1:1:num_poses
     sim_results_all{ind_pose} = sim_inst.RollOut();
 end
 toc;
+q_inits = zeros(3, num_poses);
+q_ends = zeros(3, num_poses);
+for ind_pose = 1:1:num_poses
+        q_inits(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,1);
+        q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
+end
 if (flag_plot)
     h1 = figure; 
     h2 = figure;
     hold on;
-    q_inits = zeros(3, num_poses);
-    q_ends = zeros(3, num_poses);
     for ind_pose = 1:1:num_poses
-        q_inits(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,1);
-        q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
         q_init = q_inits(:, ind_pose);
         q_end = q_ends(:, ind_pose);
         figure(h1);
