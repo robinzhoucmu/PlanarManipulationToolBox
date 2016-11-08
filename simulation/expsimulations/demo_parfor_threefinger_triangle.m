@@ -1,4 +1,5 @@
 clear all;
+flag_plot = 0;
 rng(1);
 p = gcp;
 if (isempty(p))
@@ -28,7 +29,11 @@ hand_traj_opts.interp_mode = 'spline';
 [pushobj_tri,shape_info] = CreateNSidedPolygonPushObject(3, le, 'quadratic');
 
 tic;
-num_poses = 8^3;
+num_poses_xy = 100;
+num_poses_theta = 10; 
+num_poses = num_poses_xy * num_poses_theta;
+sample_radius = le / 2;
+sampled_ic_poses = cylindricalsampling(sample_radius, num_poses_xy, num_poses_theta);
 sd = num_poses^(1/3);
 sim_results_all = cell(num_poses, 1);
 parfor ind_pose = 1:1:num_poses
@@ -36,37 +41,45 @@ parfor ind_pose = 1:1:num_poses
         shape_info, pushobj_tri.ls_type, pushobj_tri.ls_coeffs);
     % Sample a pose uniformly.
     %pushobj.pose = [le/sqrt(3) * 2 * (rand() - 0.5); le/sqrt(3) * 2  * (rand() - 0.5);  pi/3 * 2 * (rand() -0.5)];
-    k1 = floor(ind_pose / sd^2);
-    k2 = floor((ind_pose - k1*sd^2) / sd);
-    k3 = floor(ind_pose - k1*sd^2 - k2*sd);
-    pushobj.pose = [le/sqrt(3) * 2*(k1 / sd - 0.5); le/sqrt(3) * 2*(k2 / sd - 0.5);  pi/3 * 2*(k3 / sd - 0.5)];
+    %k1 = floor(ind_pose / sd^2);
+    %k2 = floor((ind_pose - k1*sd^2) / sd);
+    %k3 = floor(ind_pose - k1*sd^2 - k2*sd);
+    %pushobj.pose = [le/sqrt(3) * 2*(k1 / sd - 0.5); le/sqrt(3) * 2*(k2 / sd - 0.5);  pi/3 * 2*(k3 / sd - 0.5)];
+    pushobj.pose = sampled_ic_poses(:, ind_pose);
     hand_three_finger = ConstructThreeFingersOneDofHand(finger_radius);
     hand_traj = HandTraj(hand_traj_opts);
     sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_three_finger, mu);
     sim_results_all{ind_pose} = sim_inst.RollOut();
 end
 toc;
-
-h1 = figure; 
-h2 = figure;
-hold on;
-for ind_pose = 1:1:num_poses
-    q_init = sim_results_all{ind_pose}.obj_configs(:,1);
-    q_end = sim_results_all{ind_pose}.obj_configs(:,end);
-    figure(h1);
-    plot3(q_init(1)/pushobj_tri.pho, q_init(2)/pushobj_tri.pho, q_init(3), 'b*');
+if (flag_plot)
+    h1 = figure; 
+    h2 = figure;
     hold on;
-    figure(h2);
-    plot3(q_end(1)/pushobj_tri.pho, q_end(2)/pushobj_tri.pho, q_end(3), 'r*');
-    hold on;
+    q_inits = zeros(3, num_poses);
+    q_ends = zeros(3, num_poses);
+    for ind_pose = 1:1:num_poses
+        q_inits(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,1);
+        q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
+        q_init = q_inits(:, ind_pose);
+        q_end = q_ends(:, ind_pose);
+        figure(h1);
+        plot3(q_init(1)/pushobj_tri.pho, q_init(2)/pushobj_tri.pho, q_init(3), 'b*');
+        hold on;
+        figure(h2);
+        plot3(q_end(1)/pushobj_tri.pho, q_end(2)/pushobj_tri.pho, q_end(3), 'r*');
+        hold on;
+    end
+    figure; seg = 10; 
+    ks = 4;
+    for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
+    traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_tri.pho;
+    quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);hold on;
+    end
 end
-
-figure; seg = 10; 
-for i = 1:1:num_poses
-traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_tri.pho;
-quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);hold on;
-end;
-
+str_datetime = datestr(datetime('now'));
+str_file_to_save = strcat('data_logs/', str_datetime);
+save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj_tri');
 % hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
 % for ind_pose = 1:1:num_poses
 %     sim_results = sim_results_all{ind_pose};
