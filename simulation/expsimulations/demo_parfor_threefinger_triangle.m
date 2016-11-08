@@ -29,8 +29,8 @@ hand_traj_opts.interp_mode = 'spline';
 [pushobj_tri,shape_info] = CreateNSidedPolygonPushObject(3, le, 'quadratic');
 
 tic;
-num_poses_xy = 100;
-num_poses_theta = 10; 
+num_poses_xy = 400;
+num_poses_theta = 21; 
 num_poses = num_poses_xy * num_poses_theta;
 sample_radius = le / 2;
 sample_angle = pi * 2 / 3;
@@ -60,25 +60,15 @@ for ind_pose = 1:1:num_poses
         q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
 end
 if (flag_plot)
-    h1 = figure; 
-    h2 = figure;
-    hold on;
-    for ind_pose = 1:1:num_poses
-        q_init = q_inits(:, ind_pose);
-        q_end = q_ends(:, ind_pose);
-        figure(h1);
-        plot3(q_init(1)/pushobj_tri.pho, q_init(2)/pushobj_tri.pho, q_init(3), 'b*');
-        hold on;
-        figure(h2);
-        plot3(q_end(1)/pushobj_tri.pho, q_end(2)/pushobj_tri.pho, q_end(3), 'r*');
-        hold on;
-    end
-    figure; seg = 10; 
-    ks = 4;
-    for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
-    traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_tri.pho;
-    quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);hold on;
-    end
+    [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_tri.pho);
+    [h3] = PlotObjectConfigurationTrajectory(sim_results_all, pushobj_tri.pho,0,0);
+%     figure; seg = 10; 
+%     ks = 4;
+%     for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
+%         traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_tri.pho;
+%         quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);
+%         hold on;
+%     end
 end
 str_datetime = datestr(datetime('now'));
 str_file_to_save = strcat('data_logs/', str_datetime);
