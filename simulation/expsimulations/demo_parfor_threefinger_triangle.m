@@ -60,7 +60,7 @@ for ind_pose = 1:1:num_poses
         q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
 end
 if (flag_plot)
-    [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_tri.pho);
+    [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_tri.pho,0, 0);
     [h3] = PlotObjectConfigurationTrajectory(sim_results_all, pushobj_tri.pho,0,0);
 %     figure; seg = 10; 
 %     ks = 4;
