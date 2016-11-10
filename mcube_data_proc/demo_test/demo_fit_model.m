@@ -1,7 +1,7 @@
 addpath('~/Downloads/cvx/');
 cvx_startup;
 folder_name = '~/pushing_data'; query_info.surface='abs'; 
-query_info.shape = 'rect1'; query_info.velocity = 10; 
+query_info.shape = 'rect2'; query_info.velocity = 10; 
 num_samples_perfile = 20; 
 [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(folder_name, query_info, num_samples_perfile);
 all_twists_local_normalized = UnitNormalize(all_twists_local);
