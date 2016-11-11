@@ -13,7 +13,7 @@
 % [all_wrenches_local, all_twists_local] = read_json_files(folder_name, query_info, num_samples_perfile);
 function [ all_wrenches_local, all_twists_local, all_vel_tip_local, all_dists, all_vel_slip] = read_json_files(folder_name, query_info, num_samples_perfile)
 str_folder = strcat(folder_name, '/', query_info.surface, '/', query_info.shape, '/')
-%'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.349.json'
+% example: 'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.349.json'
 str_file = strcat('motion_surface=', query_info.surface, '_shape=', query_info.shape, ...
                   '*v=', num2str(query_info.velocity), '_i*.json')
 listing = dir(strcat(str_folder, str_file));    
