@@ -25,8 +25,8 @@ wrench = data.ft_wrench;
 
 if do_plot
     
-    figure('position', [275, 500, 1500, 1000]) 
-    
+    %figure('position', [275, 500, 1500, 1000]) 
+    h = figure;
     %Plot snapshots object and pusher pose
     %subplot(1,2,1); 
     hold on;
