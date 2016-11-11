@@ -1,0 +1,14 @@
+vel = 10;
+numsamples_perfile = 10;
+surface_type = 'abs';
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect1', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect2', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect3', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'tri1', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'tri2', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'tri3', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'ellip1', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'ellip2', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'ellip3', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'hex', vel, numsamples_perfile);
+VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'butter', vel, numsamples_perfile);

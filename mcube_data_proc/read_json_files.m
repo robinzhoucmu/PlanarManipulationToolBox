@@ -68,7 +68,7 @@ all_dists([index_small_wrenches;index_big_wrenches]) = [];
 all_vel_slip([index_small_wrenches;index_big_wrenches], :) = [];
 %all_twists_local_normalized = UnitNormalize(all_twists_local);
 
-figure; plot3(all_wrenches_local(:,1), all_wrenches_local(:,2), all_wrenches_local(:,3), 'r.');
+%figure; plot3(all_wrenches_local(:,1), all_wrenches_local(:,2), all_wrenches_local(:,3), 'r.');
 
 
 end
