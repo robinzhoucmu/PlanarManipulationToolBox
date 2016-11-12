@@ -1,10 +1,15 @@
-function [record_all] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, num_samples_perfile)
+function [record_all] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile)
 tic;
 rng(1);
+p = gcp;
+if (isempty(p))
+    num_physical_cores = feature('numcores');
+    parpool(num_physical_cores);
+end
 query_info.surface= surface_type; 
 query_info.shape = shape_id; 
 query_info.velocity = vel; 
-if (nargin < 6)
+if (nargin < 7)
     num_samples_perfile = 20;
 end
 [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(folder_name, query_info, num_samples_perfile); 
@@ -53,12 +58,14 @@ pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
 % Construct a single round point pusher with specified radius.
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 
+%mu = 0.22;
+
 record_all = cell(num_files, 1);
 %record_all.init_pose_gt = zeros(3, num_files);
 %record_all.final_pose_gt = zeros(3, num_files);
 %record_all.final_pose_sim = zeros(3, num_files);
 parfor i = 1:1:num_files
-    (i+0.0)/num_files
+    %(i+0.0)/num_files
     file_name = listing(i).name
     [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
     N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
@@ -72,7 +79,6 @@ parfor i = 1:1:num_files
     hand_traj_opts.interp_mode = 'spline';
     hand_traj = HandTraj(hand_traj_opts);
 
-    mu = 0.22;
     pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
     % Set initial pose.
     pushobj.pose = object_pose(1,:)';
@@ -82,6 +88,8 @@ parfor i = 1:1:num_files
     record_all{i}.init_pose_gt = object_pose(1,:)';
     record_all{i}.final_pose_gt = object_pose(end,:)';
     record_all{i}.final_pose_sim = sim_results.obj_configs(:, end);
+    record_all{i}.init_tip_pt = tip_pt(1,:)';
+    record_all{i}.final_tip_pt = tip_pt(end, :)';
 %     record_all.init_pose_gt(:, i) = object_pose(1,:)';
 %     record_all.final_pose_gt(:, i) = object_pose(end,:)';
 %     record_all.final_pose_sim(:, i) = sim_results.obj_configs(:, end);

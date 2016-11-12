@@ -35,8 +35,8 @@ shape_vertices = get_shape(query_info.shape);
 shape_vertices(end,:) = [];
 [pho] = compute_shape_avgdist_to_center(query_info.shape);
 for i = 1:1:num_files
-    (i+0.0)/num_files
-    file_name = listing(i).name
+    %(i+0.0)/num_files
+    file_name = listing(i).name;
     [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
     size(object_pose)
     N = num_samples_perfile + 3;
