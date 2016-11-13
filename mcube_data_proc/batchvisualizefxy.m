@@ -1,6 +1,6 @@
 vel = 10;
-numsamples_perfile = 10;
-surface_type = 'abs';
+numsamples_perfile = 100;
+surface_type = 'plywood';
 VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect1', vel, numsamples_perfile);
 VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect2', vel, numsamples_perfile);
 VisualizeFrictionForceMCubeData('~/pushing_data', surface_type, 'rect3', vel, numsamples_perfile);

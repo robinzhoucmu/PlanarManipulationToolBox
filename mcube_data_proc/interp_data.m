@@ -12,7 +12,7 @@ object_pose = sortrows(object_pose);
 ind_rep_time = find(object_pose(1:end-1,:) == object_pose(2:end,:));
 object_pose(ind_rep_time, :) = [];
 
-obj_pose = interp1(object_pose(:,1), object_pose(:,2:end), t_q);
-tip_pt = interp1(tip_pose(:,1), tip_pose(:,2:3), t_q);
-force = interp1(wrench(:,1), wrench(:,2:3), t_q);
+obj_pose = interp1(object_pose(:,1), object_pose(:,2:end), t_q, 'spline');
+tip_pt = interp1(tip_pose(:,1), tip_pose(:,2:3), t_q, 'spline');
+force = interp1(wrench(:,1), wrench(:,2:3), t_q, 'spline');
 end
