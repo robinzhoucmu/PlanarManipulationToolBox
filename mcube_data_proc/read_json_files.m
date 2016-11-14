@@ -38,7 +38,6 @@ for i = 1:1:num_files
     %(i+0.0)/num_files
     file_name = listing(i).name;
     [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
-    size(object_pose)
     N = num_samples_perfile + 3;
     [obj_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
     [wrench_local, twist_local, vel_tip_local, dists, vel_slip] = compute_wrench_twist_local_frame(shape_vertices, force, obj_pose, tip_pt, t_q);
