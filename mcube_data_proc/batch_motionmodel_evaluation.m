@@ -1,6 +1,6 @@
 %clear all;
 
-numsamples_perfile = 20;
+num_samples_perfile = 20;
 
 folder_name = '~/pushing_data';
 vels = [10, 20, 50, 100, 500];
