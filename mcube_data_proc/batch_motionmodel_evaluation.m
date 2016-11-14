@@ -9,7 +9,7 @@ shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip
 ls_types = {'poly4', 'quadratic'};
 mu = 0.25;
 % On average each scenario contains about 400 files.
-ratio_training = 0.25;
+ratio_training = 0.2;
 for ind_vel = 1:1:length(vels)
     for ind_surface = 1:1:length(surface_types)
         for ind_shape = 1:1:length(shape_ids)
@@ -46,11 +46,11 @@ for ind_vel = 1:1:length(vels)
                 avg_diff_disp = mean(sqrt(sum(diff_trans.^2, 1)))
                 angle_diff = compute_angle_diff(angle_sim_final, angle_gt_final);
                 avg_diff_angle = mean(abs(angle_diff))
-                
+                num_training_pairs = size(record_ls_training.wrenches, 1)
                 save(file_save, 'record_all', 'diff_trans', 'tip_trans', 'angle_diff', 'angle_gt', 'angle_sim', ...
                       'avg_tip_trans', 'avg_diff_disp', 'avg_diff_angle' ,...
                       'surface_type', 'shape_id', 'vel', 'ls_type', 'mu', 'avg_angle_change_gt', 'avg_disp_change_norm_gt', ...
-                      'record_ls_training');
+                      'record_ls_training', 'num_training_pairs');
 
             end
         end
