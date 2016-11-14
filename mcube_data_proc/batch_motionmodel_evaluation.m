@@ -20,28 +20,37 @@ for ind_vel = 1:1:length(vels)
                 vel = vels(ind_vel)
                 ls_type = ls_types{ind_ls_type}
                 
-                [record_all] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ...
+                [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ...
                 ls_type, mu, num_samples_perfile, ratio_training);
                 N = length(record_all);
                 diff_trans = zeros(2, N);
-                angle_gt = zeros(N,1);
-                angle_sim = zeros(N,1);
+                angle_gt_final = zeros(N,1);
+                angle_gt_init = zeros(N,1);
+                disp_gt_final = zeros(2, N);
+                disp_gt_init = zeros(2, N);
+                angle_sim_final = zeros(N,1);
                 tip_trans = zeros(2, N);
                 for i = 1:1:N
                     diff_trans(:,i) = record_all{i}.final_pose_gt(1:2) - record_all{i}.final_pose_sim(1:2);
-                    angle_gt(i) = mod(record_all{i}.final_pose_gt(3) + 2*pi, 2*pi);
-                    angle_sim(i) = mod(record_all{i}.final_pose_sim(3) + 2*pi, 2*pi);
+                    angle_gt_init(i) = mod(record_all{i}.init_pose_gt(3) + 2*pi, 2*pi);
+                    angle_gt_final(i) = mod(record_all{i}.final_pose_gt(3) + 2*pi, 2*pi);
+                    disp_gt_init(:,i) = record_all{i}.init_pose_gt(1:2);
+                    disp_gt_final(:,i) = record_all{i}.final_pose_gt(1:2);
+                    angle_sim_final(i) = mod(record_all{i}.final_pose_sim(3) + 2*pi, 2*pi);
                     tip_trans(:, i) = record_all{i}.final_tip_pt - record_all{i}.init_tip_pt;
                 end
                 file_save = strcat(folder_result_save, surface_type, '_', shape_id, '_', ls_type, '_v', num2str(vel))
-                avg_tip_trans = mean(sqrt(sum(tip_trans.^2, 1))) 
+                avg_tip_trans = mean(sqrt(sum(tip_trans.^2, 1)))
+                avg_angle_change_gt = mean(abs(compute_angle_diff(angle_gt_init, angle_gt_final)))
+                avg_disp_change_norm_gt = mean(sqrt(sum((disp_gt_final - disp_gt_init).^2, 1)))
                 avg_diff_disp = mean(sqrt(sum(diff_trans.^2, 1)))
-                angle_diff = compute_angle_diff(angle_sim, angle_gt);
+                angle_diff = compute_angle_diff(angle_sim_final, angle_gt_final);
                 avg_diff_angle = mean(abs(angle_diff))
                 
                 save(file_save, 'record_all', 'diff_trans', 'tip_trans', 'angle_diff', 'angle_gt', 'angle_sim', ...
                       'avg_tip_trans', 'avg_diff_disp', 'avg_diff_angle' ,...
-                      'surface_type', 'shape_id', 'vel', 'ls_type', 'mu');
+                      'surface_type', 'shape_id', 'vel', 'ls_type', 'mu', 'avg_angle_change_gt', 'avg_disp_change_norm_gt', ...
+                      'record_ls_training');
 
             end
         end
