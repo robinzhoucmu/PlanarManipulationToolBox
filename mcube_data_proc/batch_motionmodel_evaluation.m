@@ -3,14 +3,15 @@ folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_tes
 num_samples_perfile = 20;
 
 folder_name = '~/pushing_data';
-vels = [10, 20, 50, 100, 500];
+%vels = [10, 20, 50, 100, 500];
+vels = [10];
 surface_types = {'abs', 'plywood'};
 shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip2', 'ellip3', 'hex', 'butter'};
 ls_types = {'poly4', 'quadratic'};
-mu = 0.25;
+mu = 0.3;
 % On average each scenario contains about 400 files.
 ratio_training = 0.2;
-flag_uniform_pressure = 1;
+flag_uniform_pressure = 0;
 
 for ind_vel = 1:1:length(vels)
     for ind_surface = 1:1:length(surface_types)
