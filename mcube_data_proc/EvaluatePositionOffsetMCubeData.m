@@ -1,4 +1,4 @@
-function [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile, ratio_training_files)
+function [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile, ratio_training_files, flag_uniform_pressure)
 tic;
 rng(1);
 p = gcp;
@@ -15,34 +15,10 @@ end
 if (nargin < 8)
     ratio_training_files = 0.5;
 end
-file_listing = GetMCubeFileListing(folder_name, query_info);
-index_file_training = rand(length(file_listing), 1) < ratio_training_files;
-file_listing_training = file_listing(index_file_training);
-file_listing_testing = file_listing(~index_file_training);
-[all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
-all_twists_local_normalized = UnitNormalize(all_twists_local);
-num_sample_pairs = min(500, size(all_wrenches_local, 1));
-sampledindices = datasample(1:1:size(all_wrenches_local,1), num_sample_pairs,'Replace',false);
-all_wrenches_local_training = all_wrenches_local(sampledindices,:);
-all_twists_local_training = all_twists_local(sampledindices,:);
-all_twists_local_normalized_training = all_twists_local_normalized(sampledindices,:);
-% Fit model using sampled data.
-if strcmp(ls_type, 'poly4')
-    [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
-        all_twists_local_normalized_training', 1, 1, 1, 1);
-elseif strcmp(ls_type, 'quadratic')
-    [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
-        all_twists_local_normalized_training', 1, 1, 1, 1);
-else
-    error('%s type not recognized\n', ls_type);
+if (nargin < 9) 
+    flag_uniform_pressure = 0;
 end
-record_ls_training.ls_coeffs = ls_coeffs;
-record_ls_training.wrenches = all_wrenches_local_training;
-record_ls_training.twists = all_twists_local_training;
 
-num_files = length(file_listing_testing);
-
-% Construct pushobject.
 tip_radius = 0.00475;
 [pho] = compute_shape_avgdist_to_center(shape_id);
 shape_vertices = get_shape(shape_id);
@@ -52,12 +28,58 @@ shape_info.shape_id = shape_id;
 shape_info.shape_type = 'polygon';
 shape_info.shape_vertices = shape_vertices';
 shape_info.pho = pho;
+
+file_listing = GetMCubeFileListing(folder_name, query_info);
+index_file_training = rand(length(file_listing), 1) < ratio_training_files;
+file_listing_training = file_listing(index_file_training);
+file_listing_testing = file_listing(~index_file_training);
+if (~flag_uniform_pressure)
+    [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
+    all_twists_local_normalized = UnitNormalize(all_twists_local);
+    num_sample_pairs = min(500, size(all_wrenches_local, 1));
+    sampledindices = datasample(1:1:size(all_wrenches_local,1), num_sample_pairs,'Replace',false);
+    all_wrenches_local_training = all_wrenches_local(sampledindices,:);
+    all_twists_local_training = all_twists_local(sampledindices,:);
+    all_twists_local_normalized_training = all_twists_local_normalized(sampledindices,:);
+    % Fit model using sampled data.
+    if strcmp(ls_type, 'poly4')
+        [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
+            all_twists_local_normalized_training', 1, 1, 1, 1);
+    elseif strcmp(ls_type, 'quadratic')
+        [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
+            all_twists_local_normalized_training', 1, 1, 1, 1);
+    else
+        error('%s type not recognized\n', ls_type);
+    end
+    record_ls_training.wrenches = all_wrenches_local_training;
+    record_ls_training.twists = all_twists_local_training;
+else
+    options_support_pts.mode = 'polygon';
+    options_support_pts.vertices = shape_info.shape_vertices';
+    num_supports_pts = 50;
+    support_pts = GridSupportPoint(num_supports_pts, options_support_pts); % N*2.
+    %num_supports_pts = size(support_pts, 1);
+    options_pressure.mode = 'uniform';
+    pressure_weights = AssignPressure(support_pts, options_pressure);
+    result_ls_training.support_pts = support_pts;
+    result_ls_training.pressure_weights = pressure_weights;
+end
+
+num_files = length(file_listing_testing);
+
+% Construct pushobject
+if (~flag_uniform_pressure)
 % Create the push object with given ls_type and coefficient.
-pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
+    pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
+else
+    pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+    pushobj.FitLS(ls_type, 150, 0.1);    
+end
+ls_coeffs = pushobj.ls_coeffs;
+record_ls_training.ls_coeffs = pushobj.ls_coeffs;
+record_ls_training.ls_type = pushobj.ls_type;
 % Construct a single round point pusher with specified radius.
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
-
-%mu = 0.22;
 
 record_all = cell(num_files, 1);
 %record_all.init_pose_gt = zeros(3, num_files);

@@ -1,5 +1,5 @@
 %clear all;
-folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test/';
+folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test_uniformpressure/';
 num_samples_perfile = 20;
 
 folder_name = '~/pushing_data';
@@ -10,6 +10,8 @@ ls_types = {'poly4', 'quadratic'};
 mu = 0.25;
 % On average each scenario contains about 400 files.
 ratio_training = 0.2;
+flag_uniform_pressure = 1;
+
 for ind_vel = 1:1:length(vels)
     for ind_surface = 1:1:length(surface_types)
         for ind_shape = 1:1:length(shape_ids)
@@ -21,7 +23,7 @@ for ind_vel = 1:1:length(vels)
                 ls_type = ls_types{ind_ls_type}
                 
                 [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ...
-                ls_type, mu, num_samples_perfile, ratio_training);
+                ls_type, mu, num_samples_perfile, ratio_training, flag_uniform_pressure);
                 N = length(record_all);
                 diff_trans = zeros(2, N);
                 angle_gt_final = zeros(N,1);
@@ -46,11 +48,11 @@ for ind_vel = 1:1:length(vels)
                 avg_diff_disp = mean(sqrt(sum(diff_trans.^2, 1)))
                 angle_diff = compute_angle_diff(angle_sim_final, angle_gt_final);
                 avg_diff_angle = mean(abs(angle_diff))
-                num_training_pairs = size(record_ls_training.wrenches, 1)
+                %num_training_pairs = size(record_ls_training.wrenches, 1)
                 save(file_save, 'record_all', 'diff_trans', 'tip_trans', 'angle_diff', 'angle_gt', 'angle_sim', ...
                       'avg_tip_trans', 'avg_diff_disp', 'avg_diff_angle' ,...
                       'surface_type', 'shape_id', 'vel', 'ls_type', 'mu', 'avg_angle_change_gt', 'avg_disp_change_norm_gt', ...
-                      'record_ls_training', 'num_training_pairs');
+                      'record_ls_training');
 
             end
         end
