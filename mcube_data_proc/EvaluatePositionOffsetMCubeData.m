@@ -1,4 +1,4 @@
-function [record_all] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile, ratio_training_files)
+function [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile, ratio_training_files)
 tic;
 rng(1);
 p = gcp;
@@ -23,16 +23,22 @@ file_listing_testing = file_listing(~index_file_training);
 all_twists_local_normalized = UnitNormalize(all_twists_local);
 num_sample_pairs = min(500, size(all_wrenches_local, 1));
 sampledindices = datasample(1:1:size(all_wrenches_local,1), num_sample_pairs,'Replace',false);
+all_wrenches_local_training = all_wrenches_local(sampledindices,:);
+all_twists_local_training = all_twists_local(sampledindices,:);
+all_twists_local_normalized_training = all_twists_local_normalized(sampledindices,:);
 % Fit model using sampled data.
 if strcmp(ls_type, 'poly4')
-    [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local(sampledindices,:)', ...
-        all_twists_local_normalized(sampledindices,:)', 1, 1, 1, 1);
+    [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
+        all_twists_local_normalized_training', 1, 1, 1, 1);
 elseif strcmp(ls_type, 'quadratic')
-    [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local(sampledindices,:)', ...
-        all_twists_local_normalized(sampledindices,:)', 1, 1, 1, 1);
+    [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
+        all_twists_local_normalized_training', 1, 1, 1, 1);
 else
     error('%s type not recognized\n', ls_type);
 end
+record_ls_training.ls_coeffs = ls_coeffs;
+record_ls_training.wrenches = all_wrenches_local_training;
+record_ls_training.twists = all_twists_local_training;
 
 num_files = length(file_listing_testing);
 
