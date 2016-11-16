@@ -18,7 +18,8 @@ end
 if (nargin < 9) 
     flag_uniform_pressure = 0;
 end
-
+weight_wrench = 1;
+weight_twist = 5;
 tip_radius = 0.00475;
 [pho] = compute_shape_avgdist_to_center(shape_id);
 shape_vertices = get_shape(shape_id);
@@ -44,10 +45,10 @@ if (~flag_uniform_pressure)
     % Fit model using sampled data.
     if strcmp(ls_type, 'poly4')
         [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', 1, 1, 1, 1);
+            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 0);
     elseif strcmp(ls_type, 'quadratic')
         [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', 1, 1, 1, 1);
+            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 0);
     else
         error('%s type not recognized\n', ls_type);
     end
@@ -116,6 +117,7 @@ end
 ct_mu = ct_mu + 1;
 end
 mu_best
+val_best / length(file_listing_training)
 record_ls_training.mu_best = mu_best;
 
 % Record testing result.
