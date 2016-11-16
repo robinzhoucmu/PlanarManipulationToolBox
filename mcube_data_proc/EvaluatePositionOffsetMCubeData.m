@@ -34,8 +34,9 @@ file_listing = GetMCubeFileListing(folder_name, query_info);
 index_file_training = rand(length(file_listing), 1) < ratio_training_files;
 file_listing_training = file_listing(index_file_training);
 file_listing_testing = file_listing(~index_file_training);
-% for debugging. Let's only use 20% of the testing files. 
-file_listing_testing = file_listing_testing(1:ceil(length(file_listing_testing)/10));
+% for debugging. Let's only use 10% of the testing files. 
+rand_perm = randperm(length(file_listing_testing));
+file_listing_testing = file_listing_testing(rand_perm(1:ceil(length(file_listing_testing) / 10)));
 
 if (~flag_uniform_pressure)
     [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
