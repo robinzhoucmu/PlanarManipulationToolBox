@@ -108,8 +108,8 @@ parfor i = 1:1:length(file_listing_training)
     sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu_trials(ct_mu));
     [sim_results] = sim_inst.RollOut();
     alpha = mod(sim_results.obj_configs(3,end) + 10 * pi, 2*pi);
-    beta = mod(object_pose(3,end) + 10 *pi, 2*pi);
-    all_dev(i) = norm(abs(sim_results.obj_configs(1:2,end) - object_pose(1:2,end))) + ...
+    beta = mod(object_pose(end,3) + 10 *pi, 2*pi);
+    all_dev(i) = norm(sim_results.obj_configs(1:2,end) - object_pose(1:2,end)) + ...
         pushobj.pho * abs(compute_angle_diff(alpha, beta));
 end
 if (sum(all_dev) < val_best)
