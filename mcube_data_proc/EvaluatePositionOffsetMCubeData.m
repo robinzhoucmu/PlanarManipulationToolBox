@@ -19,7 +19,7 @@ if (nargin < 9)
     flag_uniform_pressure = 0;
 end
 weight_wrench = 1;
-weight_twist = 5;
+weight_twist = 2;
 tip_radius = 0.00475;
 [pho] = compute_shape_avgdist_to_center(shape_id);
 shape_vertices = get_shape(shape_id);
@@ -34,6 +34,9 @@ file_listing = GetMCubeFileListing(folder_name, query_info);
 index_file_training = rand(length(file_listing), 1) < ratio_training_files;
 file_listing_training = file_listing(index_file_training);
 file_listing_testing = file_listing(~index_file_training);
+% for debugging. Let's only use 20% of the testing files. 
+file_listing_testing = file_listing_testing(1:ceil(length(file_listing_testing)/10));
+
 if (~flag_uniform_pressure)
     [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
     all_twists_local_normalized = UnitNormalize(all_twists_local);
@@ -89,7 +92,7 @@ ct_mu = 1;
 while ct_mu <= length(mu_trials)
     all_dev = zeros(length(file_listing_training), 1);
 parfor i = 1:1:length(file_listing_training)
-     file_name = file_listing_testing(i).name;
+    file_name = file_listing_training(i).name;
     [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
     N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
     [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
