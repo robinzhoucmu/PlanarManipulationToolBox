@@ -1,9 +1,11 @@
 file_name_1 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.349.json';
 file_name_2 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=1.000_s=0.300_t=0.000.json';
-file_name_3 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=2.000_s=0.200_t=0.698.json';
+file_name_3 = 'motion_surface=plywood_shape=ellip1_a=0_v=10_i=0.000_s=0.025_t=-0.698.json';
 
 flag_plot = 1;
-shape_id = 'rect1';
+%shape_id = 'rect1';
+shape_id = 'ellip1';
+addpath(strcat('~/pushing_data/', 'plywood/', shape_id, '/'));
 [object_pose, tip_pose, wrench] = get_and_plot_data(file_name_3, shape_id, flag_plot);
 N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
 [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
@@ -21,8 +23,13 @@ shape_info.shape_vertices = shape_vertices';
 shape_info.pho = pho;
 % Uniformly sample points in the polygon area 
 % and assign uniform pressure.  
+
 options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
+
+%options_support_pts.mode = 'rim';
+%options_support_pts.range = pho;
+
 num_supports_pts = 50;
 support_pts = GridSupportPoint(num_supports_pts, options_support_pts); % N*2.
 num_supports_pts = size(support_pts, 1);
@@ -49,7 +56,7 @@ hand_traj = HandTraj(hand_traj_opts);
 
 %% Simulation.
 tic;
-mu = 0.22;
+mu = 0.15;
 pushobj.pose = object_pose(1,:)';
 %sim_inst = ForwardSimulation(pushobj, hand_traj, hand_single_finger, mu, dt_collision);
 sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu);

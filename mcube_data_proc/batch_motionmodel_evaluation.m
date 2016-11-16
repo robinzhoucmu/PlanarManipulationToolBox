@@ -1,14 +1,14 @@
 %clear all;
-folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test_uniformpressure/';
+folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test_searchmu/';
 num_samples_perfile = 20;
 
 folder_name = '~/pushing_data';
 %vels = [10, 20, 50, 100, 500];
 vels = [10];
 surface_types = {'abs', 'plywood'};
-shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip2', 'ellip3', 'hex', 'butter'};
+shape_ids = {'hex', 'ellip1', 'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip2', 'ellip3', 'butter'};
 ls_types = {'poly4', 'quadratic'};
-mu = 0.3;
+mu = 0.2;
 % On average each scenario contains about 400 files.
 ratio_training = 0.2;
 flag_uniform_pressure = 0;
@@ -50,7 +50,7 @@ for ind_vel = 1:1:length(vels)
                 angle_diff = compute_angle_diff(angle_sim_final, angle_gt_final);
                 avg_diff_angle = mean(abs(angle_diff))
                 %num_training_pairs = size(record_ls_training.wrenches, 1)
-                save(file_save, 'record_all', 'diff_trans', 'tip_trans', 'angle_diff', 'angle_gt', 'angle_sim', ...
+                save(file_save, 'record_all', 'diff_trans', 'tip_trans', 'angle_diff', 'angle_gt_init', 'angle_gt_final', 'angle_sim_final', ...
                       'avg_tip_trans', 'avg_diff_disp', 'avg_diff_angle' ,...
                       'surface_type', 'shape_id', 'vel', 'ls_type', 'mu', 'avg_angle_change_gt', 'avg_disp_change_norm_gt', ...
                       'record_ls_training');

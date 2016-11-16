@@ -80,13 +80,47 @@ record_ls_training.ls_coeffs = pushobj.ls_coeffs;
 record_ls_training.ls_type = pushobj.ls_type;
 % Construct a single round point pusher with specified radius.
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
+% Grid search over mu to find the best value on training data.
+mu_trials = [mu-0.1; mu - 0.05; mu; mu+0.05; mu + 0.1];
+mu_best = 0;
+val_best = 1e+3;
+ct_mu = 1;
+while ct_mu <= length(mu_trials)
+    all_dev = zeros(length(file_listing_training), 1);
+parfor i = 1:1:length(file_listing_training)
+     file_name = file_listing_testing(i).name;
+    [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
+    N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
+    [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
+    tip_pose = [tip_pt,zeros(length(t_q), 1)];
+    
+    % Specify its trajectory.
+    hand_traj_opts = [];
+    hand_traj_opts.q = tip_pose';
+    hand_traj_opts.t = bsxfun(@minus, t_q, t_q(1));
+    hand_traj_opts.interp_mode = 'spline';
+    hand_traj = HandTraj(hand_traj_opts);
 
+    pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
+    % Set initial pose.
+    pushobj.pose = object_pose(1,:)';
+    sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu_trials(ct_mu));
+    [sim_results] = sim_inst.RollOut();
+    all_dev(i) = sum(abs(sim_results.obj_configs(1:2,end) - object_pose(1:2,end))) + ...
+        pushobj.pho * abs(compute_angle_diff(sim_results.obj_configs(3,end), object_pose(3,end)));
+end
+if (sum(all_dev) < val_best)
+    val_best = sum(all_dev);
+    mu_best = mu_trials(ct_mu);
+end
+ct_mu = ct_mu + 1;
+end
+mu_best
+record_ls_training.mu_best = mu_best;
+
+% Record testing result.
 record_all = cell(num_files, 1);
-%record_all.init_pose_gt = zeros(3, num_files);
-%record_all.final_pose_gt = zeros(3, num_files);
-%record_all.final_pose_sim = zeros(3, num_files);
 parfor i = 1:1:num_files
-    %(i+0.0)/num_files
     file_name = file_listing_testing(i).name;
     [object_pose, tip_pose, wrench] = get_and_plot_data(file_name, query_info.shape, 0);
     N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
@@ -103,7 +137,7 @@ parfor i = 1:1:num_files
     pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
     % Set initial pose.
     pushobj.pose = object_pose(1,:)';
-    sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu);
+    sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu_best);
     [sim_results] = sim_inst.RollOut();
 
     record_all{i}.init_pose_gt = object_pose(1,:)';

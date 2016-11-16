@@ -32,7 +32,7 @@ if do_plot
     hold on;
     tip_radius = 0.00475;
     gamma = linspace(0,2*pi);
-    plot_interval = 50;
+    plot_interval = 20;
     for i = 1:plot_interval:length(tip_pose(:,1))
          plot(tip_radius*cos(gamma)+tip_pose(i,2),tip_radius*sin(gamma)+tip_pose(i,3), 'k'); 
     end
@@ -51,10 +51,11 @@ if do_plot
     %Plot force over time
 %     subplot(1,2,2); hold on;
 % 
-%     plot(wrench(:,1)-wrench(1,1), wrench(:,2), 'b');
-%     plot(wrench(:,1)-wrench(1,1), wrench(:,3), 'g');
-%     plot(wrench(:,1)-wrench(1,1), wrench(:,4), 'r');
-%     legend('x direction', 'y direction', 'torque')
-%     title('Force profile over time')
+    figure; hold on;
+    plot(wrench(:,1)-wrench(1,1), wrench(:,2), 'b');
+    plot(wrench(:,1)-wrench(1,1), wrench(:,3), 'g');
+    plot(wrench(:,1)-wrench(1,1), wrench(:,4), 'r');
+    legend('x direction', 'y direction', 'torque')
+    title('Force profile over time')
 end
 end
