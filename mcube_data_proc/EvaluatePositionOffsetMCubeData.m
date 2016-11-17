@@ -86,7 +86,7 @@ record_ls_training.ls_type = pushobj.ls_type;
 % Construct a single round point pusher with specified radius.
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 % Grid search over mu to find the best value on training data.
-mu_trials = [mu-0.075; mu - 0.05; mu -0.025; mu; mu+0.025; mu + 0.05; mu +0.075];
+mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
 mu_best = 0;
 val_best = 1e+3;
 ct_mu = 1;
