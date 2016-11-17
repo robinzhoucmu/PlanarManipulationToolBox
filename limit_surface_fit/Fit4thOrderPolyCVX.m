@@ -47,7 +47,7 @@ G = [x.^3; x.^2.*y; x.^2.*z; x.*y.^2; x.*y.*z; x.*z.^2; y.^3; y.^2.*z; y.*z.^2; 
 scaling_min = eps;
  
 if (flag_convex == 1)
-    cvx_begin 
+    cvx_begin quiet
         cvx_precision high
         variable Q(9,9) semidefinite
         variable v(15) %nonnegative

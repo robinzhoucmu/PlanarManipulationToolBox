@@ -23,7 +23,7 @@ end
 [d, n] = size(F);
 scale_min = eps;
 if (flag_convex)
-    cvx_begin %quiet
+    cvx_begin quiet
         variable A(d,d) semidefinite
         variables xi(n) s(n) delta(n)
     minimize( lambda * norm(A, 'fro') + beta * sum(xi)/n + gamma * sum(delta)/n)
