@@ -19,7 +19,7 @@ if (nargin < 9)
     flag_uniform_pressure = 0;
 end
 weight_wrench = 1;
-weight_twist = 2;
+weight_twist = 1;
 tip_radius = 0.00475;
 [pho] = compute_shape_avgdist_to_center(shape_id);
 shape_vertices = get_shape(shape_id);
@@ -36,12 +36,12 @@ file_listing_training = file_listing(index_file_training);
 file_listing_testing = file_listing(~index_file_training);
 % for debugging. Let's only use 10% of the testing files. 
 rand_perm = randperm(length(file_listing_testing));
-file_listing_testing = file_listing_testing(rand_perm(1:ceil(length(file_listing_testing) / 10)));
-
+file_listing_testing = file_listing_testing(rand_perm(1:ceil(length(file_listing_testing))));
+num_training_data = 600;
 if (~flag_uniform_pressure)
     [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
     all_twists_local_normalized = UnitNormalize(all_twists_local);
-    num_sample_pairs = min(500, size(all_wrenches_local, 1));
+    num_sample_pairs = min(num_training_data, size(all_wrenches_local, 1));
     sampledindices = datasample(1:1:size(all_wrenches_local,1), num_sample_pairs,'Replace',false);
     all_wrenches_local_training = all_wrenches_local(sampledindices,:);
     all_twists_local_training = all_twists_local(sampledindices,:);
@@ -49,10 +49,10 @@ if (~flag_uniform_pressure)
     % Fit model using sampled data.
     if strcmp(ls_type, 'poly4')
         [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 0);
+            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
     elseif strcmp(ls_type, 'quadratic')
         [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 0);
+            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
     else
         error('%s type not recognized\n', ls_type);
     end

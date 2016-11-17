@@ -5,7 +5,8 @@ query_info.velocity = vel;
 if (nargin < 5)
     num_samples_perfile = 20;
 end
-[all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(folder_name, query_info, num_samples_perfile); 
+file_listing = GetMCubeFileListing(folder_name, query_info);
+[all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing, shape_id, num_samples_perfile); 
 % If the slipping component is less than 5% of the pushing velocity, then
 % we consider it as sticking.
 vel_sticking_threshold = (query_info.velocity/1000) * 0.05;
