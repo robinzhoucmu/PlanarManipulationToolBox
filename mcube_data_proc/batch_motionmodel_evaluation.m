@@ -1,5 +1,8 @@
 clear all;
+rng(1);
+
 folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test_searchmu2_filter/wrench1twist1_20percenttraining';
+num_runs = 10;
 num_samples_perfile = 10;
 
 folder_name = '~/pushing_data';
@@ -12,7 +15,7 @@ mu = 0.25;
 % On average each scenario contains about 400 files.
 ratio_training = 0.2;
 flag_uniform_pressure = 0;
-
+for ind_run = 1:1:num_runs
 for ind_vel = 1:1:length(vels)
     for ind_surface = 1:1:length(surface_types)
         for ind_shape = 1:1:length(shape_ids)
@@ -42,7 +45,7 @@ for ind_vel = 1:1:length(vels)
                     angle_sim_final(i) = mod(record_all{i}.final_pose_sim(3) + 2*pi, 2*pi);
                     tip_trans(:, i) = record_all{i}.final_tip_pt - record_all{i}.init_tip_pt;
                 end
-                file_save = strcat(folder_result_save, surface_type, '_', shape_id, '_', ls_type, '_v', num2str(vel))
+                file_save = strcat(folder_result_save, surface_type, '_', shape_id, '_', ls_type, '_v', num2str(vel), '_run', num2str(ind_run));
                 avg_tip_trans = mean(sqrt(sum(tip_trans.^2, 1)))
                 avg_angle_change_gt = mean(abs(compute_angle_diff(angle_gt_init, angle_gt_final)))
                 avg_disp_change_norm_gt = mean(sqrt(sum((disp_gt_final - disp_gt_init).^2, 1)))
@@ -58,4 +61,5 @@ for ind_vel = 1:1:length(vels)
             end
         end
     end
+end
 end

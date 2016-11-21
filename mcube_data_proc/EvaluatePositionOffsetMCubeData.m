@@ -1,6 +1,5 @@
 function [record_all, record_ls_training] = EvaluatePositionOffsetMCubeData(folder_name, surface_type, shape_id, vel, ls_type, mu, num_samples_perfile, ratio_training_files, flag_uniform_pressure)
 tic;
-rng(1);
 p = gcp;
 if (isempty(p))
     num_physical_cores = feature('numcores');
