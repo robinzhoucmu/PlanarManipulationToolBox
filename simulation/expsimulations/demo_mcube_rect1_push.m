@@ -1,12 +1,12 @@
 file_name_1 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=0.000_s=0.000_t=0.349.json';
 file_name_2 = 'motion_surface=plywood_shape=rect1_a=0_v=10_i=1.000_s=0.300_t=0.000.json';
 file_name_3 = 'motion_surface=plywood_shape=ellip1_a=0_v=10_i=0.000_s=0.025_t=-0.698.json';
-
+file_name_test = 'motion_surface=delrin_shape=ellip1_a=0_v=10_i=0.000_s=0.525_t=0.698.json';
 flag_plot = 1;
 %shape_id = 'rect1';
 shape_id = 'ellip1';
-addpath(strcat('~/pushing_data/', 'plywood/', shape_id, '/'));
-[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_3, shape_id, flag_plot);
+addpath(strcat('~/pushing_data/', 'delrin/', shape_id, '/'));
+[object_pose, tip_pose, wrench] = get_and_plot_data(file_name_test, shape_id, flag_plot);
 N = floor((tip_pose(end,1) - tip_pose(1,1)) / 0.01);
 [object_pose, tip_pt, force, t_q] = interp_data(object_pose, tip_pose, wrench, N);
 tip_pose = [tip_pt,zeros(length(t_q), 1)];
@@ -40,9 +40,25 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 %drawnow;
 % limit surface fitting based on pressure distribution.
 ls_type = 'poly4';
+ls_coeff_test = [0.146370788404678
+   0.113197964421117
+   0.278638393573682
+   0.058360895230491
+   0.026172121870120
+  -0.039808858375788
+   0.052015077985983
+  -0.120560048277458
+   0.073685879884696
+   0.177299808465202
+   0.620482600921318
+   1.024614815650334
+   0.016548222766705
+   0.029731679316744
+  -0.278834553794510];
+pushobj = PushedObject([],[],shape_info,ls_type, ls_coeff_test);
 % Uncomment the following two lines if you first run this file. 
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-pushobj.FitLS(ls_type, 150, 0.1);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+%pushobj.FitLS(ls_type, 150, 0.1);
 % Specify the initial pose of the object.
 pushobj.pose = object_pose(1,2:end)';
 %% Construct the hand and its trajectory.
@@ -66,7 +82,7 @@ toc;
 num_rec_configs = size(sim_results.obj_configs, 2);
 figure;
 hold on;
-seg_size = 20;
+seg_size = 10;
 for i = 1:1:num_rec_configs
     if mod(i, seg_size) == 1
     % Plot the square object.

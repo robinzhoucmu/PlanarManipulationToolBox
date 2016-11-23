@@ -45,6 +45,7 @@ if do_plot
             oriented_shape(j,:) = shape(j,:)*rotation_matrix;
         end
         plot(oriented_shape(:,1)+object_pose(i,2), oriented_shape(:,2) + object_pose(i,3), 'r');
+        plot(object_pose(i,2), object_pose(i,3), 'b+');
     end
     %title('Motion of the object and the pusher in the robot frame')
     axis equal;

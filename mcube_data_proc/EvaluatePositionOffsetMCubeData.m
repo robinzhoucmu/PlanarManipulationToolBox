@@ -17,6 +17,7 @@ end
 if (nargin < 9) 
     flag_uniform_pressure = 0;
 end
+weight_angle_to_disp = 1;
 weight_wrench = 1;
 weight_twist = 1;
 tip_radius = 0.00475;
@@ -40,7 +41,7 @@ num_training_data = 600;
 if (~flag_uniform_pressure)
     [all_wrenches_local, all_twists_local, vel_tip_local, dists, vel_slip] = read_json_files(file_listing_training, query_info.shape, num_samples_perfile); 
     all_twists_local_normalized = UnitNormalize(all_twists_local);
-    num_sample_pairs = min(num_training_data, size(all_wrenches_local, 1));
+    num_sample_pairs = min(num_training_data, size(all_wrenches_local, 1))
     sampledindices = datasample(1:1:size(all_wrenches_local,1), num_sample_pairs,'Replace',false);
     all_wrenches_local_training = all_wrenches_local(sampledindices,:);
     all_twists_local_training = all_twists_local(sampledindices,:);
@@ -86,6 +87,7 @@ record_ls_training.ls_type = pushobj.ls_type;
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 % Grid search over mu to find the best value on training data.
 mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
+%mu_trials = [mu];
 mu_best = 0;
 val_best = 1e+3;
 ct_mu = 1;
@@ -113,7 +115,7 @@ parfor i = 1:1:length(file_listing_training)
     alpha = mod(sim_results.obj_configs(3,end) + 10 * pi, 2*pi);
     beta = mod(object_pose(end,3) + 10 *pi, 2*pi);
     all_dev(i) =  norm(sim_results.obj_configs(1:2,end) - object_pose(end,1:2)') + ...
-        pushobj.pho * abs(compute_angle_diff(alpha, beta))
+       weight_angle_to_disp * pushobj.pho * abs(compute_angle_diff(alpha, beta))
 end
 if (sum(all_dev) < val_best)
     val_best = sum(all_dev);
@@ -152,6 +154,7 @@ parfor i = 1:1:num_files
     record_all{i}.final_pose_sim = sim_results.obj_configs(:, end);
     record_all{i}.init_tip_pt = tip_pt(1,:)';
     record_all{i}.final_tip_pt = tip_pt(end, :)';
+    record_all{i}.file_name = file_name;
 %     record_all.init_pose_gt(:, i) = object_pose(1,:)';
 %     record_all.final_pose_gt(:, i) = object_pose(end,:)';
 %     record_all.final_pose_sim(:, i) = sim_results.obj_configs(:, end);

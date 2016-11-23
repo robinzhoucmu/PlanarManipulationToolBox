@@ -28,7 +28,8 @@ for i = 1:1:num_files
     all_vel_slip((i-1) * num_samples_perfile+1: i*num_samples_perfile, :) = vel_slip(2:end-1);
 end
 %Remove close-to-static moves.
-index_static = find(sqrt(sum(all_twists_local.^2,2)) < 0.001);
+%index_static = find(sqrt(sum(all_twists_local.^2,2)) < 0.001);
+index_static = find(sqrt(sum(all_twists_local.^2,2)) < 0.005);
 all_wrenches_local(index_static,:) = [];
 all_twists_local(index_static,:) = [];
 all_vel_tip_local(index_static, :) = [];
