@@ -1,16 +1,16 @@
 clear all;
 rng(1);
 
-folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu_r2/wrench1twist1_30percenttraining';
+folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu/wrench1twist1_30percenttraining';
 num_runs = 10;
-num_samples_perfile = 2;
+num_samples_perfile = 5;
 
 folder_name = '~/pushing_data';
 %vels = [10, 20, 50, 100, 500];
 vels = [10];
 surface_types = {'delrin', 'abs', 'plywood'};
-%shape_ids = {'ellip1', 'hex', 'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip2', 'ellip3', 'butter'};
-shape_ids = {'ellip1'};
+shape_ids = {'ellip1', 'hex', 'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip2', 'ellip3', 'butter'};
+%shape_ids = {'ellip1'};
 ls_types = {'poly4', 'quadratic'};
 mu = 0.25;
 % On average each scenario contains about 400 files.
