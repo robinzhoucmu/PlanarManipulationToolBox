@@ -9,7 +9,8 @@
 % t_s: sampled signal time_stamp (uniform rate)
 function [y, t_s] = FIRFilter(x, t, N, Fp)
 if nargin == 2
-N   = 350;              % FIR filter order
+%N   = 350;              % FIR filter order
+N = 250
 Fp = 0.10;             % passband-edge frequency
 end
 
