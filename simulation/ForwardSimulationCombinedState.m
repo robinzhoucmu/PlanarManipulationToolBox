@@ -121,7 +121,7 @@ classdef ForwardSimulationCombinedState < handle
                     contact_info.obj_status = 'jammed';
                     contact_info.obj_config_dot = zeros(3,1);
                 end
-                contact_info.obj_status
+                %contact_info.obj_status
                 %contact_info.obj_config_dot
                 %obj.pushobj.pose
             else

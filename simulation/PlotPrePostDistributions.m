@@ -1,8 +1,8 @@
-function [h1,h2] = PlotPrePostDistributions(sim_results_all, pho, theta_min, theta_max)
-if (nargin < 3)
+function [h1,h2] = PlotPrePostDistributions(sim_results_all, pho, num_sides, theta_min, theta_max)
+if (nargin < 4)
     theta_min = -1e+4;
 end
-if (nargin < 4)
+if (nargin < 5)
     theta_max = 1e+4;
 end
 h1 = figure;
@@ -10,6 +10,7 @@ h2 = figure;
 num_poses = length(sim_results_all);
 ct_roc = 0;
 ct_tot = 0;
+angle_symmetry = 2 * pi / num_sides;
 for ind_pose = 1:1:num_poses
     if (sim_results_all{ind_pose}.obj_configs(3,1) >= theta_min) & (sim_results_all{ind_pose}.obj_configs(3,1) <= theta_max)
         ct_tot = ct_tot + 1;
@@ -17,7 +18,12 @@ for ind_pose = 1:1:num_poses
         q_end = sim_results_all{ind_pose}.obj_configs(:,end);
         q_init(1:2) = q_init(1:2) / pho;
         q_end(1:2) = q_end(1:2) / pho;
-        if (norm(q_end(1:2)) < 1e-2) & ((abs(q_end(3)) < 0.075) | (abs(q_end(3) - 2*pi/3) < 0.075)  | (abs(q_end(3) + 2*pi/3) < 0.075))
+        res_xy = norm(q_end(1:2))
+        res_angle = mod(q_end(3), angle_symmetry)
+%         if (norm(q_end(1:2)) < 1e-2) & ((abs(q_end(3)) < 0.075) | (abs(q_end(3) - 2*pi/3) < angle_symmetry)  | (abs(q_end(3) + 2*pi/3) < 0.075))
+%             color = 'r';
+%             ct_roc = ct_roc + 1;
+        if (res_xy < 1e-2) && (res_angle < 5 * pi / 180)
             color = 'r';
             ct_roc = ct_roc + 1;
         else

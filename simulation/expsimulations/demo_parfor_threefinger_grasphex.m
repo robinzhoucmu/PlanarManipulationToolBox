@@ -7,13 +7,13 @@ if (isempty(p))
     parpool(num_physical_cores);
 end
 le = 0.02;
-mu = 0.1;
+mu = 0.2;
 %% Specify hand trajectory.
 % Way points
 %% Construct hand.
 finger_radius = 0.002;
-q_start = [0; 0; pi/3;  (2/sqrt(3) + 0.1) * le + finger_radius];
-q_end = [0; 0; pi/3; le/4 + finger_radius];
+q_start = [0; 0; 0;  2.25 * le + finger_radius];
+q_end = [0; 0; 0; le * sqrt(3)/2 + finger_radius];
 
 num_way_q = 100;
 dim_q = length(q_start);
@@ -26,32 +26,28 @@ t_q = linspace(0, t_max, num_way_q);
 hand_traj_opts.q = waypoints_hand_q;
 hand_traj_opts.t = t_q;
 hand_traj_opts.interp_mode = 'spline';
-% First vertex is pi/2.
-[pushobj_tri,shape_info] = CreateNSidedPolygonPushObject(3, le, 'quadratic');
+ls_type = 'poly4';
+num_sides = 6;
+[pushobj_hex,shape_info] = CreateNSidedPolygonPushObject(num_sides, le, ls_type);
 
 tic;
-num_poses_xy = 400;
-num_poses_theta = 21; 
+num_poses_xy = 10;
+num_poses_theta = 11; 
 num_poses = num_poses_xy * num_poses_theta;
-sample_radius = le / 2;
-sample_angle = pi * 2 / 3;
+sample_radius = le;
+sample_angle = pi * 2.0 / 6;
 sampled_ic_poses = cylindricalsampling(sample_radius, sample_angle, num_poses_xy, num_poses_theta);
 sd = num_poses^(1/3);
 sim_results_all = cell(num_poses, 1);
 parfor ind_pose = 1:1:num_poses
-    pushobj = PushedObject(pushobj_tri.support_pts, pushobj_tri.pressure_weights, ...
-        shape_info, pushobj_tri.ls_type, pushobj_tri.ls_coeffs);
-    % Sample a pose uniformly.
-    %pushobj.pose = [le/sqrt(3) * 2 * (rand() - 0.5); le/sqrt(3) * 2  * (rand() - 0.5);  pi/3 * 2 * (rand() -0.5)];
-    %k1 = floor(ind_pose / sd^2);
-    %k2 = floor((ind_pose - k1*sd^2) / sd);
-    %k3 = floor(ind_pose - k1*sd^2 - k2*sd);
-    %pushobj.pose = [le/sqrt(3) * 2*(k1 / sd - 0.5); le/sqrt(3) * 2*(k2 / sd - 0.5);  pi/3 * 2*(k3 / sd - 0.5)];
+    pushobj = PushedObject(pushobj_hex.support_pts, pushobj_hex.pressure_weights, ...
+        shape_info, pushobj_hex.ls_type, pushobj_hex.ls_coeffs);
     pushobj.pose = sampled_ic_poses(:, ind_pose);
     hand_three_finger = ConstructThreeFingersOneDofHand(finger_radius);
     hand_traj = HandTraj(hand_traj_opts);
     sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_three_finger, mu);
     sim_results_all{ind_pose} = sim_inst.RollOut();
+    ind_pose
 end
 toc;
 q_inits = zeros(3, num_poses);
@@ -61,8 +57,8 @@ for ind_pose = 1:1:num_poses
         q_ends(:, ind_pose) = sim_results_all{ind_pose}.obj_configs(:,end);
 end
 if (flag_plot)
-    [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_tri.pho,0, 0);
-    [h3] = PlotObjectConfigurationTrajectory(sim_results_all, pushobj_tri.pho,0,0);
+    [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_hex.pho,0, 0);
+    [h3] = PlotObjectConfigurationTrajectory(sim_results_all, pushobj_hex.pho,0,0);
 %     figure; seg = 10; 
 %     ks = 4;
 %     for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
@@ -73,7 +69,7 @@ if (flag_plot)
 end
 str_datetime = datestr(datetime('now'));
 str_file_to_save = strcat('data_logs/', str_datetime);
-save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj_tri');
+save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj_hex');
 % hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
 % for ind_pose = 1:1:num_poses
 %     sim_results = sim_results_all{ind_pose};
