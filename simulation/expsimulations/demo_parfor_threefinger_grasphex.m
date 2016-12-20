@@ -31,7 +31,7 @@ num_sides = 6;
 [pushobj_hex,shape_info] = CreateNSidedPolygonPushObject(num_sides, le, ls_type);
 
 tic;
-num_poses_xy = 10;
+num_poses_xy = 100;
 num_poses_theta = 11; 
 num_poses = num_poses_xy * num_poses_theta;
 sample_radius = le;
