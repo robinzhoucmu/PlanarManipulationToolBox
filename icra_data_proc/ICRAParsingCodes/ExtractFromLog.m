@@ -60,8 +60,9 @@ for i = 1:1:num_pushes
     wrench(:,3) = wrench(:,3) / pho;
     record_log.wrench{i} = wrench;  
     % Trajectory video generation.
-    %vd_file = strcat('videos/out', int2str(i), '.avi');
-    %finger_2d_traj = robot_traj(1:2,:)'; [h] = check2dtraj_visualize(vd_file, obj_start_pos', obj_end_pos', finger_2d_traj/unit_scale);
+    %vd_file = strcat('video_logs/out', int2str(i), '.avi');
+    %finger_2d_traj = robot_traj(1:2,:)'; 
+    %[h] = check2dtraj_visualize(vd_file, obj_start_pos', obj_end_pos', finger_2d_traj/unit_scale);
     
     % Compute average wrench as the pushing force and normalized slider velocity. 
     push_wrenches(i,:) = mean(wrench);
