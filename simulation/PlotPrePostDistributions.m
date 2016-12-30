@@ -18,7 +18,7 @@ for ind_pose = 1:1:num_poses
         q_end = sim_results_all{ind_pose}.obj_configs(:,end);
         q_init(1:2) = q_init(1:2) / pho;
         q_end(1:2) = q_end(1:2) / pho;
-        res_xy = norm(q_end(1:2))
+        res_xy = norm(q_end(1:2));
         res_angle = mod(q_end(3), angle_symmetry)
 %         if (norm(q_end(1:2)) < 1e-2) & ((abs(q_end(3)) < 0.075) | (abs(q_end(3) - 2*pi/3) < angle_symmetry)  | (abs(q_end(3) + 2*pi/3) < 0.075))
 %             color = 'r';

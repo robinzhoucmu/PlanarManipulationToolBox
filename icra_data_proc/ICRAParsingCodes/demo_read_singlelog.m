@@ -15,6 +15,12 @@ mu_f_wood = 5.0 / (Tri_mass * 9.8);
 Tri_com = [0.15/3; 0.15/3];
 Tri_pho = 0.05;
 unit_scale = 1000;
+
+% Note that the object 2d pose is already at the center of the object.
 [ record_log ] = ExtractFromLog(file_name, Tri_pho, R_tool, H_tf, unit_scale);
 
 % Construct triangular push object.
+shape_info.shape_id = 'tri';
+shape_info.shape_type = 'polygon';
+le = 0.15;
+shape_info.shape_vertices = []

@@ -69,7 +69,8 @@ if (flag_plot)
 end
 str_datetime = datestr(datetime('now'));
 str_file_to_save = strcat('data_logs/', str_datetime);
-save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj_hex');
+pushobj = pushobj_hex;
+save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj');
 % hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
 % for ind_pose = 1:1:num_poses
 %     sim_results = sim_results_all{ind_pose};

@@ -4,6 +4,7 @@ classdef PushedObject < handle
       % Limit surface related.
       ls_coeffs
       ls_type
+      ls_coeffs_cp
       % Pressure related.
       support_pts  %2*N
       pressure_weights  % N*1
@@ -45,6 +46,7 @@ classdef PushedObject < handle
             if (nargin == 5)
                 obj.ls_type = ls_type;
                 obj.ls_coeffs = ls_coeffs;
+                obj.ls_coeffs_cp = obj.ls_coeffs;
             else
                 % If no limit surface information is provided. By default, we will fit a
                 % ellipsoid model for it.
@@ -55,7 +57,6 @@ classdef PushedObject < handle
 %                   obj.FitLSFromPressurePoints('quadratic');
 %                 end
             end
-
        end
        function [obj] = FitLS(obj, ls_type, num_cors, r_facet)
             if (nargin < 2)
@@ -70,6 +71,15 @@ classdef PushedObject < handle
             obj.SetWrenchTwistSamplingConfig(num_cors, r_facet);
             obj.FitLSFromPressurePoints(ls_type);
        end
+       
+       % For now, the noise injection is only for ellipsoid/quadratic model.
+       function [obj] = InjectLSNoise(obj)
+           if strcmp(obj.ls_type, 'quadratic')
+                df = 500; 
+                obj.ls_coeffs = wishrnd(obj.ls_coeffs,df)/df;
+           end
+       end
+       
        function [obj] = SetWrenchTwistSamplingConfig(obj, num_cors, r_facet)
            if (num_cors < 15)
                 disp('More wrench-twist points would be better.')
@@ -104,8 +114,7 @@ classdef PushedObject < handle
             elseif strcmp(obj.ls_type, 'poly4')
                 [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V', 1, 5);
             end
-            ls_type = obj.ls_type;
-            ls_coeffs = obj.ls_coeffs;
+            obj.ls_coeffs_cp = obj.ls_coeffs;
        end
            
        function [pt_closest, dist] = FindClosestPointAndDistanceWorldFrame(obj, pt)
@@ -264,7 +273,7 @@ classdef PushedObject < handle
       end
       
       function [flag_cagged, flag_in, flag_on] = CheckForCagingGeometry(obj, pts, finger_radius)
-          % This function checks geometric conditions for fingers caing the
+          % This function checks geometric conditions for fingers caging the
           % object.
           % Input: pts: the contact points column vectors.
           % Output: flag_cagged, whether the object is being cagged or not.
