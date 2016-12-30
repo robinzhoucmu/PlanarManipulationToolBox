@@ -32,7 +32,10 @@ for i = 1:1:num_pushes
     index_small = sum(force.^2,1) < sum(avg_f.^2);
     
     % Hack: only use x%-100% of the force signal.
-    starting_p = 0.3;
+    %starting_p = 0.3;
+    % Note that this is changed smaller such that the finger won't be in
+    % initial collision.
+    starting_p = 0.15;
     index_pre_touch = 1:length(t) < ceil(length(t) * starting_p);
     index_rm = index_pre_touch | index_small;
     force(:, index_rm) = [];
