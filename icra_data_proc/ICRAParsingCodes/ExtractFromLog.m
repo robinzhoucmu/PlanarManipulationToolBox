@@ -31,11 +31,13 @@ for i = 1:1:num_pushes
     avg_f = mean(force,2);
     index_small = sum(force.^2,1) < sum(avg_f.^2);
     
+    t_cp = t;
+    %N = length(t_cp); 
     % Hack: only use x%-100% of the force signal.
     %starting_p = 0.3;
     % Note that this is changed smaller such that the finger won't be in
     % initial collision.
-    starting_p = 0.1;
+    starting_p = 0.25;
     index_pre_touch = 1:length(t) < ceil(length(t) * starting_p);
     index_rm = index_pre_touch | index_small;
     force(:, index_rm) = [];
@@ -53,10 +55,12 @@ for i = 1:1:num_pushes
    
     % Linear interpolate robot_pose.
     robot_traj = interp1(t_robot,robot_traj_0',t, 'linear','extrap')';
+    %robot_traj = interp1(t_robot,robot_traj_0',t_cp, 'linear','extrap')';
     robot_2d_pos = get2dPos(robot_traj',eye(4,4), unit_scale);
     record_log.robot_traj{i} = robot_traj;
     record_log.robot_2d_pos{i} = robot_2d_pos;
-    
+    record_log.robot_traj_full{i} = robot_traj_0;
+    record_log.robot_2d_pos_full{i} = get2dPos(robot_traj_0', eye(4,4), unit_scale);
     % Compute wrench in object local coordinate.
     wrench = ComputeWrench(obj_2d_traj, force', robot_2d_pos);
     % Minus offset. 

@@ -1,5 +1,5 @@
 % Input: 
-% object 2d pose (N*3), forces (fx, fy) (N*2) and robot x,y (N*2) in global frame
+% object 2d pose (N*3), forces (fx, fy) (N*2) and robot x,y,theta (N*3) in global frame
 % Output: Wrenches in object local frame.
 function [Wrenches] = ComputeWrench(Pos_2d, Forces, Robot_Pos_2d)
 N = size(Pos_2d, 1);
