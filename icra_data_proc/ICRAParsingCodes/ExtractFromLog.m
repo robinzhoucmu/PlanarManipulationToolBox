@@ -37,7 +37,7 @@ for i = 1:1:num_pushes
     %starting_p = 0.3;
     % Note that this is changed smaller such that the finger won't be in
     % initial collision.
-    starting_p = 0.25;
+    starting_p = 0.3;
     index_pre_touch = 1:length(t) < ceil(length(t) * starting_p);
     index_rm = index_pre_touch | index_small;
     force(:, index_rm) = [];
