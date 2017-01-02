@@ -81,7 +81,7 @@ record_ls_training.ls_type = ls_type;
 
 
 %mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
-mu_trials = [mu - 0.05; mu; mu + 0.05;];
+mu_trials = [mu-0.1;mu - 0.05; mu; mu + 0.05;mu + 0.1];
 %mu_trials = [mu];
 mu_best = 0;
 val_best = 1e+3;
