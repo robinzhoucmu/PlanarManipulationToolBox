@@ -24,7 +24,7 @@ ls_types = {'poly4', 'quadratic'};
 
 ratio_train = 0.7;
 ratio_val = 0.4;
-mu = 0.8;
+mu = 0.7;
 num_runs = 5;
 rho =  0.05 * sqrt(2);
 for ind_run = 1:1:num_runs

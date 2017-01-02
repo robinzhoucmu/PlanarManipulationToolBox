@@ -20,7 +20,7 @@ le = 0.15;
 % sqrt((\int_{0}^{0.15}(\int_{0}^{0.15-x}(x^2+y^2)dy)dx - 0.5*0.15*0.15*0.05^2)/(0.5*0.15*0.15));
 % mass is 0.5*0.15*0.15 assuming density equals 1 and then use parallel
 % axis theorem. 
-Tri_pho = 0.05 * sqrt(2);
+Tri_pho = le * sqrt(2);
 unit_scale = 1000;
 % Construct triangular push object.
 shape_info.shape_id = 'tri';
