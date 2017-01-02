@@ -17,12 +17,13 @@ log_files_set{10} = 'SensorLogs/wood_patch/exp_08_17_0839_50.txt';
 
 %surface_types = {'hardboard', 'plywood'};
 surface_types = {'hardboard'};
-pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
+%pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
+pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
 %pressure_ids = {'3pts1', '3pts2'};
 ls_types = {'poly4', 'quadratic'};
 
 ratio_train = 0.5;
-mu = 0.95;
+mu = 0.90;
 num_runs = 5;
 rho =  0.05 * sqrt(2);
 for ind_run = 1:1:num_runs
