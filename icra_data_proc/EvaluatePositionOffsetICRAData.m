@@ -1,4 +1,7 @@
-function [record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train)
+% ratio_train is the ratio of the entire dataset for training. 
+% ratio_validation is the ratio among training dataset for validation
+% search over parameters.
+function [record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train, ratio_validation)
 p = gcp;
 if (isempty(p))
     num_physical_cores = feature('numcores');
@@ -13,22 +16,12 @@ R_tool = [sqrt(2)/2, sqrt(2)/2;
           sqrt(2)/2, -sqrt(2)/2]';
 % Parameters for trianglular block.         
 le = 0.15;
-Tri_mass = 1.518;
-% Black board.
-mu_f_blk = 4.2 / (Tri_mass * 9.8);
-% Wood board.
-mu_f_wood = 5.0 / (Tri_mass * 9.8);
-Tri_com = [le/3; le/3];
-% Formula using wolfram alpha:
+% Formula for computing rho using wolfram alpha:
 % sqrt((\int_{0}^{0.15}(\int_{0}^{0.15-x}(x^2+y^2)dy)dx - 0.5*0.15*0.15*0.05^2)/(0.5*0.15*0.15));
 % mass is 0.5*0.15*0.15 assuming density equals 1 and then use parallel
 % axis theorem. 
 Tri_pho = 0.05 * sqrt(2);
 unit_scale = 1000;
-
-% Note that the object 2d pose is already at the center of the object.
-[record_log] = ExtractFromLog(file_name, Tri_pho, R_tool, H_tf, unit_scale);
-
 % Construct triangular push object.
 shape_info.shape_id = 'tri';
 shape_info.shape_type = 'polygon';
@@ -37,6 +30,8 @@ shape_info.shape_type = 'polygon';
 shape_info.shape_vertices = [-le/3, -le/3, le*2/3;
                              -le/3, le*2/3, -le/3];
 shape_info.pho = Tri_pho;
+% Note that the object 2d pose is already at the center of the object.
+[record_log] = ExtractFromLog(file_name, Tri_pho, R_tool, H_tf, unit_scale);
                          
 tip_radius = 0.001;
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
@@ -44,25 +39,39 @@ hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 wrenches = record_log.push_wrenches';
 twists = record_log.slider_velocities';
 
-%Split train and test trials. 
+%Split train_all and test trials. 
 num_trials = size(wrenches, 2);
 index_perm = randperm(num_trials);
 split_ind = ceil(num_trials * ratio_train);
 index_train = index_perm(1:split_ind);
 index_test = index_perm(split_ind + 1:end);
-wrenches_train = wrenches(:, index_train);
-twists_train = twists(:, index_train);
+wrenches_train_all = wrenches(:, index_train);
+twists_train_all = twists(:, index_train);
 
-weight_wrench = 1;
-weight_twist = 1;
+% Split train_all into train and validation.
+[twists_train, twists_val, wrenches_train, wrenches_val] = ...
+            SplitTrainTestData(twists_train_all', wrenches_train_all', 1 - ratio_validation);
+
+%weight_wrench = 1;
+%weight_twist = 1;
 if strcmp(ls_type, 'poly4')
-    [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
+    options.flag_convex = 1;
+    options.method = 'poly4';
+    options.flag_dir = 0;
+    [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
+    ls_coeffs = info.coeffs;
+    %[ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
 else strcmp(ls_type, 'quadratic')
-    [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
+     options.flag_convex = 1;
+    options.method = 'quadratic';
+    options.flag_dir = 0;
+    [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
+    ls_coeffs = info.coeffs;
+    %[ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
 end
 
-record_ls_training.wrenches = wrenches_train;
-record_ls_training.twists = twists_train;
+record_ls_training.wrenches = wrenches_train';
+record_ls_training.twists = twists_train';
 
 
 %devs = zeros(length(index_test), 1);
