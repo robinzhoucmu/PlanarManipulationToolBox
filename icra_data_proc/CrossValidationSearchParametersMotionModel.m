@@ -22,7 +22,7 @@ indices_val = indices_train_all(indices_val_select);
 
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 mu = options.est_mu;
-mu_trials = [mu - 0.05; mu; mu + 0.05;];
+mu_trials = [mu-0.1; mu - 0.05; mu; mu + 0.05; mu+0.1];
 
 
 flag_plot = 0;
@@ -30,13 +30,14 @@ flag_convex = options.flag_convex;
 method = options.method;
 
 %w_force = [0.1, 0.25, 1];
-w_force = [0.5, 1, 2];
+w_force = [0.5, 1, 2, 4];
 w_vel = [1];
-w_reg = [1, 2, 4];
+w_reg = [1, 2, 4, 8];
 
 best_mu = 0;
 best_w_force = -1;
 best_w_vel = -1;
+best_w_reg = 0;
 best_combined_metric = 1e+9;
 % For a given w_force, w_vel combinations, train 
 % the ls_coeffs, then search for the best mu on training data. 
@@ -89,12 +90,13 @@ best_combined_metric = 1e+9;
           [avg_combined_metric_val] = EvalCombinedMetricGivenFileListICRA(...
                    record_log, indices_val, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
                    mu_train); 
-          fprintf('%s, mu_trail: %f, metricval: %f \n', ls_type, mu_train, avg_combined_metric_val); 
+          fprintf('%s, mu_trial: %f, metricval: %f \n', ls_type, mu_train, avg_combined_metric_val); 
            % Update the best so far according to the average combined metric
            % on validation data.
            if (best_combined_metric > avg_combined_metric_val) 
                 best_w_force = w_force(ind_f);
                 best_w_vel  = w_vel(ind_v);
+                best_w_reg = w_reg(ind_r);
                 best_mu = mu_train;
                 best_coeffs = ls_coeffs;
                 best_combined_metric = avg_combined_metric_val;
@@ -106,6 +108,7 @@ best_combined_metric = 1e+9;
     para.mu = best_mu;
     para.w_force = best_w_force;
     para.w_vel = best_w_vel;
+    para.w_reg = best_w_reg;
     para.best_combined_metric_val = best_combined_metric;
     fprintf('%s, mubest: %f, metricbest: %f \n', ls_type, best_mu, best_combined_metric); 
 end
