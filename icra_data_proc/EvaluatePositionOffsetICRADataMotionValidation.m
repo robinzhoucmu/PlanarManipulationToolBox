@@ -59,5 +59,6 @@ record_ls_training.ls_type = ls_type;
 
  [avg_combined_metric_test, record_all] = EvalCombinedMetricGivenFileListICRA(...
                record_log, index_test, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
-               mu_train); 
+               record_ls_training.mu); 
+fprintf('test: metric %f\n', avg_combined_metric_test);
 end

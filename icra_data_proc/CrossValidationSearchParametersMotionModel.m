@@ -22,7 +22,7 @@ indices_val = indices_train_all(indices_val_select);
 
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 mu = options.est_mu;
-mu_trials = [mu-0.1;mu - 0.05; mu; mu + 0.05;mu + 0.1];
+mu_trials = [mu - 0.05; mu; mu + 0.05;];
 
 
 flag_plot = 0;
@@ -59,7 +59,7 @@ best_combined_metric = 1e+9;
        % Search for the best mu on the training set.
        mu_train = 0;
        ct_mu = 1;
-       val_best = 1e+3;
+       val_best_train = 1e+3;
        ls_coeffs = coeffs;
        ls_type = method;
        while ct_mu <= length(mu_trials)
@@ -67,17 +67,18 @@ best_combined_metric = 1e+9;
            [avg_combined_metric] = EvalCombinedMetricGivenFileListICRA(...
                record_log, indices_train, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
                mu_candidate);  
-           if (avg_combined_metric < val_best)
-                val_best = avg_combined_metric;
+           if (avg_combined_metric < val_best_train)
+                val_best_train = avg_combined_metric;
                 mu_train = mu_candidate;
             end
             ct_mu = ct_mu + 1;
        end
-       fprintf('%s, mu_train: %f, metric: %f \n', ls_type, mu_train, val_best); 
+       fprintf('%s, mu_trial: %f, metric: %f \n', ls_type, mu_train, val_best_train); 
        % Use (ls_coeffs, mu) pair to evaluate on the validation set.
       [avg_combined_metric_val] = EvalCombinedMetricGivenFileListICRA(...
                record_log, indices_val, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
                mu_train); 
+      fprintf('%s, mu_trail: %f, metric: %f \n', ls_type, mu_train, avg_combined_metric_val); 
        % Update the best so far according to the average combined metric
        % on validation data.
        if (best_combined_metric > avg_combined_metric_val) 
