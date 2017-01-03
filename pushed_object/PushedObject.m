@@ -186,7 +186,15 @@ classdef PushedObject < handle
 %             flag_contact = 0;
 %           end
       end
-          
+      
+      function [flag_contact, pt_contacts, vel_contacts, outward_normal_contacts] = ...
+              GetHandContactInfo(obj, hand)
+      % Given the hand which contains, geometries, pose and twists in
+      % global frame, compute whether the object is in contact with the
+      % hand and if so find all contact points and velocities in world
+      % frame.
+      end
+      
       function [twist_local, wrench_load_local, contact_mode] = ComputeVelGivenPointRoundFingerPush(obj, ...
               pt_global, vel_global, outward_normal_global, mu)
         % Input: 
@@ -268,8 +276,7 @@ classdef PushedObject < handle
                 plot([pts(1,i), pts(1,i) + fc_edges(1,2*i-1) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i-1) * arrow_length], 'b-');
                 plot([pts(1,i), pts(1,i) + fc_edges(1,2*i) * arrow_length], [pts(2,i), pts(2,i) + fc_edges(2,2*i) * arrow_length], 'b-');
             end
-        end
-        
+        end     
       end
       
       function [flag_cagged, flag_in, flag_on] = CheckForCagingGeometry(obj, pts, finger_radius)

@@ -1,6 +1,8 @@
 % Caveat: Penetration case does not work: sometimes return empty
 % or missing collision pairs.
 % Input: 
+% poly_a can be just a simple point. However, poly b must be a proper
+% polygon.
 % poly_a, poly_b: (2*Na, 2*Nb) polygon a and b geometry in their respective local frame.
 % pose_a, pose_b: the pose in world frame. 
 % Output: unique pairs of minimum distance contact pairs. 
@@ -52,7 +54,8 @@ function [pts_pairs, indices_va_polyb_closest] = ProjectPointsOntoPolygonDistanc
     else
     end
 end
-
+% Input: pt 2*1 vector. polygon 2*N.
+% Output: pts_pair [pt; pt_proj] and minimum distance.
 function [pts_pair, dist] = ProjectPointOntoPolygon(pt, polygon)
     [location, dist] = projPointOnPolygon(pt', polygon');
     pts_pair = [pt; polygonPoint(polygon', location)'];
