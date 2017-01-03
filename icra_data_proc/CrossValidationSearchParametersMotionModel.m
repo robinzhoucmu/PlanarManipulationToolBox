@@ -30,7 +30,7 @@ flag_convex = options.flag_convex;
 method = options.method;
 
 %w_force = [0.1, 0.25, 1];
-w_force = [0.5, 1,2];
+w_force = [0.5, 1, 2];
 w_vel = [1];
 w_reg = [1, 2, 4];
 
