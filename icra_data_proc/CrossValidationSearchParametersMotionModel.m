@@ -45,15 +45,15 @@ best_combined_metric = 1e+9;
             [coeffs, xi, delta, pred_v_train, s] = ...
                Fit4thOrderPolyCVX(wrenches_train', twists_train', w_vel(ind_r), w_force(ind_f), flag_convex, flag_plot);
            % Evaluate on validation set.
-           [err ,dev_angle] = EvaluatePoly4Predictor(F_val, V_val, coeffs);
-           [train_err, train_dev_angle] = EvaluatePoly4Predictor(F_train, V_train, coeffs);
+           [err ,dev_angle] = EvaluatePoly4Predictor(wrenches_val, twists_val, coeffs);
+           [train_err, train_dev_angle] = EvaluatePoly4Predictor(wrenches_train, twists_train, coeffs);
            fprintf('poly4: w_force:%f, w_vel:%f, dev_angle_train:%f, dev_angle_val:%f\n', w_force(ind_f), w_vel(ind_r), train_dev_angle, dev_angle);
 
        elseif (strcmp(method, 'quadratic'))
            [coeffs, xi_elip, delta_elip, pred_v_lr_train, s_lr] = ...
                FitEllipsoidForceVelocityCVX(wrenches_train', twists_train',  w_vel(ind_r), w_force(ind_f),  flag_convex, flag_plot);
-           [err, dev_angle] = EvaluateLinearPredictor(F_val, V_val, coeffs);
-           [train_err, train_dev_angle] = EvaluateLinearPredictor(F_train, V_train, coeffs);
+           [err, dev_angle] = EvaluateLinearPredictor(wrenches_val, twists_val, coeffs);
+           [train_err, train_dev_angle] = EvaluateLinearPredictor(wrenches_train, twists_train,  coeffs);
            fprintf('quadratic: w_force:%f, w_vel:%f, dev_angle_train:%f, dev_angle_val:%f\n', w_force(ind_f), w_vel(ind_r), train_dev_angle, dev_angle);
        end
        % Search for the best mu on the training set.
