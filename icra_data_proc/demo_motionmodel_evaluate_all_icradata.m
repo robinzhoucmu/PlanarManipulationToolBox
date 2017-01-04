@@ -1,7 +1,7 @@
 clear all; 
 close all;
 rng(1);
-folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/wrench1twist1_50percenttraining';
+folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train70val40mu06';
 log_files_set = {};
 log_files_set{1} = 'SensorLogs/10_130_10_10_10_130/exp_08_17_50.txt';
 log_files_set{2} = 'SensorLogs/30_90_30_30_30_90/exp_08_11_50_mixed.txt';
@@ -24,7 +24,7 @@ ls_types = {'poly4', 'quadratic'};
 
 ratio_train = 0.7;
 ratio_val = 0.4;
-mu = 0.55;
+mu = 0.6;
 num_runs = 5;
 rho =  0.05 * sqrt(2);
 for ind_run = 1:1:num_runs
