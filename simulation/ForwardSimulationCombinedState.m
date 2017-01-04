@@ -81,9 +81,9 @@ classdef ForwardSimulationCombinedState < handle
             contact_info.num_fingers_contact = length(contact_info.finger_index_contact);
             contact_info.finger_carts_contact = finger_carts(:, contact_info.finger_index_contact);
             contact_info.finger_twists_contact = finger_twists(:, contact_info.finger_index_contact);
-            contact_info.pt_contact = zeros(2, contact_info.num_fingers_contact);
-            contact_info.vel_contact = zeros(2, contact_info.num_fingers_contact);
-            contact_info.outward_normal_contact = zeros(2, contact_info.num_fingers_contact);
+            %contact_info.pt_contact = zeros(2, contact_info.num_fingers_contact);
+            %contact_info.vel_contact = zeros(2, contact_info.num_fingers_contact);
+            %contact_info.outward_normal_contact = zeros(2, contact_info.num_fingers_contact);
             
             if (contact_info.num_fingers_contact == 1)
                 % Get the position, velocity and contact normal of the touching finger.

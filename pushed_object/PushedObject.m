@@ -193,12 +193,29 @@ classdef PushedObject < handle
       % global frame, compute whether the object is in contact with the
       % hand and if so find all contact points and velocities in world
       % frame.
+      flag_contact = zeros(hand.num_fingers, 1);
+      pt_contacts = [];
+      vel_contacts = [];
+      outward_normal_contacts = [];
        if strcmp(obj.shape_type, 'polygon')
-            for ind_finger = 1:1:hand.num_fingers
+           [finger_twists, finger_poses] = GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
+           % Look at each polygonal or point finger's contact information. 
+           for ind_finger = 1:1:hand.num_fingers
                 [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
-                    hand.finger_geometries{ind_finger}, obj.shape_vertices, hand.q, obj.pose);
-                
-            end
+                    hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
+                indices_pair_contact = (min_dist <= hand.finger_radius);
+                if (sum(indices_pair_contact) > 0)
+                    flag_contact(ind_finger) = 1;
+                    pt_contacts_finger = closest_pairs(3:4, indices_pair_contact);
+                    vel_contacts_finger = finger_twists(1:2, ind_finger) + ...
+                        bsxfun(@times, finger_twists(3,ind_finger), [-pt_contacts_finger(2,:); pt_contacts_finger(1,:)]);            
+                    outward_normal_contacts_finger = closest_pairs(1:2, indices_pair_contact) - pt_contacts_finger;
+                    outward_normal_contacts_finger = bsxfun(@rdivide, outward_normal_contacts_finger, sqrt(sum(outward_normal_contacts_finger.^2)) + eps);
+                    pt_contacts = [pt_contacts, pt_contacts_finger];
+                    vel_contacts = [vel_contacts, vel_contacts_finger];
+                    outward_normal_contacts = [outward_normal_contacts, outward_normal_contacts_finger];
+                end
+           end
        end
       end
       
