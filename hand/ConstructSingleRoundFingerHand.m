@@ -4,6 +4,7 @@ fun_fk_hand_single_finger = @(q)([0;0;0]);
 fun_fv_hand_single_finger = @(q, qdot)([0;0;0]);
 
 hand_single_finger = Hand();
+hand_single_finger.finger_type = 'all_circles';
 hand_single_finger.num_fingers = 1;
 hand_single_finger.finger_radius = finger_radius;
 hand_single_finger.fun_fk = fun_fk_hand_single_finger;

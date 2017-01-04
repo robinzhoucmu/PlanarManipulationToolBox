@@ -193,6 +193,12 @@ classdef PushedObject < handle
       % global frame, compute whether the object is in contact with the
       % hand and if so find all contact points and velocities in world
       % frame.
+       if strcmp(obj.shape_type, 'polygon')
+            [cur_shape_vertices] = GetPolygonShapeInWorldFrame(obj.shape_vertices, obj.pose);
+            for ind_finger = 1:1:hand.num_fingers
+                [cur_finger_vertices] = GetPolygonShapeInWorldFrame()
+            end
+       end
       end
       
       function [twist_local, wrench_load_local, contact_mode] = ComputeVelGivenPointRoundFingerPush(obj, ...

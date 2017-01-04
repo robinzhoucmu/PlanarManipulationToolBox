@@ -73,7 +73,7 @@ best_combined_metric = 1e+9;
            % Search for the best mu on the training set.
            mu_train = 0;
            ct_mu = 1;
-           val_best_train = 1e+3;
+           metric_best_train = 1e+3;
            ls_coeffs = coeffs;
            ls_type = method;
            while ct_mu <= length(mu_trials)
@@ -81,18 +81,20 @@ best_combined_metric = 1e+9;
                [avg_combined_metric] = EvalCombinedMetricGivenFileListICRA(...
                    record_log, indices_train, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
                    mu_candidate);  
-               if (avg_combined_metric < val_best_train)
-                    val_best_train = avg_combined_metric;
+               if (avg_combined_metric < metric_best_train)
+                    metric_best_train = avg_combined_metric;
                     mu_train = mu_candidate;
                 end
                 ct_mu = ct_mu + 1;
            end
-           fprintf('%s, mu_trial: %f, metrictrain: %f \n', ls_type, mu_train, val_best_train); 
+           fprintf('%s, wrench: %f, twist: %f, reg: %f,  mu_trial: %f, metrictrain: %f \n', ...
+               ls_type, option_train.weight_wrench, option_train.weight_twist, option_train.weight_regularization, mu_train, metric_best_train); 
            % Use (ls_coeffs, mu) pair to evaluate on the validation set.
           [avg_combined_metric_val] = EvalCombinedMetricGivenFileListICRA(...
                    record_log, indices_val, ls_type, ls_coeffs, shape_info, hand_single_finger, ...
                    mu_train); 
-          fprintf('%s, mu_trial: %f, metricval: %f \n', ls_type, mu_train, avg_combined_metric_val); 
+          fprintf('%s, wrench: %f, twist: %f, reg: %f,  mu_trial: %f, metricval: %f \n', ...
+              ls_type, option_train.weight_wrench, option_train.weight_twist, option_train.weight_regularization, mu_train, avg_combined_metric_val); 
            % Update the best so far according to the average combined metric
            % on validation data.
            if (best_combined_metric > avg_combined_metric_val) 
@@ -112,5 +114,6 @@ best_combined_metric = 1e+9;
     para.w_vel = best_w_vel;
     para.w_reg = best_w_reg;
     para.best_combined_metric_val = best_combined_metric;
-    fprintf('%s, mubest: %f, metricbest: %f \n', ls_type, best_mu, best_combined_metric); 
+    fprintf('%s, w_forcebest: %f, w_velbest: %f, w_regbest: %f,  mubest: %f, metricvalbest: %f \n', ...
+        ls_type, best_w_force, best_w_vel, best_w_reg, best_mu, best_combined_metric); 
 end

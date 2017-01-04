@@ -1,18 +1,18 @@
 clear all; 
 close all;
 rng(1);
-folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train70val40mu06';
+folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train70val30mu055';
 log_files_set = {};
-log_files_set{1} = 'SensorLogs/10_130_10_10_10_130/exp_08_17_50.txt';
-log_files_set{2} = 'SensorLogs/30_90_30_30_30_90/exp_08_11_50_mixed.txt';
-log_files_set{3} = 'SensorLogs/10_90_10_10_30_130/exp_08_15_50.txt';
-log_files_set{4} = 'SensorLogs/30_63.33_43.33_30_43.33_63.33/exp_08_17_50.txt';
+log_files_set{1} = 'SensorLogs/30_63.33_43.33_30_43.33_63.33/exp_08_17_50.txt';
+log_files_set{2} = 'SensorLogs/10_130_10_10_10_130/exp_08_17_50.txt';
+log_files_set{3} = 'SensorLogs/30_90_30_30_30_90/exp_08_11_50_mixed.txt';
+log_files_set{4} = 'SensorLogs/10_90_10_10_30_130/exp_08_15_50.txt';
 log_files_set{5} = 'SensorLogs/patch/exp_08_18_1435_50.txt';
 
-log_files_set{6} = 'SensorLogs/wood_10_130_10_10_10_130/exp_08_17_50.txt';
-log_files_set{7} = 'SensorLogs/wood_30_90_30_30_30_90/exp_08_17_0922_50.txt';
-log_files_set{8} = 'SensorLogs/wood_10_90_10_10_30_130/exp_08_18_1100_50.txt';
-log_files_set{9} = 'SensorLogs/wood_30_63.33_43.33_30_43.33_63.33/exp_08_18_1330_50.txt';
+log_files_set{6} = 'SensorLogs/wood_30_63.33_43.33_30_43.33_63.33/exp_08_18_1330_50.txt';
+log_files_set{7} = 'SensorLogs/wood_10_130_10_10_10_130/exp_08_17_50.txt';
+log_files_set{8} = 'SensorLogs/wood_30_90_30_30_30_90/exp_08_17_0922_50.txt';
+log_files_set{9} = 'SensorLogs/wood_10_90_10_10_30_130/exp_08_18_1100_50.txt';
 log_files_set{10} = 'SensorLogs/wood_patch/exp_08_17_0839_50.txt';
 
 %surface_types = {'hardboard', 'plywood'};
@@ -23,8 +23,8 @@ pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
 ls_types = {'poly4', 'quadratic'};
 
 ratio_train = 0.7;
-ratio_val = 0.4;
-mu = 0.6;
+ratio_val = 0.3;
+mu = 0.55;
 num_runs = 5;
 rho =  0.05 * sqrt(2);
 for ind_run = 1:1:num_runs

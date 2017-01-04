@@ -8,6 +8,7 @@ fun_fk_hand_three_fingers = @(q)([0, sqrt(3)/2*q(4), -sqrt(3)/2*q(4); q(4), -q(4
 fun_fv_hand_three_fingers = @(q,qdot)([0, sqrt(3)/2*qdot(4), -sqrt(3)/2*qdot(4); qdot(4), -qdot(4)/2, -qdot(4)/2; 0, 0, 0]);
 
 hand_three_fingers_gripper = Hand();
+hand_three_fingers_gripper.finger_type = 'all_circles';
 hand_three_fingers_gripper.num_fingers = 3;
 hand_three_fingers_gripper.finger_radius = finger_radius;
 hand_three_fingers_gripper.fun_fk = fun_fk_hand_three_fingers;
