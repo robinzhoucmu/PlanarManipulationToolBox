@@ -39,9 +39,9 @@ for ind_run = 1:1:num_runs
                 ls_type = ls_types{ind_ls_type};
                 pressure_id = pressure_ids{ind_pressure};
                 surface_type = surface_types{ind_surface};
-                %[record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train, ratio_val);
-                [record_all, record_ls_training] = EvaluatePositionOffsetICRADataMotionValidation(...
-                    file_name, ls_type, mu, ratio_train, ratio_val);
+                [record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train, ratio_val);
+                %[record_all, record_ls_training] = EvaluatePositionOffsetICRADataMotionValidation(...
+                %    file_name, ls_type, mu, ratio_train, ratio_val);
                 N = length(record_all);
                 diff_trans = zeros(2, N);
                 angle_gt_final = zeros(N,1);

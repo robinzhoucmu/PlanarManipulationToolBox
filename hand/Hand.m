@@ -10,6 +10,8 @@ classdef Hand < handle
         % For 'multi_polygons', each element is a 2*N array.
         finger_geometries
         % Finger radius for 'all_circle' type hand.
+        % The enveloped virtual circle (blem model) radius for
+        % 'multi_polygons' type.
         finger_radius
         num_fingers
         % The first 3 elements of q are cartesian pose w.r.t global frame.

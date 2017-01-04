@@ -1,5 +1,6 @@
-function [hand_parallel_edge] = ConstructParallelEdgeGripper(finger_length, finger_width)
-% Input: the length of the edge gripper (the length two fingers facing each
+function [hand_parallel_edges] = ConstructParallelEdgeGripper(virtual_circle_radius, finger_length, finger_width)
+% Input: virtual circle radius (blem) enclosing the rectangle edge gripper. 
+% the length of the edge gripper (the length two fingers facing each
 % other). the width of edge (if not specified then we set it as 25% of the
 % length).
 if (nargin < 2)
@@ -19,12 +20,13 @@ finger_shape_upper = ...
     [-finger_length/2, finger_length/2, finger_length/2, -finger_length/2;
     0, 0, finger_width, finger_width];
 
-hand_parallel_edge = Hand();
-hand_parallel_edge.num_fingers = 2;
-hand_parallel_edge.finger_type = 'multi_polygons';
-hand_parallel_edge.finger_geometries{1} = finger_shape_lower;
-hand_parallel_edge.finger_geometries{2} = finger_shape_upper;
-hand_parallel_edge.fun_fk = fun_fk_hand_two_fingers;
-hand_parallel_edge.fun_fv = fun_fv_hand_two_fingers;
+hand_parallel_edges = Hand();
+hand_parallel_edges.finger_radius = virtual_circle_radius;
+hand_parallel_edges.num_fingers = 2;
+hand_parallel_edges.finger_type = 'multi_polygons';
+hand_parallel_edges.finger_geometries{1} = finger_shape_lower;
+hand_parallel_edges.finger_geometries{2} = finger_shape_upper;
+hand_parallel_edges.fun_fk = fun_fk_hand_two_fingers;
+hand_parallel_edges.fun_fv = fun_fv_hand_two_fingers;
 
 end

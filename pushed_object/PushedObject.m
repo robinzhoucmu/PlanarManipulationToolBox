@@ -197,6 +197,7 @@ classdef PushedObject < handle
             for ind_finger = 1:1:hand.num_fingers
                 [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
                     hand.finger_geometries{ind_finger}, obj.shape_vertices, hand.q, obj.pose);
+                
             end
        end
       end
