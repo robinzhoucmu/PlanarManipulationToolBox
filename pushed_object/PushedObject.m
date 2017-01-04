@@ -194,9 +194,9 @@ classdef PushedObject < handle
       % hand and if so find all contact points and velocities in world
       % frame.
        if strcmp(obj.shape_type, 'polygon')
-            [cur_shape_vertices] = GetPolygonShapeInWorldFrame(obj.shape_vertices, obj.pose);
             for ind_finger = 1:1:hand.num_fingers
-                [cur_finger_vertices] = GetPolygonShapeInWorldFrame()
+                [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
+                    hand.finger_geometries{ind_finger}, obj.shape_vertices, hand.q, obj.pose);
             end
        end
       end

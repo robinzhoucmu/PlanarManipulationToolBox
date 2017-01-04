@@ -31,10 +31,10 @@ method = options.method;
 
 %w_force = [0.1, 0.25, 1];
 %w_force = [0.5, 1, 2, 4];
-w_force = [0.1, 0.5, 1, 2, 4, 8];
+w_force = [0.1, 0.5, 2];
 w_vel = [1];
 %w_reg = [1, 2, 4, 8];
-w_reg = [0.1, 2, 8, 16];
+w_reg = [0.1, 0.5, 4];
 
 best_mu = 0;
 best_w_force = -1;
