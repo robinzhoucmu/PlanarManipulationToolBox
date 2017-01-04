@@ -22,8 +22,8 @@ indices_val = indices_train_all(indices_val_select);
 
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 mu = options.est_mu;
-mu_trials = [mu-0.1; mu - 0.05; mu; mu + 0.05; mu+0.1];
-
+%mu_trials = [mu-0.1; mu - 0.05; mu; mu + 0.05; mu+0.1];
+mu_trials = [mu - 0.1; mu; mu+0.1];
 
 flag_plot = 0;
 flag_convex = options.flag_convex;
