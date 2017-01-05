@@ -1,12 +1,16 @@
 clear all;
-folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/hardboard_plywood_run5_fastvalidation';
-surface_types = {'hardboard', 'plywood'};
+folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/plywood_run5_fastvalidation';
+%surface_types = {'hardboard', 'plywood'};
+surface_types = {'plywood'};
+
 %shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip2', 'ellip3', 'hex', 'butter'};
-shape_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
+%shape_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
+shape_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
+
 ls_types = {'poly4', 'quadratic'};
 % Result table for a particular velocity. Each column is a particular object, the odd number rows are surface-poly4
 % the even number rows are surface-quad. 
-numruns = 5;
+numruns = 3;
 result_record_all = cell(numruns, 1);
 all_run_avg_disp = zeros(length(surface_types) * length(ls_types), length(shape_ids));
 all_run_avg_angle = zeros(length(surface_types) * length(ls_types), length(shape_ids));
