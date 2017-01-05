@@ -1,6 +1,6 @@
 clear all; 
 close all;
-rng(1);
+rng(-1);
 folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train70val30mu055';
 log_files_set = {};
 % log_files_set{6} = 'SensorLogs/30_63.33_43.33_30_43.33_63.33/exp_08_17_50.txt';
@@ -9,20 +9,20 @@ log_files_set = {};
 % log_files_set{9} = 'SensorLogs/10_90_10_10_30_130/exp_08_15_50.txt';
 % log_files_set{10} = 'SensorLogs/patch/exp_08_18_1435_50.txt';
 % 
-% log_files_set{1} = 'SensorLogs/wood_30_63.33_43.33_30_43.33_63.33/exp_08_18_1330_50.txt';
-% log_files_set{2} = 'SensorLogs/wood_10_130_10_10_10_130/exp_08_17_50.txt';
-% log_files_set{3} = 'SensorLogs/wood_30_90_30_30_30_90/exp_08_17_0922_50.txt';
-% log_files_set{4} = 'SensorLogs/wood_10_90_10_10_30_130/exp_08_18_1100_50.txt';
-% log_files_set{5} = 'SensorLogs/wood_patch/exp_08_17_0839_50.txt';
-
 log_files_set{1} = 'SensorLogs/wood_30_63.33_43.33_30_43.33_63.33/exp_08_18_1330_50.txt';
+log_files_set{2} = 'SensorLogs/wood_10_130_10_10_10_130/exp_08_17_50.txt';
+log_files_set{3} = 'SensorLogs/wood_30_90_30_30_30_90/exp_08_17_0922_50.txt';
+log_files_set{4} = 'SensorLogs/wood_10_90_10_10_30_130/exp_08_18_1100_50.txt';
+log_files_set{5} = 'SensorLogs/wood_patch/exp_08_17_0839_50.txt';
+
+%log_files_set{1} = 'SensorLogs/wood_30_63.33_43.33_30_43.33_63.33/exp_08_18_1330_50.txt';
 
 %surface_types = {'plywood', 'hardboard'};
 surface_types = {'plywood'};
 %surface_types = {'hardboard'};
 %pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
-%pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
-pressure_ids = {'3pts1'};
+pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
+%pressure_ids = {'3pts1'};
 ls_types = {'poly4', 'quadratic'};
 
 ratio_train = 0.7;
