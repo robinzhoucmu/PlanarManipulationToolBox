@@ -1,6 +1,6 @@
 clear all; 
 close all;
-rng(-1);
+rng(100);
 folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train70val30mu055';
 log_files_set = {};
 % log_files_set{6} = 'SensorLogs/30_63.33_43.33_30_43.33_63.33/exp_08_17_50.txt';
