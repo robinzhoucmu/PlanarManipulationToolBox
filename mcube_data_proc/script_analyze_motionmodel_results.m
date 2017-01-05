@@ -1,7 +1,7 @@
-fl_poly4 = dir('*poly4*');
-fl_quad = dir('*quadratic*');
-%fl_poly4 = dir('*hardboard_3pts3_poly4*');
-%fl_quad = dir('*hardboard_3pts3_quadratic*');
+%fl_poly4 = dir('*poly4*');
+%fl_quad = dir('*quadratic*');
+fl_poly4 = dir('*hardboard_3pts*poly4*');
+fl_quad = dir('*hardboard_3pts*quadratic*');
 rho = 0.05 * sqrt(2);
 
 sum_disp_diff_poly4 = 0;

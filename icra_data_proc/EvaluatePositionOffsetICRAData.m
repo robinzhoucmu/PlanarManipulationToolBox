@@ -58,21 +58,18 @@ if strcmp(ls_type, 'poly4')
     options.flag_convex = 1;
     options.method = 'poly4';
     options.flag_dir = 0;
-    [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
-    ls_coeffs = info.coeffs;
     %[ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
 else strcmp(ls_type, 'quadratic')
      options.flag_convex = 1;
     options.method = 'quadratic';
     options.flag_dir = 0;
-    [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
-    ls_coeffs = info.coeffs;
     %[ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(wrenches_train, twists_train, weight_twist, weight_wrench, 1, 1);
 end
-
+[info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
+ls_coeffs = info.coeffs;
 record_ls_training.wrenches = wrenches_train';
 record_ls_training.twists = twists_train';
-
+record_ls_training.info = info;
 
 %devs = zeros(length(index_test), 1);
 record_all = cell(length(index_test), 1);
@@ -81,7 +78,7 @@ record_ls_training.ls_type = ls_type;
 
 
 %mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
-mu_trials = [mu-0.15; mu-0.1;mu - 0.05; mu; mu + 0.05;mu + 0.1; mu + 0.15];
+mu_trials = [mu-0.2; mu-0.15; mu-0.1;mu - 0.05; mu; mu + 0.05;mu + 0.1; mu + 0.15; mu+0.2];
 %mu_trials = [mu];
 mu_best = 0;
 val_best = 1e+3;
