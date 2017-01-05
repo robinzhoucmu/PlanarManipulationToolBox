@@ -15,10 +15,10 @@ log_files_set{8} = 'SensorLogs/wood_30_90_30_30_30_90/exp_08_17_0922_50.txt';
 log_files_set{9} = 'SensorLogs/wood_10_90_10_10_30_130/exp_08_18_1100_50.txt';
 log_files_set{10} = 'SensorLogs/wood_patch/exp_08_17_0839_50.txt';
 
-%surface_types = {'hardboard', 'plywood'};
-surface_types = {'hardboard'};
-%pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
-pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
+surface_types = {'hardboard', 'plywood'};
+%surface_types = {'hardboard'};
+pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4', 'patch'};
+%pressure_ids = {'3pts1', '3pts2', '3pts3', '3pts4'};
 %pressure_ids = {'3pts1', '3pts2'};
 ls_types = {'poly4', 'quadratic'};
 
