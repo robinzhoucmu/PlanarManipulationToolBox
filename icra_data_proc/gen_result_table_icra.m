@@ -1,5 +1,5 @@
 clear all;
-folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/plywood_run5_fastvalidation';
+folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/plywood_run5_fastvalidation2';
 %surface_types = {'hardboard', 'plywood'};
 surface_types = {'plywood'};
 
@@ -37,6 +37,7 @@ for ind_run = 1:1:numruns
                 pho = 0.05*sqrt(2);
                 str_query = strcat('*', surface_types{ind_surface}, '*', shape_ids{ind_shape}, '*', ...
                     ls_types{ind_ls_type}, '*run', num2str(ind_run), '.mat');
+                str_query
                 files = dir(str_query);
                 load(files.name);
 

@@ -4,11 +4,13 @@
 function [para] = CrossValidationSearchParameters(F_train, V_train, F_val, V_val, options)
 flag_plot = 0;
 % weight for velocity matching is fixed at 1.
-w_vel = [1,2, 4];
+w_vel = [1,2,4];
 % regularization of parameters w.r.t velocity matching.
 % More regularization for real robot exp.
 %w_reg = [0.1, 2, 8, 16];
-w_reg = [0.25, 0.5, 1];
+w_reg = [0.25, 0.5, 1, 4];
+w_force = [0.1, 0.5, 1, 2, 4];
+
 method = options.method;
 
 best_err = 1e+9;
@@ -31,7 +33,6 @@ if ~strcmp(method, 'gp')
         %w_force = [0.1, 1, 4, 8];
         %w_force = [0.1, 0.5, 1, 2, 4, 8];
         %w_force = [0.5, 1, 2, 4, 8];
-        w_force = [0.1, 0.5, 1, 2, 4];
     end
     for ind_f = 1:length(w_force)
         for ind_v = 1:length(w_vel)
@@ -97,6 +98,10 @@ if ~strcmp(method, 'gp')
     para.dev_angle = best_dev_angle;
     para.train_err_record = train_err_record;
     para.train_dev_angle_record = train_dev_angle_record;
+    % store validation range search.
+    para.w_force_range = w_force;
+    para.w_reg_range = w_reg;
+    para.w_vel_range = w_vel;
 else
 % GP method.
     F_train_dir = UnitNormalize(F_train);

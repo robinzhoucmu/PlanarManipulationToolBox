@@ -49,7 +49,7 @@ wrenches_train_all = wrenches(:, index_train);
 twists_train_all = twists(:, index_train);
 
 % Split train_all into train and validation.
-[twists_train, twists_val, wrenches_train, wrenches_val] = ...
+[twists_train, twists_val, wrenches_train, wrenches_val, indices_train, indices_val] = ...
             SplitTrainTestData(twists_train_all', wrenches_train_all', 1 - ratio_validation);
 
 %weight_wrench = 1;
@@ -70,6 +70,7 @@ ls_coeffs = info.coeffs;
 record_ls_training.wrenches = wrenches_train';
 record_ls_training.twists = twists_train';
 record_ls_training.info = info;
+display(info)
 
 %devs = zeros(length(index_test), 1);
 record_all = cell(length(index_test), 1);
@@ -78,7 +79,7 @@ record_ls_training.ls_type = ls_type;
 
 
 %mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
-mu_trials = [mu-0.2; mu-0.15; mu-0.1;mu - 0.05; mu; mu + 0.05;mu + 0.1; mu + 0.15; mu+0.2];
+mu_trials = [mu-0.1;mu - 0.05; mu; mu + 0.05; mu + 0.1; ];
 %mu_trials = [mu];
 mu_best = 0;
 val_best = 1e+3;
