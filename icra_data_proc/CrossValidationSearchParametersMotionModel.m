@@ -114,6 +114,7 @@ best_combined_metric = 1e+9;
     para.w_vel = best_w_vel;
     para.w_reg = best_w_reg;
     para.best_combined_metric_val = best_combined_metric;
+    display(para);
     fprintf('%s, w_forcebest: %f, w_velbest: %f, w_regbest: %f,  mubest: %f, metricvalbest: %f \n', ...
         ls_type, best_w_force, best_w_vel, best_w_reg, best_mu, best_combined_metric); 
 end
