@@ -1,7 +1,7 @@
 clear all;
 rng(1);
 
-folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu/wrench1twist1_30percenttraining';
+folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu/validation_50percenttraining';
 num_runs = 10;
 num_samples_perfile = 5;
 
@@ -14,7 +14,7 @@ shape_ids = {'ellip1', 'hex', 'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3',
 ls_types = {'poly4', 'quadratic'};
 mu = 0.25;
 % On average each scenario contains about 400 files.
-ratio_training = 0.3;
+ratio_training = 0.5;
 flag_uniform_pressure = 0;
 for ind_run = 1:1:num_runs
 for ind_vel = 1:1:length(vels)

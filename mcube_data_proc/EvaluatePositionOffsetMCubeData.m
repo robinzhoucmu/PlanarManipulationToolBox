@@ -46,18 +46,35 @@ if (~flag_uniform_pressure)
     all_wrenches_local_training = all_wrenches_local(sampledindices,:);
     all_twists_local_training = all_twists_local(sampledindices,:);
     all_twists_local_normalized_training = all_twists_local_normalized(sampledindices,:);
-    % Fit model using sampled data.
-    if strcmp(ls_type, 'poly4')
-        [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
-    elseif strcmp(ls_type, 'quadratic')
-        [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
-            all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
-    else
-        error('%s type not recognized\n', ls_type);
-    end
-    record_ls_training.wrenches = all_wrenches_local_training;
-    record_ls_training.twists = all_twists_local_training;
+
+%     % Fit model using sampled data.
+%     if strcmp(ls_type, 'poly4')
+%         [ls_coeffs, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(all_wrenches_local_training', ...
+%             all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
+%     elseif strcmp(ls_type, 'quadratic')
+%         [ls_coeffs, xi, delta, pred_V, s] = FitEllipsoidForceVelocityCVX(all_wrenches_local_training', ...
+%             all_twists_local_normalized_training', weight_twist, weight_wrench, 1, 1);
+%     else
+%         error('%s type not recognized\n', ls_type);
+%     end
+%     record_ls_training.wrenches = all_wrenches_local_training;
+%     record_ls_training.twists = all_twists_local_training;
+    
+    % Split train_all into train and validation.
+    ratio_validation = 0.4;
+    [twists_train, twists_val, wrenches_train, wrenches_val, indices_train, indices_val] = ...
+            SplitTrainTestData(all_twists_local_normalized_training, all_wrenches_local_training, 1 - ratio_validation);
+    options.flag_convex = 1;
+    options.method = ls_type;
+    options.flag_dir = 0;
+    [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
+    ls_coeffs = info.coeffs;
+    record_ls_training.wrenches = wrenches_train';
+    record_ls_training.twists = twists_train'; 
+    record_ls_training.info = info;
+    display(info)
+
+    
 else
     options_support_pts.mode = 'polygon';
     options_support_pts.vertices = shape_info.shape_vertices';
@@ -86,7 +103,8 @@ record_ls_training.ls_type = pushobj.ls_type;
 % Construct a single round point pusher with specified radius.
 hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 % Grid search over mu to find the best value on training data.
-mu_trials = [mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];
+%mu_trials=[mu-0.075;mu-0.05;mu-0.025;mu;mu+0.025;mu+0.05;mu+0.075];%Oldtable.
+mu_trials=[mu-0.1;mu-0.05;mu;mu+0.05;mu+0.1];
 %mu_trials = [mu];
 mu_best = 0;
 val_best = 1e+3;
