@@ -68,7 +68,7 @@ end
 [info] = CrossValidationSearchParameters(wrenches_train, twists_train, wrenches_val, twists_val, options);
 ls_coeffs = info.coeffs;
 record_ls_training.wrenches = wrenches_train';
-record_ls_training.twists = twists_train';
+record_ls_training.twists = twists_train'; 
 record_ls_training.info = info;
 display(info)
 
@@ -99,7 +99,7 @@ while ct_mu <= length(mu_trials)
         pushobj = PushedObject([], [], shape_info, ls_type, ls_coeffs);
         object_poses = record_log.obj_2d_traj{ind_trial_train}';
         pushobj.pose = object_poses(:,1);
-        sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu);
+        sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_single_finger, mu_test);
         [sim_results] = sim_inst.RollOut();
 
         weight_angle_to_disp = 1;

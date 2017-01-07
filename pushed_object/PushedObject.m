@@ -58,7 +58,7 @@ classdef PushedObject < handle
 %                 end
             end
        end
-       function [obj] = FitLS(obj, ls_type, num_cors, r_facet)
+       function [obj] = FitLS(obj, ls_type, num_cors, r_facet, flag_plot)
             if (nargin < 2)
                 ls_type = 'quadratic';
             end
@@ -68,8 +68,11 @@ classdef PushedObject < handle
             if (nargin < 4)
                 r_facet = 0.4;  
             end
+            if (nargin < 5)
+                flag_plot = 0;
+            end
             obj.SetWrenchTwistSamplingConfig(num_cors, r_facet);
-            obj.FitLSFromPressurePoints(ls_type);
+            obj.FitLSFromPressurePoints(ls_type, flag_plot);
        end
        
        % For now, the noise injection is only for ellipsoid/quadratic model.
@@ -88,7 +91,7 @@ classdef PushedObject < handle
            obj.r_facet = r_facet;
        end
        
-       function [obj] = FitLSFromPressurePoints(obj, ls_type)
+       function [obj] = FitLSFromPressurePoints(obj, ls_type, flag_plot)
             if (nargin == 1)
                 obj.ls_type = 'quadratic';
             else
@@ -97,6 +100,9 @@ classdef PushedObject < handle
                 else
                     disp('limit surface type not recognized %s\n', ls_type);
                 end
+            end
+            if (nargin < 3)
+                flag_plot = 0;
             end
             % Generate random points. 
             num_pts = size(obj.support_pts, 2);
@@ -110,9 +116,9 @@ classdef PushedObject < handle
             % vector.
             [V, F] = NormalizeForceAndVelocities(V, F, obj.pho);
             if strcmp(obj.ls_type, 'quadratic')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 5);
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 1, 1, flag_plot);
             elseif strcmp(obj.ls_type, 'poly4')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V', 1, 5);
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V', 1, 1, 1, flag_plot);
             end
             obj.ls_coeffs_cp = obj.ls_coeffs;
        end
