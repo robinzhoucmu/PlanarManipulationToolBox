@@ -1,8 +1,9 @@
 clear all; 
 close all;
 rng(100);
-folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/idealls_mu05';
-flag_use_ideal_ls = 1;
+%folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/idealls_mu05';
+folder_result_save = '~/Pushing/icra_data_proc/motion_model_eval_logs_multirun/train50val40_mu05';
+flag_use_ideal_ls = 0;
 
 log_files_set = {};
  log_files_set{5} = 'SensorLogs/30_63.33_43.33_30_43.33_63.33/exp_08_17_50.txt';
@@ -36,9 +37,9 @@ Tri_total_pressure = Tri_mass * mu_f;
 Tri_com = [0.15/3; 0.15/3];
 
 ratio_train = 0.5;
-ratio_val = 0;
+ratio_val = 0.4;
 mu = 0.5;
-num_runs = 5;
+num_runs = 10;
 rho =  0.05 * sqrt(2);
 for ind_run = 1:1:num_runs
     for ind_surface = 1:1:length(surface_types)
@@ -53,9 +54,9 @@ for ind_run = 1:1:num_runs
                 pressure_id = pressure_ids{ind_pressure};
                 surface_type = surface_types{ind_surface};
                 if (~flag_use_ideal_ls)
-                %[record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train, ratio_val);                
-                [record_all, record_ls_training] = EvaluatePositionOffsetICRADataMotionValidation(...
-                    file_name, ls_type, mu, ratio_train, ratio_val);
+                [record_all, record_ls_training] = EvaluatePositionOffsetICRAData(file_name, ls_type, mu, ratio_train, ratio_val);                
+                %[record_all, record_ls_training] = EvaluatePositionOffsetICRADataMotionValidation(...
+                %    file_name, ls_type, mu, ratio_train, ratio_val);
                 else
                     tri_pts = bsxfun(@minus, Tri_pts{ind_pressure}, Tri_com);
                     [pds] = GetObjParaFromSupportPts(tri_pts, [0;0], Tri_total_pressure);

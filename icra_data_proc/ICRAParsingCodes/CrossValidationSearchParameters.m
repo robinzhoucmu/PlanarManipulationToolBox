@@ -8,7 +8,7 @@ w_vel = [1,2,4];
 % regularization of parameters w.r.t velocity matching.
 % More regularization for real robot exp.
 %w_reg = [0.1, 2, 8, 16];
-w_reg = [0.25, 0.5, 1, 4];
+w_reg = [0.25, 0.5, 1];
 w_force = [0.1, 0.5, 1, 2, 4];
 
 method = options.method;
