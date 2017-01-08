@@ -11,6 +11,12 @@ w_vel = [1,2,4];
 w_reg = [0.25, 0.5, 1];
 w_force = [0.1, 0.5, 1, 2, 4];
 
+% Parameters for mcube data. (smaller range for speed).
+w_vel = [1, 4];
+w_reg = [0.1, 0.25, 1];
+w_force = [0.1, 1, 4];
+
+
 method = options.method;
 
 best_err = 1e+9;
