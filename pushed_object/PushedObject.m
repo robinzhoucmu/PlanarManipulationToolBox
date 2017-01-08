@@ -193,22 +193,40 @@ classdef PushedObject < handle
 %           end
       end
       
+      function [min_dist] = FindClosestDistanceToHand(obj, hand)
+          min_dist = 1e+9;
+          if strcmp(obj.shape_type, 'polygon')
+                [finger_twists, finger_poses] = hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
+                % Look at each polygonal or point finger's contact information. 
+                for ind_finger = 1:1:hand.num_fingers
+                    [dist_finger] = PolygonToPolygonDistance(...
+                        hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
+                    if (dist_finger < min_dist)
+                        min_dist = dist_finger;
+                    end
+                end
+          end
+      end
+      
       function [flag_contact, pt_contacts, vel_contacts, outward_normal_contacts] = ...
               GetHandContactInfo(obj, hand)
       % Given the hand which contains, geometries, pose and twists in
       % global frame, compute whether the object is in contact with the
       % hand and if so find all contact points and velocities in world
       % frame.
+      % Output flag_contact indicates if each finger is in contact.
+      % all other contact informations are column vectors per each contact
+      % point. 
       flag_contact = zeros(hand.num_fingers, 1);
       pt_contacts = [];
       vel_contacts = [];
       outward_normal_contacts = [];
        if strcmp(obj.shape_type, 'polygon')
-           [finger_twists, finger_poses] = GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
+           [finger_twists, finger_poses] = hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
            % Look at each polygonal or point finger's contact information. 
            for ind_finger = 1:1:hand.num_fingers
                 [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
-                    hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
+                    hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose)
                 indices_pair_contact = (min_dist <= hand.finger_radius);
                 if (sum(indices_pair_contact) > 0)
                     flag_contact(ind_finger) = 1;

@@ -61,7 +61,7 @@ if (~flag_uniform_pressure)
 %     record_ls_training.twists = all_twists_local_training;
     
     % Split train_all into train and validation.
-    ratio_validation = 0.4;
+    ratio_validation = 0.3;
     [twists_train, twists_val, wrenches_train, wrenches_val, indices_train, indices_val] = ...
             SplitTrainTestData(all_twists_local_normalized_training, all_wrenches_local_training, 1 - ratio_validation);
     options.flag_convex = 1;

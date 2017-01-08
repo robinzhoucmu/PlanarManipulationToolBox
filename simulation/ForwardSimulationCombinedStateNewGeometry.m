@@ -10,12 +10,11 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
     end
     
     methods (Access = public)
-        function obj = ForwardSimulationCombinedState(pushobj, hand_traj, hand, mu)
+        function obj = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand, mu)
             obj.pushobj = pushobj;
             obj.hand_traj = hand_traj;
             obj.hand = hand;
             obj.mu = mu;
-
         end
         
         function [results] = RollOut(obj)
@@ -48,13 +47,13 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             dx = zeros(size(x));
             dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
             obj.pushobj.pose = x(1:3);
+            % Set hand config and configdot.
             obj.hand.q = x(4:end);
+            obj.hand.qdot = dx(4:end);
             % Check for contact or not. 
-            finger_poses = obj.hand.GetGlobalFingerCartesians();
-            [ ~, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
-            dist = bsxfun(@minus, dist, obj.hand.finger_radius);
-            if min(dist) < 0
-                [contact_info] = ContactResolution(obj, x(4:end), dx(4:end), dist);
+            [min_dist] = obj.pushobj.FindClosestDistanceToHand(obj.hand);
+            if min_dist < obj.hand.finger_radius
+                [contact_info] = obj.ContactResolutionNewGeometry(x(4:end), dx(4:end));
                 dx(1:3) = contact_info.obj_config_dot;
                 if ~strcmp(contact_info.obj_status, 'pushed')
                     dx = zeros(size(x));
@@ -62,6 +61,43 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             end
             %dx
         end        
+        
+        function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot)
+              obj.hand.SetQandQdot(hand_q, hand_qdot);
+              [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
+                  contact_info.outward_normal_contact] = obj.pushobj.GetHandContactInfo(obj.hand);
+              contact_info.num_contact_pts = size(contact_info.pt_contact, 2);
+              contact_info.num_fingers_contact = sum(contact_info.flag_contact);
+              if (contact_info.num_contact_pts == 1)
+                    [contact_info.twist_local, contact_info.wrench_local, contact_info.contact_mode] = ...
+                       obj.pushobj.ComputeVelGivenPointRoundFingerPush(contact_info.pt_contact,  ...
+                       contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                    contact_info.obj_status = 'pushed';
+                    contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
+              elseif (contact_info.num_contact_pts > 1)
+                    [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
+                        contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                    %contact_info.twist_local
+                    if ~flag_converged
+                        fprintf('The multi-contact complementarity problem did not converge!\n');
+                    end
+                    if ~flag_jammed
+                        contact_info.obj_status = 'pushed';
+                        contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local); 
+                        %contact_info.obj_config_dot
+                    elseif contact_info.num_fingers_contact == obj.hand.num_fingers
+                        contact_info.obj_status = 'grasped';
+                        contact_info.obj_config_dot = zeros(3,1);
+                    else
+                        contact_info.obj_status = 'jammed';
+                        contact_info.obj_config_dot = zeros(3,1);
+                    end
+                    contact_info.obj_status
+                    contact_info.obj_config_dot
+                    obj.pushobj.pose
+              end
+        end
+        
         % Resolves contact at time t.
         % 1) Compute the contact points and velocity.
         % 2) If single point contact, call pushing model.
@@ -141,16 +177,6 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
 %               SE2Algebra.GetExponentialMapGivenTwistVec(twist_body * obj.dt_collision);
 %               obj.pushobj.pose = SE2Algebra.GetCartesianPoseFromHomogTransf(nxt_homog_trans);
 %         end
-        
-         % Contact event detection.
-        function [values, isterminal, direction] = ContactEvent(obj, t, hand_config)
-            isterminal = ones(obj.hand.num_fingers, 1);
-            direction = zeros(obj.hand.num_fingers, 1);
-            obj.hand.q = hand_config;
-            finger_poses = obj.hand.GetGlobalFingerCartesians();
-            [~, dist] = obj.pushobj.FindClosestPointAndDistanceWorldFrame(finger_poses);
-            values = max(dist - obj.hand.finger_radius, 0);
-        end
         
     end
     

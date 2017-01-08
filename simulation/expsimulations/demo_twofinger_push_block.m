@@ -31,7 +31,7 @@ pushobj.pose= [le/3;0;0];
 
 %% Construct hand.
 finger_radius = 0.002;
-hand_two_finger = ConstructTwoFingersGripperHand(finger_radius);
+hand_two_finger = ConstructTwoRoundFingersGripperHand(finger_radius);
 %% Specify hand trajectory.
 % Way points
 % Pushing while closing gripper. 
@@ -58,7 +58,7 @@ hand_traj = HandTraj(hand_traj_opts);
 mu = 10;
 dt_collision = 0.05;
 
-sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_two_finger, mu);
+sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, mu);
 sim_results = sim_inst.RollOut();
 toc;
 num_rec_configs = size(sim_results.obj_configs, 2);
