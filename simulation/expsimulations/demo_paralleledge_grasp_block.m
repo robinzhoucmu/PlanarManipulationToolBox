@@ -27,16 +27,16 @@ ls_type = 'quadratic';
 %pushobj.FitLS(ls_type, 200, 0.1);
 
 % put the object initially at the origin.
-pushobj.pose= [le/3;0;pi/24];
+pushobj.pose= [le/3;0;pi/6];
 
-virtual_circle_radius = le/20;
+virtual_circle_radius = le/100;
 finger_radius = virtual_circle_radius;
 finger_length = le / 2;
 finger_width = finger_length / 4;
 [hand_parallel_edges] = ConstructParallelEdgeGripper(virtual_circle_radius, finger_length, finger_width);
 
 q_start = [0; 0; -pi/2; 3*sqrt(2) * le + virtual_circle_radius *2];
-q_end = [-le; 0; -pi/2; 2*le + virtual_circle_radius * 2];
+q_end = [0; 0; -pi/2; 2.00*le + virtual_circle_radius * 2];
 
 
 num_way_q = 100;
@@ -57,24 +57,32 @@ sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_pa
 sim_results = sim_inst.RollOut();
 toc;
 num_rec_configs = size(sim_results.obj_configs, 2);
-figure;
+h = figure;
 hold on;
-seg_size = 5;
+seg_size = 2;
 for i = 1:1:num_rec_configs
     if mod(i, seg_size) == 1
+        if (i == 1)
+            c1 = 'g';
+        elseif (i + seg_size > num_rec_configs)
+            c1 = 'k';
+        else
+            c1 = 'm';
+        end
     % Plot the square object.
         plot(sim_results.obj_configs(1, i), sim_results.obj_configs(2,i), 'b+');
         vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj.shape_vertices, sim_results.obj_configs(:,i));
         vertices(:,end+1) = vertices(:,1);
-        plot(vertices(1,:), vertices(2,:), 'r-');
-     % Plot the round point pusher.
-        theta = sim_results.hand_configs(3,i);
-        d = sim_results.hand_configs(4,i);
-        R = [cos(theta), -sin(theta);
-                sin(theta), cos(theta)];
-        vec_f1 = R * [0;d/2];
-        drawCircle(sim_results.hand_configs(1,i) + vec_f1(1), sim_results.hand_configs(2,i)+ vec_f1(2), finger_radius, 'k');
-        drawCircle(sim_results.hand_configs(1,i) - vec_f1(1), sim_results.hand_configs(2,i) - vec_f1(2), finger_radius, 'k');
+        plot(vertices(1,:), vertices(2,:), '-', 'Color', c1);
+        hand_parallel_edges.Draw(h, sim_results.hand_configs(:,i) , c1);
+%      % Plot the round point pusher.
+%         theta = sim_results.hand_configs(3,i);
+%         d = sim_results.hand_configs(4,i);
+%         R = [cos(theta), -sin(theta);
+%                 sin(theta), cos(theta)];
+%         vec_f1 = R * [0;d/2];
+%         drawCircle(sim_results.hand_configs(1,i) + vec_f1(1), sim_results.hand_configs(2,i)+ vec_f1(2), finger_radius, 'k');
+%         drawCircle(sim_results.hand_configs(1,i) - vec_f1(1), sim_results.hand_configs(2,i) - vec_f1(2), finger_radius, 'k');
     end
 end
 axis equal;

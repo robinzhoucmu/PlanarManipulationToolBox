@@ -20,7 +20,7 @@ function [closest_pairs, min_dist] = PolygonToPolygonContactInfo(poly_a, poly_b,
     min_dist = distancePolygons(cur_vertices_poly_a', cur_vertices_poly_b');
     % Important to get rid of chattering between two contact points on an
     % edge.
-    r_scaled = 1 + 1e-4;
+    r_scaled = 1 + 1e-2;
     min_dist_scaled = min_dist * r_scaled;
     % Project vertices of A onto polygon B.
     [pts_pairs_va_polyb, indices_va_polyb_closest] = ProjectPointsOntoPolygonDistanceThreshold(...
@@ -38,32 +38,8 @@ function [closest_pairs, min_dist] = PolygonToPolygonContactInfo(poly_a, poly_b,
  end
 end
 
-% Project the vertices of polygon A onto polygon B and store the pairs that
-% are smaller than a distance threshold.
-% Output: pts_pairs: 4*N column vectors, first 2 elements in each column
-% corresponds to vertices of A, last 2 elements are their respective
-% projection on polygon B. 
-function [pts_pairs, indices_va_polyb_closest] = ProjectPointsOntoPolygonDistanceThreshold(cur_vertices_poly_a, cur_vertices_poly_b, min_dist)
-    % If the polygon A is NOT a degenerate point.
-    if (size(cur_vertices_poly_a, 2) > 1)
-        % Compute the closest points on poly b w.r.t vertices of a. 
-         [dists_va_polyb, locations_polyb] = distancePointPolyline(cur_vertices_poly_a', cur_vertices_poly_b');
-         % Find pairs that are of the minimum distance.
-         indices_va_polyb_closest = (dists_va_polyb <= min_dist);
-         % Log these pairs. 
-         pts_polyb_project = (polygonPoint(cur_vertices_poly_b', locations_polyb))';
-         pts_polyb_closest = pts_polyb_project(:, indices_va_polyb_closest);
-         pts_polya_closest = cur_vertices_poly_a(:, indices_va_polyb_closest);
-         pts_pairs = [pts_polya_closest;pts_polyb_closest];
-    else
-    end
-end
-% Input: pt 2*1 vector. polygon 2*N.
-% Output: pts_pair [pt; pt_proj] and minimum distance.
-function [pts_pair, dist] = ProjectPointOntoPolygon(pt, polygon)
-    [location, dist] = projPointOnPolygon(pt', polygon');
-    pts_pair = [pt; polygonPoint(polygon', location)'];
-end
+
+
 
 %% Test codes.
 % case 1: edge to vertex

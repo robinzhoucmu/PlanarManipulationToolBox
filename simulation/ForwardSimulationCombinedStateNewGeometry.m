@@ -66,7 +66,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               obj.hand.SetQandQdot(hand_q, hand_qdot);
               [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
                   contact_info.outward_normal_contact] = obj.pushobj.GetHandContactInfo(obj.hand);
-              %contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu
+              %contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact
               contact_info.num_contact_pts = size(contact_info.pt_contact, 2);
               contact_info.num_fingers_contact = sum(contact_info.flag_contact);
               if (contact_info.num_contact_pts == 1)
@@ -77,6 +77,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                     contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local);
                     
               elseif (contact_info.num_contact_pts > 1)
+                  %contact_info.num_fingers_contact
+                  %contact_info.num_contact_pts 
                   [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
                         contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);            
                     if ~flag_converged
@@ -93,13 +95,13 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                         contact_info.obj_status = 'jammed';
                         contact_info.obj_config_dot = zeros(3,1);
                     end
+                   %contact_info.obj_status
+                   %contact_info.obj_config_dot
+                   %obj.pushobj.pose
               else
                   contact_info.obj_status = 'nil';
                    contact_info.obj_config_dot = zeros(3,1);
               end
-               contact_info.obj_status
-               contact_info.obj_config_dot
-               obj.pushobj.pose
         end
         
         % Resolves contact at time t.

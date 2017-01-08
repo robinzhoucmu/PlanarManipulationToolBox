@@ -225,6 +225,7 @@ classdef PushedObject < handle
            [finger_twists, finger_poses] = hand.GetFingerGlobalTwistsAndCartesianWrtInertiaFrame();
            % Look at each polygonal or point finger's contact information. 
            for ind_finger = 1:1:hand.num_fingers
+               %display(ind_finger);
                 [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
                     hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
                 %indices_pair_contact = (min_dist <= hand.finger_radius);
