@@ -1,7 +1,7 @@
 clear all;
 rng(1);
 
-folder_result_save = '~/Pushing/mcube_data_proc/run_searchmu/run10_train50validation30mu025';
+folder_result_save = '~/Pushing/mcube_data_proc/run10_train50validation30mu025/';
 num_runs = 10;
 num_samples_perfile = 5;
 

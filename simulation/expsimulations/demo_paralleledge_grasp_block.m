@@ -27,19 +27,17 @@ ls_type = 'quadratic';
 %pushobj.FitLS(ls_type, 200, 0.1);
 
 % put the object initially at the origin.
-pushobj.pose= [le/3;0;0];
+pushobj.pose= [le/3;0;pi/24];
 
-%% Construct hand.
-finger_radius = 0.002;
-hand_two_finger = ConstructTwoRoundFingersGripperHand(finger_radius);
-%% Specify hand trajectory.
-% Way points
-% Pushing while closing gripper. 
-q_start = [1.5*le; 0; 0; 1.5*le];
-q_end = [0.1*le; 0; 0; 2*finger_radius];
-% Squeezing.
-%q_start = [0; 0; -pi/2; 3*sqrt(2) * le + finger_radius *2];
-%q_end = [0; 0; -pi/2; 2*le + finger_radius * 2];
+virtual_circle_radius = le/20;
+finger_radius = virtual_circle_radius;
+finger_length = le / 2;
+finger_width = finger_length / 4;
+[hand_parallel_edges] = ConstructParallelEdgeGripper(virtual_circle_radius, finger_length, finger_width);
+
+q_start = [0; 0; -pi/2; 3*sqrt(2) * le + virtual_circle_radius *2];
+q_end = [-le; 0; -pi/2; 2*le + virtual_circle_radius * 2];
+
 
 num_way_q = 100;
 dim_q = length(q_start);
@@ -54,11 +52,8 @@ hand_traj_opts.t = t_q;
 hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
-%% Set simulation.
-mu = 1;
-dt_collision = 0.05;
-
-sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, mu);
+mu = 0.1;
+sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_parallel_edges , mu);
 sim_results = sim_inst.RollOut();
 toc;
 num_rec_configs = size(sim_results.obj_configs, 2);

@@ -17,13 +17,17 @@ function [closest_pairs, min_dist] = PolygonToPolygonContactInfo(poly_a, poly_b,
  % If polygon A is not a degenerate point.
  if size(cur_vertices_poly_a, 2) > 1
     % Compute the minimum distance between the polygons.
-    min_dist = distancePolygons(cur_vertices_poly_a', cur_vertices_poly_b')
+    min_dist = distancePolygons(cur_vertices_poly_a', cur_vertices_poly_b');
+    % Important to get rid of chattering between two contact points on an
+    % edge.
+    r_scaled = 1 + 1e-4;
+    min_dist_scaled = min_dist * r_scaled;
     % Project vertices of A onto polygon B.
     [pts_pairs_va_polyb, indices_va_polyb_closest] = ProjectPointsOntoPolygonDistanceThreshold(...
-     cur_vertices_poly_a, cur_vertices_poly_b, min_dist);
+     cur_vertices_poly_a, cur_vertices_poly_b, min_dist_scaled);
     % Project vertices of B onto polygon A.
     [pts_pairs_vb_polya, indices_vb_polya_closest] = ProjectPointsOntoPolygonDistanceThreshold(...
-         cur_vertices_poly_b, cur_vertices_poly_a, min_dist);
+         cur_vertices_poly_b, cur_vertices_poly_a, min_dist_scaled);
      % Swap to <a,b> order
      pts_pairs_vb_polya = [pts_pairs_vb_polya(3:4, :); pts_pairs_vb_polya(1:2, :)];
      closest_pairs = [pts_pairs_va_polyb'; pts_pairs_vb_polya'];

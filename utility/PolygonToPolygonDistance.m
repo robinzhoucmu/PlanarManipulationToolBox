@@ -9,7 +9,7 @@ function [min_dist] = PolygonToPolygonDistance(poly_a, poly_b, pose_a, pose_b)
  [cur_vertices_poly_a] = GetPolygonShapeInWorldFrame(poly_a, pose_a);
  [cur_vertices_poly_b] = GetPolygonShapeInWorldFrame(poly_b, pose_b);
 if size(cur_vertices_poly_a, 2) > 1
-     min_dist = distancePolygons(cur_vertices_poly_a', cur_vertices_poly_b')
+     min_dist = distancePolygons(cur_vertices_poly_a', cur_vertices_poly_b');
 else
     [~,min_dist] = projPointOnPolygon(cur_vertices_poly_a', cur_vertices_poly_b');
 end
