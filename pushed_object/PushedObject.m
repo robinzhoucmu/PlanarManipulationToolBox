@@ -16,7 +16,7 @@ classdef PushedObject < handle
       shape_vertices % object coordinate frame. 2*N.
       shape_parameters % radius of circle, two axis length of ellipse, etc.
       pho % radius of gyration.
-      
+      nsides_symmetry % specify the symmetry order (if any).
       % Pose related. object coordinate frame w.r.t the world frame.
       pose %3*1: [x;y;theta]
       %cur_shape_vertices % shape vertices in world frame.
@@ -34,7 +34,6 @@ classdef PushedObject < handle
        function obj = PushedObject(support_pts, pressure_weights, shape_info, ls_type, ls_coeffs) 
             obj.support_pts = support_pts;
             obj.pressure_weights = pressure_weights;
-
             obj.shape_id = shape_info.shape_id;
             obj.shape_type = shape_info.shape_type;
             obj.pho = shape_info.pho;
@@ -48,14 +47,8 @@ classdef PushedObject < handle
                 obj.ls_coeffs = ls_coeffs;
                 obj.ls_coeffs_cp = obj.ls_coeffs;
             else
-                % If no limit surface information is provided. By default, we will fit a
-                % ellipsoid model for it.
-%                 obj.SetWrenchTwistSamplingConfig(200, 0.4);
-%                 if (nargin == 4)
-%                   obj.FitLSFromPressurePoints(ls_type);
-%                 else
-%                   obj.FitLSFromPressurePoints('quadratic');
-%                 end
+            % The default symmetry order is 1.
+            obj.nsides_symmetry = 1;
             end
        end
        function [obj] = FitLS(obj, ls_type, num_cors, r_facet, flag_plot)
@@ -181,16 +174,6 @@ classdef PushedObject < handle
           vel_contact(:, indices_contact) = twist(1:2, indices_contact) + bsxfun(@times, twist(3,indices_contact), [-pt_contact(2,indices_contact); pt_contact(1,indices_contact)]);
           outward_normal_contact(:, indices_contact) = pt_finger_center(:, indices_contact) - pt_contact(:, indices_contact);
           outward_normal_contact(:, indices_contact) = bsxfun(@rdivide, outward_normal_contact(:, indices_contact), sqrt(sum(outward_normal_contact(:, indices_contact).^2)) + eps);
-% -----------------------------------------------          
-%           if (dist <= finger_radius * r_blem)
-%             flag_contact = 1;
-%             pt_contact = pt_closest;
-%             vel_contact = twist(1:2) + twist(3) * [-pt_contact(2);pt_contact(1)];
-%             outward_normal_contact = pt_finger_center - pt_contact; 
-%             outward_normal_contact = outward_normal_contact / ( eps + norm(outward_normal_contact));
-%           else
-%             flag_contact = 0;
-%           end
       end
       
       function [min_dist] = FindClosestDistanceToHand(obj, hand)

@@ -1,14 +1,14 @@
 clear all;
 %folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_train_test_searchmu2_filter/wrench1twist1_20percenttraining';
-folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu/';
+%folder_result_save = '~/Pushing/mcube_data_proc/motion_model_eval_logs_multirun_searchmu/';
 vels = [10];
-%surface_types = {'delrin', 'abs', 'plywood'};
-surface_types = {'delrin'};
+surface_types = {'delrin',  'abs', 'plywood'};
+%surface_types = {'delrin', 'abs'};
 shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip2', 'ellip3', 'hex', 'butter'};
 ls_types = {'poly4', 'quadratic'};
 % Result table for a particular velocity. Each column is a particular object, the odd number rows are surface-poly4
 % the even number rows are surface-quad. 
-numruns = 1;
+numruns = 6;
 result_record_all = cell(numruns, 1);
 all_run_avg_disp = zeros(length(surface_types) * length(ls_types), length(shape_ids));
 all_run_avg_angle = zeros(length(surface_types) * length(ls_types), length(shape_ids));

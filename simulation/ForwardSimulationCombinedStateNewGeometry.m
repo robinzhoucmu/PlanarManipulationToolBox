@@ -7,6 +7,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         hand
         % Coefficient of friction between the object and the hand.
         mu
+        % Contact status
+        status_contact
     end
     
     methods (Access = public)
@@ -15,6 +17,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.hand_traj = hand_traj;
             obj.hand = hand;
             obj.mu = mu;
+            obj.status_contact = 'free';
         end
         
         function [results] = RollOut(obj)
@@ -22,7 +25,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               'AbsTol', 1e-6,...
               'MaxStep',0.05);             
             dt_record = 0.02;
-            results.all_contact_info = {};
+            %results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
             cur_t = 0;
@@ -36,7 +39,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             all_x = deval(sol, t_eval);
             results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
             results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
-            
+            results.final_contact_status = obj.status_contact;
         end
     end
     
@@ -58,6 +61,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 if ~strcmp(contact_info.obj_status, 'pushed')
                     dx = zeros(size(x));
                 end
+                obj.status_contact = contact_info.obj_status;
             end
             %dx
         end        

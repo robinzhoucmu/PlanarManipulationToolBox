@@ -23,8 +23,8 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 200, 0.1);
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+pushobj.FitLS(ls_type, 200, 0.1);
 
 % put the object initially at the origin.
 pushobj.pose= [le/3;0;pi/6];
@@ -52,7 +52,7 @@ hand_traj_opts.t = t_q;
 hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
-mu = 0.1;
+mu = 0.2;
 sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_parallel_edges , mu);
 sim_results = sim_inst.RollOut();
 toc;
@@ -63,7 +63,7 @@ seg_size = 2;
 for i = 1:1:num_rec_configs
     if mod(i, seg_size) == 1
         if (i == 1)
-            c1 = 'g';
+            c1 = 'b';
         elseif (i + seg_size > num_rec_configs)
             c1 = 'k';
         else
