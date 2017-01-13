@@ -111,7 +111,7 @@ for iter = 1:max_iter
       break;
    end
 end
-warning on MATLAB:nearlySingularMatrix
+%warning on MATLAB:nearlySingularMatrix
 x = min(max(x,l),u);
 
 function [psi,phi,J] = FB(x,q,M,l,u)

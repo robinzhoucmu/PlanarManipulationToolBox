@@ -1,4 +1,4 @@
-classdef PushedObject < handle
+classdef PushedObject < matlab.mixin.Copyable
     % Class of object being pushed. 
    properties
       % Limit surface related.
@@ -31,26 +31,29 @@ classdef PushedObject < handle
       
    end
    methods
-       function obj = PushedObject(support_pts, pressure_weights, shape_info, ls_type, ls_coeffs) 
+       function obj = PushedObject(support_pts, pressure_weights, shape_info, ls_type, ls_coeffs, nsides_symmetry) 
             obj.support_pts = support_pts;
             obj.pressure_weights = pressure_weights;
             obj.shape_id = shape_info.shape_id;
             obj.shape_type = shape_info.shape_type;
             obj.pho = shape_info.pho;
+            % The default symmetry order is 1.
+            obj.nsides_symmetry = 1;
+
             if strcmp(obj.shape_type,'polygon')
                 obj.shape_vertices = shape_info.shape_vertices;
             else
                 obj.shape_parameters = shape_info.shape_parameters;
             end
-            if (nargin == 5)
+            if (nargin >= 5)
                 obj.ls_type = ls_type;
                 obj.ls_coeffs = ls_coeffs;
                 obj.ls_coeffs_cp = obj.ls_coeffs;
-            else
-            % The default symmetry order is 1.
-            obj.nsides_symmetry = 1;
             end
-       end
+            if (nargin == 6)
+                obj.nsides_symmetry = nsides_symmetry;
+            end
+            end
        function [obj] = FitLS(obj, ls_type, num_cors, r_facet, flag_plot)
             if (nargin < 2)
                 ls_type = 'quadratic';
@@ -213,7 +216,7 @@ classdef PushedObject < handle
                     hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
                 %indices_pair_contact = (min_dist <= hand.finger_radius);
                 %if (sum(indices_pair_contact) > 0)
-               if (min_dist <= hand.finger_radius )
+               if (min_dist <= hand.finger_radius)
                     flag_contact(ind_finger) = 1;
                     %pt_contacts_finger = closest_pairs(3:4, indices_pair_contact);
                     pt_contacts_finger = closest_pairs(3:4, :);

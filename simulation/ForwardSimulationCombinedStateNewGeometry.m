@@ -23,7 +23,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-6,...
               'AbsTol', 1e-6,...
-              'MaxStep',0.05);             
+              'MaxStep',0.01);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
@@ -96,6 +96,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                         contact_info.obj_status = 'grasped';
                         contact_info.obj_config_dot = zeros(3,1);
                     else
+                        %contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu
                         contact_info.obj_status = 'jammed';
                         contact_info.obj_config_dot = zeros(3,1);
                     end

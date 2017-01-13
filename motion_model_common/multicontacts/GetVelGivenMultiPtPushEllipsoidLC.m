@@ -40,7 +40,7 @@ lcp_M = [N*A*N', N*A*L', zeros(num_cts, num_cts);
 val_pivot = 1e-5;
 val_miters = 1e+4;
 [w, z, retcode] = LCPSolve(lcp_M, q, val_pivot, val_miters);
-%norm(w - lcp_M * z - q)
+%display(norm(w - lcp_M * z - q))
 if retcode(1) == 1
     flag_sol = 1;
 elseif (norm(w - lcp_M * z - q) < 1e-3) & (sum(w<0) == 0) & (sum(z<0) == 0) & (w'*z == 0)
@@ -48,19 +48,26 @@ elseif (norm(w - lcp_M * z - q) < 1e-3) & (sum(w<0) == 0) & (sum(z<0) == 0) & (w
 else
     flag_sol = 0;
 end
-% z = LCP(lcp_M,q);
-% w = lcp_M * z + q;
-% if (norm(w - lcp_M * z - q) < 1e-3) & (sum(w < -1e-3) == 0) & (sum(z < -1e-3) == 0) & (abs(w'*z) <= 1e-3)
-%     flag_sol = 1;
-% else
-%     flag_sol = 0;
-% end
+% If the first solver didn't return a solution, use Newton's method based
+% solver to try to get a solution.
+if (~flag_sol)
+    z = LCP(lcp_M,q);
+    w = lcp_M * z + q;
+    if (norm(w - lcp_M * z - q) < 1e-3) & (sum(w < -1e-3) == 0) & (sum(z < -1e-3) == 0) & (abs(w'*z) <= 1e-3)
+        flag_sol = 1;
+    else
+        flag_sol = 0;
+    end
+end
+
+% Result
 if (flag_sol)
     fns = z(1:num_cts);
    fts = z(num_cts+1:3*num_cts);
    V = A * (N' * fns + L' * fts);
    F = A \ V;
 end
+
 end
 % Example 1: Jamming. 
 % vps = [1,-1;0,0]; pts = [-1,1;0,0]; outnormals = [-1,1;0,0]; mu = 0.5;
