@@ -5,10 +5,14 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         hand_traj
         controller
         hand
-        % Coefficient of friction between the object and the hand.
+        % Estimated average coefficient of friction between the object and the hand.
         mu
         % Contact status
         status_contact
+        % Minimum estimated coefficient of friction between the object and the hand.
+        mu_min
+        % Maximum estimated coefficient of friction. 
+        mu_max
     end
     
     methods (Access = public)
@@ -17,6 +21,9 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.hand_traj = hand_traj;
             obj.hand = hand;
             obj.mu = mu;
+            % Default
+            obj.mu_min = mu;
+            obj.mu_max = mu;
             obj.status_contact = 'free';
         end
         
@@ -67,6 +74,10 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         end        
         
         function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot)
+              % Uniformly sample a value of coefficient of friction between
+              % mu_min and mu_max.
+              mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
+              
               obj.hand.SetQandQdot(hand_q, hand_qdot);
               [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
                   contact_info.outward_normal_contact] = obj.pushobj.GetHandContactInfo(obj.hand);
@@ -76,7 +87,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               if (contact_info.num_contact_pts == 1)
                     [contact_info.twist_local, contact_info.wrench_local, contact_info.contact_mode] = ...
                        obj.pushobj.ComputeVelGivenPointRoundFingerPush(contact_info.pt_contact,  ...
-                       contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);
+                       contact_info.vel_contact, contact_info.outward_normal_contact, mu_rand);
                     contact_info.obj_status = 'pushed';
                     contact_info.obj_config_dot = obj.GetObjectQDotGivenBodyTwist(contact_info.twist_local);
                     
@@ -84,7 +95,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                   %contact_info.num_fingers_contact
                   %contact_info.num_contact_pts 
                   [contact_info.twist_local, contact_info.wrench_local, flag_jammed, flag_converged] = obj.pushobj.ComputeVelGivenMultiPointRoundFingerPush(...
-                        contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, obj.mu);            
+                        contact_info.pt_contact, contact_info.vel_contact, contact_info.outward_normal_contact, mu_rand);            
                     if ~flag_converged
                         fprintf('The multi-contact complementarity problem did not converge!\n');
                     end
