@@ -74,9 +74,14 @@ classdef PushedObject < matlab.mixin.Copyable
        % For now, the noise injection is only for ellipsoid/quadratic model.
        function [obj] = InjectLSNoise(obj)
            if strcmp(obj.ls_type, 'quadratic')
+                % Larger df is smaller deviation.
                 df = 500; 
                 obj.ls_coeffs = wishrnd(obj.ls_coeffs,df)/df;
            end
+       end
+       
+       function [obj] = RecoverInitialLS(obj)
+            obj.ls_coeffs = obj.ls_coeffs_cp;
        end
        
        function [obj] = SetWrenchTwistSamplingConfig(obj, num_cors, r_facet)

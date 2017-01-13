@@ -77,6 +77,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               % Uniformly sample a value of coefficient of friction between
               % mu_min and mu_max.
               mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
+              % Randomly inject noise 
+              obj.pushobj.InjectLSNoise();
               
               obj.hand.SetQandQdot(hand_q, hand_qdot);
               [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
@@ -118,6 +120,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                   contact_info.obj_status = 'nil';
                    contact_info.obj_config_dot = zeros(3,1);
               end
+              % Change back to initial limit surface coefficient.
+              obj.pushobj.RecoverInitialLS();
         end
         
         % Resolves contact at time t.
