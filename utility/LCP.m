@@ -47,8 +47,8 @@ tol            = 1.0e-12;
 mu             = 1e-3;
 mu_step        = 5;
 mu_min         = 1e-5;
-%max_iter       = 10;
-max_iter       = 20;
+max_iter       = 10;
+%max_iter       = 20;
 b_tol          = 1e-6;
 
 n              = size(M,1);

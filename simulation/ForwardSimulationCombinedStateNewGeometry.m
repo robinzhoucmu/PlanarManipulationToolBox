@@ -28,9 +28,9 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         end
         
         function [results] = RollOut(obj)
-            opts = odeset('RelTol',1e-6,...
-              'AbsTol', 1e-6,...
-              'MaxStep',0.01);             
+            opts = odeset('RelTol',1e-4,...
+              'AbsTol', 1e-5,...
+              'MaxStep',0.02);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
@@ -70,7 +70,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 end
                 obj.status_contact = contact_info.obj_status;
             end
-            %dx
+            %x
         end        
         
         function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot)
@@ -79,7 +79,6 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
               % Randomly inject noise 
               obj.pushobj.InjectLSNoise();
-              
               obj.hand.SetQandQdot(hand_q, hand_qdot);
               [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
                   contact_info.outward_normal_contact] = obj.pushobj.GetHandContactInfo(obj.hand);

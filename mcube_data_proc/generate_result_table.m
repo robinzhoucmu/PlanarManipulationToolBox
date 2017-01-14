@@ -8,7 +8,7 @@ shape_ids = {'rect1', 'rect2', 'rect3', 'tri1', 'tri2', 'tri3', 'ellip1', 'ellip
 ls_types = {'poly4', 'quadratic'};
 % Result table for a particular velocity. Each column is a particular object, the odd number rows are surface-poly4
 % the even number rows are surface-quad. 
-numruns = 6;
+numruns = 7;
 result_record_all = cell(numruns, 1);
 all_run_avg_disp = zeros(length(surface_types) * length(ls_types), length(shape_ids));
 all_run_avg_angle = zeros(length(surface_types) * length(ls_types), length(shape_ids));

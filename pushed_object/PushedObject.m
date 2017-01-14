@@ -75,8 +75,8 @@ classdef PushedObject < matlab.mixin.Copyable
        function [obj] = InjectLSNoise(obj)
            if strcmp(obj.ls_type, 'quadratic')
                 % Larger df is smaller deviation.
-                df = 500; 
-                obj.ls_coeffs = wishrnd(obj.ls_coeffs,df)/df;
+                df = 200; 
+                obj.ls_coeffs = wishrnd(obj.ls_coeffs_cp,df)/df;
            end
        end
        
