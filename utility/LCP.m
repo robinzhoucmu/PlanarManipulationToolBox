@@ -72,6 +72,7 @@ x              = x0;
 [psi,phi,J]    = FB(x,q,M,l,u);
 new_x          = true;
 warning off MATLAB:nearlySingularMatrix
+warning('off','MATLAB:singularMatrix')
 for iter = 1:max_iter
    if new_x
       [mlu,ilu]      = min([abs(x-l),abs(u-x)],[],2);
