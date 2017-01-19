@@ -30,7 +30,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         function [results] = RollOut(obj)
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.02);             
+              'MaxStep',0.01);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
