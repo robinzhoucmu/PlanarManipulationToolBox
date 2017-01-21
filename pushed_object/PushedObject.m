@@ -80,9 +80,6 @@ classdef PushedObject < matlab.mixin.Copyable
            end
        end
        
-       function [obj] = RecoverInitialLS(obj)
-            obj.ls_coeffs = obj.ls_coeffs_cp;
-       end
        
        function [obj] = SetWrenchTwistSamplingConfig(obj, num_cors, r_facet)
            if (num_cors < 15)

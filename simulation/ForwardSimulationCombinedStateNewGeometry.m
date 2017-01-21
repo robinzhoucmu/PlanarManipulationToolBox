@@ -120,7 +120,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                    contact_info.obj_config_dot = zeros(3,1);
               end
               % Change back to initial limit surface coefficient.
-              obj.pushobj.RecoverInitialLS();
+              %obj.pushobj.RecoverInitialLS();
+             
         end
         
         % Resolves contact at time t.
