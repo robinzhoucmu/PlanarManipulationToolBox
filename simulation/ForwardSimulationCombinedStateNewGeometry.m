@@ -13,6 +13,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         mu_min
         % Maximum estimated coefficient of friction. 
         mu_max
+        % Current operating mu in each segment.
+        mu_cur
     end
     
     methods (Access = public)
@@ -21,33 +23,45 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.hand_traj = hand_traj;
             obj.hand = hand;
             obj.mu = mu;
+            obj.mu_cur = mu;
             % Default
             obj.mu_min = mu;
             obj.mu_max = mu;
             obj.status_contact = 'free';
         end
         
-        function [results] = RollOut(obj)
+        function [results] = RollOut(obj, num_sim_segs)
+            if nargin < 2
+                num_sim_segs = 1;
+            end
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.05);             
+              'MaxStep',0.01);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
-            cur_t = 0;
-            cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
-            t_max =  max(obj.hand_traj.t);
-            % Simulate until jamming happens.
-            t_range = [0 t_max];
-            % Roll out the hand trajectory until contact happens.
-            obj.pushobj.InjectLSNoise();
-            sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
-            t_eval = 0:dt_record:t_max;
-            all_x = deval(sol, t_eval);
-            results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
-            results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
-            results.final_contact_status = obj.status_contact;
+                        t_max =  max(obj.hand_traj.t);
+            for ind_seg = 1:1:num_sim_segs
+                t_start = t_max * (ind_seg - 1) / num_sim_segs;
+                % Simulate until jamming happens.
+                t_end = t_max * ind_seg  / num_sim_segs;
+                %t_range = [0 t_max];
+                t_range = [t_start t_end];
+                %cur_t = 0;
+                cur_t = t_start;
+                cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
+                % Roll out the hand trajectory until contact happens.
+                obj.pushobj.InjectLSNoise();
+                obj.mu_cur  = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
+                sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
+                %t_eval = 0:dt_record:t_max;
+                t_eval = t_start:dt_record:t_end;
+                all_x = deval(sol, t_eval);
+                results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
+                results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
+                results.final_contact_status = obj.status_contact;
+            end
         end
     end
     
@@ -64,7 +78,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             % Check for contact or not. 
             [min_dist] = obj.pushobj.FindClosestDistanceToHand(obj.hand);
             if min_dist < obj.hand.finger_radius
-                [contact_info] = obj.ContactResolutionNewGeometry(x(4:end), dx(4:end));
+                [contact_info] = obj.ContactResolutionNewGeometry(x(4:end), dx(4:end), obj.mu_cur);
                 dx(1:3) = contact_info.obj_config_dot;
                 if ~strcmp(contact_info.obj_status, 'pushed')
                     dx = zeros(size(x));
@@ -74,10 +88,12 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             %x
         end        
         
-        function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot)
+        function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot, mu_rand)
               % Uniformly sample a value of coefficient of friction between
               % mu_min and mu_max.
-              mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
+              if (nargin < 4)
+                mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
+              end
               % Randomly inject noise 
               %obj.pushobj.InjectLSNoise();
               obj.hand.SetQandQdot(hand_q, hand_qdot);

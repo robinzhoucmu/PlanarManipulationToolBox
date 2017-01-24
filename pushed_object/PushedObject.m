@@ -10,9 +10,9 @@ classdef PushedObject < matlab.mixin.Copyable
       Q_poly4
       % Coefficients for poly4 optimization program.  See
       % get_poly4_parameters for clarification.
-     E_poly4_opt
-     A_poly4_opt
-     B_poly4_opt
+      E_poly4_opt
+      A_poly4_opt
+      B_poly4_opt
       % Pressure related.
       support_pts  %2*N
       pressure_weights  % N*1
@@ -48,7 +48,7 @@ classdef PushedObject < matlab.mixin.Copyable
             obj.pho = shape_info.pho;
             % The default symmetry order is 1.
             obj.nsides_symmetry = 1;
-            obj.noise_df = 100;
+            obj.noise_df = 50;
             [obj.E_poly4_opt, obj.A_poly4_opt, obj.B_poly4_opt] = get_poly4_parameters();
             if strcmp(obj.shape_type,'polygon')
                 obj.shape_vertices = shape_info.shape_vertices;
