@@ -9,5 +9,6 @@ hand_single_finger.num_fingers = 1;
 hand_single_finger.finger_radius = finger_radius;
 hand_single_finger.fun_fk = fun_fk_hand_single_finger;
 hand_single_finger.fun_fv = fun_fv_hand_single_finger;
+hand_single_finger.finger_geometries{1} = [0;0];
 
 end

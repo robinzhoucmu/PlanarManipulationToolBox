@@ -82,12 +82,15 @@ classdef Hand < handle
             hand_twist = SE2Algebra.GetGlobalTwistGivenQandQdot(obj.q, obj.qdot);
         end
         
-        function [] = Draw(obj, h, q, c)
+        function [] = Draw(obj, h, q, c, lw)
             if (nargin < 3)
                 q = obj.q;
             end
             if (nargin < 4)
                 c = 'k';
+            end
+            if (nargin < 5)
+                lw = 1;
             end
             % Draw round fingers given (optional) config q and color.
             figure(h);
@@ -97,14 +100,15 @@ classdef Hand < handle
             finger_carts_global = obj.GetGlobalFingerCartesians();
             if strcmp(obj.finger_type, 'all_circles')
                 for i = 1:1:obj.num_fingers
-                    drawCircle(finger_carts_global(1,i), finger_carts_global(2,i), obj.finger_radius, 'color', c);
+                    drawCircle(finger_carts_global(1,i), finger_carts_global(2,i), ...
+                        obj.finger_radius, 'color', c, 'LineWidth', lw);
                 end
             elseif strcmp(obj.finger_type, 'multi_polygons')
                 % Draw each polygons.
                 for i = 1:1:obj.num_fingers
                     finger_vertices = GetPolygonShapeInWorldFrame(...
                         obj.finger_geometries{i}, finger_carts_global(:,i));
-                    drawPolygon(finger_vertices', c);
+                    drawPolygon(finger_vertices', 'color', c, 'LineWidth', lw);
                 end
             end
             obj.q = q_tmp;

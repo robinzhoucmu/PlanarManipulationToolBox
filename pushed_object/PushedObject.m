@@ -5,6 +5,14 @@ classdef PushedObject < matlab.mixin.Copyable
       ls_coeffs
       ls_type
       ls_coeffs_cp
+      % The psd Q decomposition matrix for poly4 from the optimization
+      % result. This is used for noisy sampling of SOS-Convex poly4s. 
+      Q_poly4
+      % Coefficients for poly4 optimization program.  See
+      % get_poly4_parameters for clarification.
+     E_poly4_opt
+     A_poly4_opt
+     B_poly4_opt
       % Pressure related.
       support_pts  %2*N
       pressure_weights  % N*1
@@ -17,6 +25,7 @@ classdef PushedObject < matlab.mixin.Copyable
       shape_parameters % radius of circle, two axis length of ellipse, etc.
       pho % radius of gyration.
       nsides_symmetry % specify the symmetry order (if any).
+      noise_df % Specify the degree of freedom in wishart sampling. Bigger value is smaller noise.
       % Pose related. object coordinate frame w.r.t the world frame.
       pose %3*1: [x;y;theta]
       %cur_shape_vertices % shape vertices in world frame.
@@ -39,7 +48,8 @@ classdef PushedObject < matlab.mixin.Copyable
             obj.pho = shape_info.pho;
             % The default symmetry order is 1.
             obj.nsides_symmetry = 1;
-
+            obj.noise_df = 5;
+            [obj.E_poly4_opt, obj.A_poly4_opt, obj.B_poly4_opt] = get_poly4_parameters();
             if strcmp(obj.shape_type,'polygon')
                 obj.shape_vertices = shape_info.shape_vertices;
             else
@@ -53,7 +63,8 @@ classdef PushedObject < matlab.mixin.Copyable
             if (nargin == 6)
                 obj.nsides_symmetry = nsides_symmetry;
             end
-            end
+       end
+        
        function [obj] = FitLS(obj, ls_type, num_cors, r_facet, flag_plot)
             if (nargin < 2)
                 ls_type = 'quadratic';
@@ -75,11 +86,13 @@ classdef PushedObject < matlab.mixin.Copyable
        function [obj] = InjectLSNoise(obj)
            if strcmp(obj.ls_type, 'quadratic')
                 % Larger df is smaller deviation.
-                df = 200; 
+                df = obj.noise_df; 
                 obj.ls_coeffs = wishrnd(obj.ls_coeffs_cp,df)/df;
+           elseif strcmp(obj.ls_type, 'poly4')
+                Q_noisy = wishrnd(obj.Q_poly4, obj.noise_df) / obj.noise_df;
+                [obj.ls_coeffs] = GetPoly4CoefficientFromDecompositionMatrix(Q_noisy, obj.A_poly4_opt, obj.B_poly4_opt);
            end
        end
-       
        
        function [obj] = SetWrenchTwistSamplingConfig(obj, num_cors, r_facet)
            if (num_cors < 15)
@@ -116,7 +129,7 @@ classdef PushedObject < matlab.mixin.Copyable
             if strcmp(obj.ls_type, 'quadratic')
                 [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 1, 1, flag_plot);
             elseif strcmp(obj.ls_type, 'poly4')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = Fit4thOrderPolyCVX(F', V', 1, 1, 1, flag_plot);
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s, obj.Q_poly4] = Fit4thOrderPolyCVX(F', V', 1, 1, 1, flag_plot);
             end
             obj.ls_coeffs_cp = obj.ls_coeffs;
        end

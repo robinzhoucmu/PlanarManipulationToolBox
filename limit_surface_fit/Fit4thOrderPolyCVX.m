@@ -10,7 +10,7 @@
 % pred_V: predicted twists directions for each input wrench point.
 % s: positive projection of twists onto the predicted twist.
 
-function [v, xi, delta, pred_V, s] = Fit4thOrderPolyCVX(Force, Vel, gamma, beta, flag_convex, flag_plot)
+function [v, xi, delta, pred_V, s, Q] = Fit4thOrderPolyCVX(Force, Vel, gamma, beta, flag_convex, flag_plot)
 lambda = 0.1;
 if (nargin == 2) 
     gamma = 1;
