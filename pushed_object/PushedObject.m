@@ -48,7 +48,7 @@ classdef PushedObject < matlab.mixin.Copyable
             obj.pho = shape_info.pho;
             % The default symmetry order is 1.
             obj.nsides_symmetry = 1;
-            obj.noise_df = 5;
+            obj.noise_df = 100;
             [obj.E_poly4_opt, obj.A_poly4_opt, obj.B_poly4_opt] = get_poly4_parameters();
             if strcmp(obj.shape_type,'polygon')
                 obj.shape_vertices = shape_info.shape_vertices;
@@ -83,7 +83,7 @@ classdef PushedObject < matlab.mixin.Copyable
        end
        
        % For now, the noise injection is only for ellipsoid/quadratic model.
-       function [obj] = InjectLSNoise(obj)
+       function [] = InjectLSNoise(obj)
            if strcmp(obj.ls_type, 'quadratic')
                 % Larger df is smaller deviation.
                 df = obj.noise_df; 

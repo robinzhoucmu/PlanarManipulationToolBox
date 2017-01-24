@@ -41,6 +41,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             % Simulate until jamming happens.
             t_range = [0 t_max];
             % Roll out the hand trajectory until contact happens.
+            obj.pushobj.InjectLSNoise();
             sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
             t_eval = 0:dt_record:t_max;
             all_x = deval(sol, t_eval);
@@ -78,7 +79,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
               % mu_min and mu_max.
               mu_rand = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
               % Randomly inject noise 
-              obj.pushobj.InjectLSNoise();
+              %obj.pushobj.InjectLSNoise();
               obj.hand.SetQandQdot(hand_q, hand_qdot);
               [contact_info.flag_contact, contact_info.pt_contact, contact_info.vel_contact, ...
                   contact_info.outward_normal_contact] = obj.pushobj.GetHandContactInfo(obj.hand);
