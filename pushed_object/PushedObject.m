@@ -127,9 +127,9 @@ classdef PushedObject < matlab.mixin.Copyable
             % vector.
             [V, F] = NormalizeForceAndVelocities(V, F, obj.pho);
             if strcmp(obj.ls_type, 'quadratic')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 1, 1, flag_plot);
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 2, 1, flag_plot);
             elseif strcmp(obj.ls_type, 'poly4')
-                [obj.ls_coeffs, xi, delta, pred_V_dir, s, obj.Q_poly4] = Fit4thOrderPolyCVX(F', V', 1, 1, 1, flag_plot);
+                [obj.ls_coeffs, xi, delta, pred_V_dir, s, obj.Q_poly4] = Fit4thOrderPolyCVX(F', V', 1, 2, 1, flag_plot);
             end
             obj.ls_coeffs_cp = obj.ls_coeffs;
        end

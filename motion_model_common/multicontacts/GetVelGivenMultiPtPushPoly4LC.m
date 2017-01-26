@@ -18,7 +18,9 @@ eps_deltaV = 1e-4;
 V = [0;0;0];
 cur_F = 1/sqrt(3)*[1;1;1];
 norm_deltaV = 1e+5;
-eta = 0.9;
+%eta = 0.9; This value has been used for a while until suspicion about two
+%finger pushing a circle.
+eta = 0.5;
 max_iters = 1e+3;
 count_iter = 0;
 while (norm_deltaV > eps_deltaV) & (count_iter < max_iters)
