@@ -2,5 +2,6 @@
 % Output: pts_pair [pt; pt_proj] and minimum distance.
 function [pts_pair, dist] = ProjectPointOntoPolygon(pt, polygon)
     [location, dist] = projPointOnPolygon(pt', polygon');
+    location = real(location);
     pts_pair = [pt; polygonPoint(polygon', location)'];
 end

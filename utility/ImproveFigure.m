@@ -12,7 +12,7 @@ end
 set(findall(gcf,'-property','FontName'),'FontName','Times New Roman');
 %set(gca, 'xtick', -1:0.5:16);
 %set(gca, 'ytick', -360:120:360);
-set(gca, 'Linewidth', 1);
+%set(gca, 'Linewidth', 1);
 x = get(gca, 'XLabel');
 y = get(gca, 'YLabel');
 set(findall(gcf,'-property','FontSize'),'FontSize', 20);

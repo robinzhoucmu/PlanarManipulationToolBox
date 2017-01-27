@@ -90,7 +90,16 @@ classdef PushedObject < matlab.mixin.Copyable
                 obj.ls_coeffs = wishrnd(obj.ls_coeffs_cp,df)/df;
            elseif strcmp(obj.ls_type, 'poly4')
                 Q_noisy = wishrnd(obj.Q_poly4, obj.noise_df) / obj.noise_df;
+                %display(obj.Q_poly4)
+                %alpha = 0.1;
+                %Q_noisy = alpha * obj.Q_poly4 + (1-alpha) * Q_noisy;
+                %Q_noisy = Q_noisy + 1e-1 * eye(9);
                 [obj.ls_coeffs] = GetPoly4CoefficientFromDecompositionMatrix(Q_noisy, obj.A_poly4_opt, obj.B_poly4_opt);
+                %filter_indices = [4,5,6,7,8,9,13,14,15];
+                %obj.ls_coeffs(filter_indices) = obj.ls_coeffs_cp(filter_indices);
+                %obj.ls_coeffs(filter_indices) = zeros(length(filter_indices), 1);
+                %display(obj.ls_coeffs);
+                %display(obj.ls_coeffs_cp);
            end
        end
        
@@ -130,6 +139,7 @@ classdef PushedObject < matlab.mixin.Copyable
                 [obj.ls_coeffs, xi, delta, pred_V_dir, s] = FitEllipsoidForceVelocityCVX(F', V', 1, 2, 1, flag_plot);
             elseif strcmp(obj.ls_type, 'poly4')
                 [obj.ls_coeffs, xi, delta, pred_V_dir, s, obj.Q_poly4] = Fit4thOrderPolyCVX(F', V', 1, 2, 1, flag_plot);
+                %display(obj.Q_poly4);
             end
             obj.ls_coeffs_cp = obj.ls_coeffs;
        end
@@ -227,6 +237,7 @@ classdef PushedObject < matlab.mixin.Copyable
            % Look at each polygonal or point finger's contact information. 
            for ind_finger = 1:1:hand.num_fingers
                %display(ind_finger);
+               
                 [closest_pairs, min_dist] = PolygonToPolygonContactInfo(...
                     hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
                 %indices_pair_contact = (min_dist <= hand.finger_radius);
