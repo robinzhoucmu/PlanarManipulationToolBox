@@ -15,6 +15,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         mu_max
         % Current operating mu in each segment.
         mu_cur
+        % Flag for jamming/grasping happened. All subsequent dx = 0.
+        flag_static
     end
     
     methods (Access = public)
@@ -28,6 +30,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.mu_min = mu;
             obj.mu_max = mu;
             obj.status_contact = 'free';
+            obj.flag_static = false;
         end
         
         function [results] = RollOut(obj, num_sim_segs)
@@ -36,12 +39,12 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             end
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.005);             
+              'MaxStep',0.01);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
-                        t_max =  max(obj.hand_traj.t);
+            t_max =  max(obj.hand_traj.t);
             for ind_seg = 1:1:num_sim_segs
                 t_start = t_max * (ind_seg - 1) / num_sim_segs;
                 % Simulate until jamming happens.
@@ -60,6 +63,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 all_x = deval(sol, t_eval);
                 results.hand_configs(: , end+1:end+length(t_eval)) = all_x(4:end, :);
                 results.obj_configs(:, end+1:end+length(t_eval)) = all_x(1:3, :);
+                %obj.pushobj.pose = all_x(1:3,end);
                 results.final_contact_status = obj.status_contact;
             end
         end
@@ -70,6 +74,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         % x is the combined state of object and hand.
         function dx = ObjectHandMotion(obj, t, x)
             dx = zeros(size(x));
+
             dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
             obj.pushobj.pose = x(1:3);
             % Set hand config and configdot.
@@ -77,7 +82,8 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.hand.qdot = dx(4:end);
             % Check for contact or not. 
             [min_dist] = obj.pushobj.FindClosestDistanceToHand(obj.hand);
-            if min_dist < obj.hand.finger_radius
+            inflated_ratio = 1.01;
+            if min_dist <= inflated_ratio * obj.hand.finger_radius
                 [contact_info] = obj.ContactResolutionNewGeometry(x(4:end), dx(4:end), obj.mu_cur);
                 dx(1:3) = contact_info.obj_config_dot;
                 if ~strcmp(contact_info.obj_status, 'pushed')
@@ -85,6 +91,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 end
                 obj.status_contact = contact_info.obj_status;
             end
+
             %x
         end        
         
