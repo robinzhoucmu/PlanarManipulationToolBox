@@ -37,9 +37,9 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             if nargin < 2
                 num_sim_segs = 1;
             end
-            opts = odeset('RelTol',1e-5,...
-              'AbsTol', 1e-6,...
-              'MaxStep',0.005);             
+            opts = odeset('RelTol',1e-4,...
+              'AbsTol', 1e-5,...
+              'MaxStep',0.01);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
@@ -82,7 +82,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             obj.hand.qdot = dx(4:end);
             % Check for contact or not. 
             [min_dist] = obj.pushobj.FindClosestDistanceToHand(obj.hand);
-            inflated_ratio = 1.01;
+            inflated_ratio = 1.00;
             if min_dist <= inflated_ratio * obj.hand.finger_radius
                 [contact_info] = obj.ContactResolutionNewGeometry(x(4:end), dx(4:end), obj.mu_cur);
                 dx(1:3) = contact_info.obj_config_dot;
