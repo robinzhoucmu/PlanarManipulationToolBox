@@ -22,6 +22,6 @@ set(findall(gcf,'-property','FontSize'),'FontSize', 20);
 child = get(gca, 'Children');
 if (flag_line_width)
     for i=1:size(child,1)
-        set(child(i),'Linewidth', 1.75);
+        set(child(i),'Linewidth', 2);
     end
 end
