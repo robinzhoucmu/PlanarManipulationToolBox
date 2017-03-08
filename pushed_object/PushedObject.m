@@ -212,7 +212,7 @@ classdef PushedObject < matlab.mixin.Copyable
                 for ind_finger = 1:1:hand.num_fingers
                     [dist_finger] = PolygonToPolygonDistance(...
                         hand.finger_geometries{ind_finger}, obj.shape_vertices, finger_poses(:, ind_finger), obj.pose);
-                    if (dist_finger < min_dist)
+                    if (dist_finger < min_dist)function [ output_args ] = 
                         min_dist = dist_finger;
                     end
                 end
