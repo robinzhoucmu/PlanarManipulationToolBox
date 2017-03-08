@@ -1,4 +1,4 @@
-classdef ForwardSimulationCombinedStateNewGeometry < handle
+classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
     % Forward simulation of a single object subject to an hand trajectory.
     properties
         pushobj
@@ -74,8 +74,10 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
         % x is the combined state of object and hand.
         function dx = ObjectHandMotion(obj, t, x)
             dx = zeros(size(x));
-
-            dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
+            %dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
+            u = obj.controller.GetControlOutput();
+            dx(4:end) = [u;0];
+            
             obj.pushobj.pose = x(1:3);
             % Set hand config and configdot.
             obj.hand.q = x(4:end);
@@ -91,8 +93,9 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 end
                 obj.status_contact = contact_info.obj_status;
             end
-
-            %x
+            % Try to update the controller perceived states at given frequency. 
+            obj.controller.UpdateInternalStates(t, x(1:3), dx(1:3));
+            % x
         end        
         
         function [contact_info] = ContactResolutionNewGeometry(obj, hand_q, hand_qdot, mu_rand)
@@ -151,11 +154,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             twist_global = SE2Algebra.TransformTwistFromLocalToGlobal(twist_body, obj.pushobj.pose);
             obj_center_vel = SE2Algebra.GetTwistMatrix(twist_global) * [obj.pushobj.pose(1:2);1];
             qdot = [obj_center_vel(1:2); twist_body(3)];
-        end
-        
-
-        
-    end
-    
+        end               
+    end    
 end
 

@@ -2,7 +2,7 @@
 % Fixed control frequency. States gets updated at discrete steps. 
 classdef PostureControllerDFL < handle
     properties
-        % Control law: 
+        % Control law: x needs to converge faster.
         %u_x = -kp * z_x - kv * z_xdot;  
         %u_y = -kp*(z_y - a/br) - kv * z_ydot;
         % Position term gains
@@ -45,7 +45,7 @@ classdef PostureControllerDFL < handle
         function [vp] = GetControlOutput(obj)
         % Return pusher point cartesian output.
         % First, compute control in flat space. 
-            ux = -obj.kp(1) * obj.z(1) - obj.kv(1) * obj.zdot(1);  
+            ux = -obj.kp(1) * obj.z(1) - obj.kv(1) * obj.zdot(1);   
             uy = -obj.kp(2) * (obj.z(2) - obj.ls_a/(obj.ls_b * obj.r)) - obj.kv(2) * obj.zdot(2);
         % Compute control [fx,fy] in cartesian space.
             fy = obj.zeta;  % Might need to check for fy >=0?
