@@ -2,7 +2,6 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
     % Forward simulation of a single object subject to an hand trajectory.
     properties
         pushobj
-        hand_traj
         controller
         hand
         % Estimated average coefficient of friction between the object and the hand.
@@ -20,9 +19,9 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
     end
     
     methods (Access = public)
-        function obj = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand, mu)
+        function obj = ForwardSimulationCombinedStateNewGeometryWithController(pushobj, controller, hand, mu)
             obj.pushobj = pushobj;
-            obj.hand_traj = hand_traj;
+            obj.controller = controller;
             obj.hand = hand;
             obj.mu = mu;
             obj.mu_cur = mu;
@@ -31,10 +30,11 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
             obj.mu_max = mu;
             obj.status_contact = 'free';
             obj.flag_static = false;
+            
         end
         
-        function [results] = RollOut(obj, num_sim_segs)
-            if nargin < 2
+        function [results] = RollOut(obj, t_max, num_sim_segs)
+            if nargin < 3
                 num_sim_segs = 1;
             end
             opts = odeset('RelTol',1e-4,...
@@ -44,7 +44,6 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
             %results.all_contact_info = {};
             results.hand_configs = [];
             results.obj_configs = [];
-            t_max =  max(obj.hand_traj.t);
             for ind_seg = 1:1:num_sim_segs
                 t_start = t_max * (ind_seg - 1) / num_sim_segs;
                 % Simulate until jamming happens.
@@ -53,11 +52,12 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
                 t_range = [t_start t_end];
                 %cur_t = 0;
                 cur_t = t_start;
-                cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
+                cur_hand_q = obj.hand.q;
                 % Roll out the hand trajectory until contact happens.
-                obj.pushobj.InjectLSNoise();
+                %obj.pushobj.InjectLSNoise();
                 obj.mu_cur  = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
-                sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
+                obj.controller.UpdateInternalStates(0, obj.pushobj.pose, zeros(3,1));
+                sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts); 
                 %t_eval = 0:dt_record:t_max;
                 t_eval = t_start:dt_record:t_end;
                 all_x = deval(sol, t_eval);
@@ -77,7 +77,7 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
             %dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
             u = obj.controller.GetControlOutput();
             dx(4:end) = [u;0];
-            
+            %x(1:3),u
             obj.pushobj.pose = x(1:3);
             % Set hand config and configdot.
             obj.hand.q = x(4:end);
