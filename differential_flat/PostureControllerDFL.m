@@ -45,7 +45,7 @@ classdef PostureControllerDFL < handle
             obj.zeta = zeta0;
             obj.zetadot = 0;
             obj.t_last_update = -100;
-            obj.tols = [0.002; 0.002; 0.02];
+            obj.tols = [0.004; 0.004; 0.05];
             obj.flag_stop = 0;
         end
         

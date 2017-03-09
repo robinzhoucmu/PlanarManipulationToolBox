@@ -42,8 +42,8 @@ parameters.a = a;
 parameters.b = b;
 parameters.r = r;
 parameters.mu = mu;
-pose_start = [0;0;0];
-pose_end = [0;le;pi];
+pose_start =  [-6*le; -5.0*le; pi/2];
+pose_end = [0;0;0];
  hand_local_pt  = [0; -r];
 [x, y, theta, u, z] = GetDubinPath(pose_start, pose_end, parameters);
 
