@@ -24,8 +24,8 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 200, 0.1);
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+pushobj.FitLS(ls_type, 200, 0.1);
 pushobj.noise_df = 10000;
 A = pushobj.ls_coeffs;
 a = A(1,1);
@@ -74,3 +74,5 @@ for i = 1:1:num_rec_configs
     end
 end
 axis equal;
+
+

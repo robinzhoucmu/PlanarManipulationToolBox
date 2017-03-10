@@ -1,21 +1,22 @@
-% Posture stabilization to origin with dynamic feedback linearization.
-% Fixed control frequency. States gets updated at discrete steps. 
-classdef PostureControllerDFL < handle
+% Track a trajectory with dynamic feedback linearization.
+% Controller track in the flat space.
+classdef TrackingControllerDFL < handle
     properties
-        % Control law: x needs to converge faster.
-        %u_x = -kp * z_x - kv * z_xdot;  
-        %u_y = -kp*(z_y - a/br) - kv * z_ydot;
+        % Control law:
+        %u_x =\ddot{z*_x} + kp * (z*_x - z_x) + kv * (\ddot{z*_x} - ddot{z_x});  
+        % Trajectory (in flat space) to track.
+        traj_interp
         % Position term gains
         kp
         % Velocity term gains
         kv
-        % Control frequency Hz.
+        % Control frequency.
         freq
+        % Last update internal state time.
+        t_last_update
         % Tolerance to stablize around the point of origin.
         tols
         flag_stop 
-        % Last time for internal states update.
-        t_last_update
         % The integrator state.
         zeta
         zetadot
@@ -38,14 +39,15 @@ classdef PostureControllerDFL < handle
         mu
     end
     methods
-        function [obj] = PostureControllerDFL(freq, kp, kv, zeta0)
+        function [obj] = TrackingControllerDFL(freq, kp, kv, zeta0)
             obj.freq = freq;
             obj.kp = kp;
             obj.kv = kv;
             obj.zeta = zeta0;
             obj.zetadot = 0;
             obj.t_last_update = -100;
-            obj.tols = [0.004; 0.004; 0.05];
+            obj.tols = [0.003; 0.003; 0.05];
+            %obj.tols = [0.00; 0.00; 0.0];
             obj.flag_stop = 0;
         end
         
@@ -56,15 +58,22 @@ classdef PostureControllerDFL < handle
             obj.mu = mu;
         end
         
+        function [] = SetTrackingTrajectory(obj, traj_interp)
+            obj.traj_interp = traj_interp;
+        end
+        
         function [vp] = GetControlOutput(obj, t)
         % Return pusher point cartesian output.
             %if sum(abs(obj.q) < obj.tols) == 3
             if obj.flag_stop
                 vp = [0;0];
             else
+                z_ref = obj.traj_interp.GetPosition(t);
+                z_ref_dot = obj.traj_interp.GetVelocity(t);
+                z_ref_ddot = obj.traj_interp.GetAcceleration(t);
             % First, compute control in flat space. 
-                ux = -obj.kp(1) * obj.z(1) - obj.kv(1) * obj.zdot(1);   
-                uy = -obj.kp(2) * (obj.z(2) - obj.ls_a/(obj.ls_b * obj.r)) - obj.kv(2) * obj.zdot(2);
+                ux = z_ref_ddot(1)  - obj.kp(1) * (obj.z(1) - z_ref(1)) - obj.kv(1) * (obj.zdot(1) - z_ref_dot(1));   
+                uy = z_ref_ddot(2)  - obj.kp(2) * (obj.z(2) - z_ref(2)) - obj.kv(2) * (obj.zdot(2) - z_ref_dot(2));
             % Compute control [fx,fy] in cartesian space.
                 fy = obj.zeta;  % Might need to check for fy >=0?
                 fx = (-ux * cos(obj.q(3))  - uy * sin(obj.q(3))) / (obj.ls_a * obj.zeta * obj.ls_b * obj.r);  
@@ -81,6 +90,7 @@ classdef PostureControllerDFL < handle
             % Convert force to velocity commands.
             % Twist V = [a*fx, a*fy, b*r*fx;]. vp = JV = [(a+ b*r^2)*fx, a*fy] 
                 vp = [(obj.ls_a + obj.ls_b * obj.r^2) * fx; obj.ls_a * fy];
+                % Convert to global frame.
                 vp = [cos(obj.q(3)), -sin(obj.q(3)); sin(obj.q(3)), cos(obj.q(3)) ] * vp;
             end
         end

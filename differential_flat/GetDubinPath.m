@@ -9,7 +9,7 @@
 % parameters.mu (coefficient of friction) at the contact point.
 % Output:
 % x,y,theta: cartesian pose in world frame of the object. Length N. 
-% u: pushing velocity in local frame. 2* N-1.
+% u: pushing displacement segment in local frame. 2* N-1.
 % z: output in flat space.
 function [x, y, theta, u, z] = GetDubinPath(pose_start, pose_end, parameters, step_size)
 a = parameters.a;
@@ -18,7 +18,7 @@ r = parameters.r;
 mu = parameters.mu;
 radius_turn =  (a / (b* r * mu));
 if nargin < 4
-    step_size = radius_turn / 50;
+    step_size = radius_turn /50;
 end
 z_start = zeros(3,1);
 z_end = zeros(3,1);
@@ -32,6 +32,11 @@ T = 1.0;
 num_z = size(z, 2);
 dt = T / num_z;
 [x,y,theta] = GetOrigStateFromFlatOutput(dt, z(1:2,:), a, b, r);
+% Add the final goal pose.
+x(end+1) = pose_end(1);
+y(end+ 1) = pose_end(2);
+theta(end + 1) = pose_end(3);
+
 num_pts = length(x);
 hand_q_traj = zeros(3, num_pts);
 hand_q_traj(3,:) = theta;

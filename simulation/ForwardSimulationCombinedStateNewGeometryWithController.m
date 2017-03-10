@@ -39,7 +39,7 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
             end
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.01);             
+              'MaxStep',0.005);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
@@ -54,7 +54,7 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
                 cur_t = t_start;
                 cur_hand_q = obj.hand.q;
                 % Roll out the hand trajectory until contact happens.
-                %obj.pushobj.InjectLSNoise();
+                obj.pushobj.InjectLSNoise();
                 obj.mu_cur  = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
                 obj.controller.UpdateInternalStates(0, obj.pushobj.pose, zeros(3,1));
                 sol = ode23(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts); 
@@ -75,9 +75,9 @@ classdef ForwardSimulationCombinedStateNewGeometryWithController < handle
         function dx = ObjectHandMotion(obj, t, x)
             dx = zeros(size(x));
             %dx(4:end) = obj.hand_traj.GetHandConfigurationDot(t);        
-            u = obj.controller.GetControlOutput();
+            u = obj.controller.GetControlOutput(t);
             dx(4:end) = [u;0];
-            x(1:3),u
+            %x(1:3),u
             obj.pushobj.pose = x(1:3);
             % Set hand config and configdot.
             obj.hand.q = x(4:end);

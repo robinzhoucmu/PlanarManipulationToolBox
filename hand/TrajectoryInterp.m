@@ -5,6 +5,7 @@ classdef TrajectoryInterp < handle
         v
         interp_poly
         interp_poly_der
+        interp_poly_dder
         % Interpolation mode: 
         % (1) 'pchipd': piecewise cubic hermite interpolation with derivative. 
         % The user needs to give poth position and velocity information
@@ -42,13 +43,19 @@ classdef TrajectoryInterp < handle
                 error('Interpolation mode not recognizable. Try pchipd, spline or pchip');
             end
             obj.interp_poly_der = fnder(obj.interp_poly);
+            obj.interp_poly_dder = fnder(obj.interp_poly_der);
         end
         
         function [p] = GetPosition(obj, t)
             p = ppval(obj.interp_poly, t)';
         end
+        
         function [v] = GetVelocity(obj,t)
              v = ppval(obj.interp_poly_der, t)';
+        end
+        
+        function [a] = GetAcceleration(obj, t)
+            a = ppval(obj.interp_poly_dder, t)';
         end
         
         function [h] = PlotTrajectory(obj)

@@ -1,4 +1,5 @@
 % Input: dt, z(2*N) discrete values per dt. 
+% Output: the cartesian mapping. The last z is not mapped.
 % a, b: ellipsoid representation of limit surface A = diag(a,a,b). 
 % r: the distance 
 function [x, y, theta] = GetOrigStateFromFlatOutput(dt, z, a, b, r)
