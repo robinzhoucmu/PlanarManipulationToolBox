@@ -101,9 +101,12 @@ classdef TrackingControllerDFL < handle
             % Also, integrate the internal extended dynamics.
             delta_t = t - obj.t_last_update;
             %if (delta_t >= 1.0 / obj.freq) && (sum(abs(q) < obj.tols) < 3)
-            if (delta_t >= 1.0 / obj.freq) 
+            if (delta_t >= 1.0 / obj.freq) && ~obj.flag_stop
                 obj.q = q;
-                obj.q(3) = mod(obj.q(3), 2*pi);
+                obj.q(3) = mod(obj.q(3)+2*pi, 2*pi);
+                if (obj.q(3) > pi)
+                    obj.q(3) = obj.q(3) - 2*pi;
+                end
                 obj.qdot = qdot;
                 obj.zeta = obj.zeta + delta_t * obj.zetadot;
                 % Update the flat output as well.
