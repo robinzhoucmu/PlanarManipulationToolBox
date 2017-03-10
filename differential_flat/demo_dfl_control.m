@@ -40,23 +40,25 @@ hand_single_finger = ConstructSingleRoundFingerHand(tip_radius);
 r = le + tip_radius;
 mu = 1.0;
 
-zeta0 = 0.01;
+%zeta0 = 0.01;
+zeta0 = 0.05;
 k_scale = 1.0;
-kv1 =  k_scale *2;
-kv2 =  k_scale *1;
+kv1 =  k_scale *1;
+kv2 =  k_scale *2;
 kv = [kv1, kv2];
 kp = [0.99*(kv1.^2/4) , 0.99*(kv2.^2/4)];
 freq = 500;
 dfl_controller = PostureControllerDFL(freq, kp, kv, zeta0);
 dfl_controller.SetSystemParameters(a, b, r, mu);
 
-q_start =  [-6*le; -5.0*le; pi/2];
+%q_start =  [-6*le; -5.0*le; pi/2];
+q_start =  [le; 2.0*le; 0];
 pushobj.pose = q_start;
 hand_single_finger.q = [q_start(1); q_start(2); 0] - r*[-sin(q_start(3));cos(q_start(3));0];
 
 
 sim_inst = ForwardSimulationCombinedStateNewGeometryWithController(pushobj, dfl_controller, hand_single_finger, mu+0.2);
-t_max = 20.0;
+t_max = 30.0;
 sim_results = sim_inst.RollOut(t_max);
 num_rec_configs = size(sim_results.obj_configs, 2);
 figure;
