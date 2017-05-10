@@ -9,7 +9,7 @@ classdef HandTraj < handle
         t % time. length = N. 
         interp_mode % interpolation mode. 
         traj_interp % trajectory interpolator. 
-        
+        flag_angle_interp % flag whether to map to [cos(theta), sin(theta)] space for angle interpolation.
     end
         
     methods
@@ -32,6 +32,11 @@ classdef HandTraj < handle
             if isfield(opts,'qdot')
                 obj.qdot = opts.qdot;
             end
+%             if isfield(opts, 'flag_angle_interp')
+%                 obj.flag_angle_interp = opts.flag_angle_interp;
+%             else
+%                 obj.flag_angle_interp = 0;
+%             end
             obj.GenerateInterpolation();
         end
         
@@ -43,7 +48,14 @@ classdef HandTraj < handle
             if strcmp(obj.interp_mode, 'pchipd')
                 obj.traj_interp.SetPositionVelocityOverTime(obj.t, obj.q, obj.qdot);
             else
-                obj.traj_interp.SetPositionOverTime(obj.t, obj.q);
+%                 if obj.flag_angle_interp
+%                     q_interp_pts = [obj.q(1:2,:); obj.AnglesToPointsOnCircle(obj.q(3,:))];
+%                 else
+%                     q_interp_pts = obj.q;
+%                 end
+%                 obj.traj_interp.SetPositionOverTime(obj.t, q_interp_pts);
+              obj.q(3,:) = obj.SmoothAngleWrapAround(obj.q(3,:));
+              obj.traj_interp.SetPositionOverTime(obj.t, obj.q);  
             end 
             % Generate interpolation coefficients.
             obj.traj_interp.GenerateInterpPolynomial();
@@ -58,7 +70,24 @@ classdef HandTraj < handle
         function [qdot] = GetHandConfigurationDot(obj, t)
             qdot = obj.traj_interp.GetVelocity(t)';
         end
-
+        % Deal with angle wrap around.
+        function [smoothed_angles] = SmoothAngleWrapAround(obj, angles)
+            % angles is a row vector.
+            smoothed_angles = mod(angles, 2*pi);
+            add_values = [-2*pi;0;2*pi];
+            for i = 2:length(smoothed_angles)
+                new_values = bsxfun(@plus, add_values, smoothed_angles(i));
+                diff_values = abs(bsxfun(@minus, new_values, smoothed_angles(i-1)));
+                [~,ind] = min(diff_values);
+                smoothed_angles(i) = new_values(ind);
+            end
+        end
+%         function [q_angles] = AnglesToPointsOnCircle(obj, angles)
+%             q_angles = [cos(angles);sin(angles)];
+%         end
+%         function [angles] = PointsOnCircleToAngles(obj, q_angles)
+%             angles = atan2(q_angles(2,:), q_angles(1,:));
+%         end
     end
     
 end

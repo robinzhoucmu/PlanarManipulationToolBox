@@ -39,7 +39,7 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             end
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.01);             
+              'MaxStep',0.005);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];

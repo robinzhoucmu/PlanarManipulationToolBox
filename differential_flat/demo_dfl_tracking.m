@@ -24,8 +24,8 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-%pushobj.FitLS(ls_type, 200, 0.1);
+pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+pushobj.FitLS(ls_type, 200, 0.1);
 pushobj.noise_df = 10000;
 A = pushobj.ls_coeffs;
 a = A(1,1);
@@ -49,7 +49,7 @@ q_start = [3*le; 0;0];
 %q_start =  [-0.1*le; -3*le; -pi/12];
 %q_start =  [-0.1*le; -2*le; -pi/12];
 
-perturbation = 0.25 * (2*rand(3,1) - ones(3,1)).* [0.01;0.01;pi/12];
+perturbation = 0.4 * (2*rand(3,1) - ones(3,1)).* [0.01;0.01;pi/10];
 pushobj.pose = q_start + perturbation;
 hand_single_finger.q = [pushobj.pose(1); pushobj.pose(2); 0] - r*[-sin(pushobj.pose(3));cos(pushobj.pose(3));0];
 parameters.a = a;
@@ -60,22 +60,22 @@ q_end = [0;0;0];
  hand_local_pt  = [0; -r];
 [x, y, theta, u, z] = GetDubinPath(q_start, q_end, parameters);
 % Generate trajectory.
-t_max = 10.0;
+t_max = 30.0;
 interp_method = 'spline';
 traj = GenerateDubinTrajectoryFromPath(z(1:2,:), t_max, interp_method);
 
 %zeta0 = 0.01;
 zeta0 = 1.0 * (u(2,1) / (t_max/length(x)) / a)
-k_scale = 2.0;
+k_scale = 0.5;
 % kv1 =  k_scale *1;
 % kv2 =  k_scale *2;
 % kv = [kv1, kv2];
 % kp = [0.99*(kv1.^2/4) , 0.99*(kv2.^2/4)];
 kv = k_scale * [0.2, 0.1];
 kp = k_scale * [4 , 1];
-freq = 30;
+freq = 60;
 tracking_controller = TrackingControllerDFL(freq, kp, kv, zeta0);
-tracking_controller.SetSystemParameters(a, b, r, mu*0.9);
+tracking_controller.SetSystemParameters(a, b, r, mu * 0.7);
 tracking_controller.SetTrackingTrajectory(traj);
 
 num_rec_configs = length(x);
@@ -112,14 +112,21 @@ sim_results = sim_inst.RollOut(t_max);
 num_rec_configs = size(sim_results.obj_configs, 2);
 figure;
 hold on;
-seg_size = ceil(num_rec_configs / 50);
+seg_size = ceil(num_rec_configs / 30);
 for i = 1:1:num_rec_configs
-    if mod(i, seg_size) == 1
+    if mod(i, seg_size) == 1 || i == num_rec_configs
     % Plot the object.
         plot(sim_results.obj_configs(1, i), sim_results.obj_configs(2,i), 'b+');
         vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj.shape_vertices, sim_results.obj_configs(:,i));
         vertices(:,end+1) = vertices(:,1);
-        plot(vertices(1,:), vertices(2,:), 'r-');
+         if i == 1
+            c= 'k';
+        elseif i == num_rec_configs
+            c = 'b';
+        else
+            c = 'r';
+        end
+        plot(vertices(1,:), vertices(2,:), '-', 'Color', c);
      % Plot the round point pusher.
         drawCircle(sim_results.hand_configs(1,i), sim_results.hand_configs(2,i), hand_single_finger.finger_radius, 'k');
     end

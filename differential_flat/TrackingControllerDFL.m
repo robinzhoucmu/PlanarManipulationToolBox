@@ -46,7 +46,7 @@ classdef TrackingControllerDFL < handle
             obj.zeta = zeta0;
             obj.zetadot = 0;
             obj.t_last_update = -100;
-            obj.tols = [0.003; 0.003; 0.05];
+            obj.tols = [0.003; 0.003; 0.02];
             %obj.tols = [0.00; 0.00; 0.0];
             obj.flag_stop = 0;
         end
