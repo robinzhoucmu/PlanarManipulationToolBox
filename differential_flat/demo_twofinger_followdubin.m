@@ -26,7 +26,7 @@ ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
 %pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
 %pushobj.FitLS(ls_type, 200, 0.1);
-pushobj.noise_df = 100;
+pushobj.noise_df = 1000;
 A = pushobj.ls_coeffs;
 a = A(1,1);
 b_normalized = A(3,3);
@@ -34,11 +34,11 @@ pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
 tip_radius = le / 10;
-width_finger = le * 0.25;
+width_finger = le * 0.35;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
 r = le + tip_radius;
-mu = 1.0;
+mu = 1.5;
 
 %q_start =  [2.0*le; -4.0*le; 0];
 %q_start =  [6*le; 2*le; -pi/2];
@@ -55,7 +55,7 @@ pushobj.pose = q_start + perturbation;
 parameters.a = a;
 parameters.b = b;
 parameters.r = r;
-parameters.mu = mu * 0.5;
+parameters.mu = 0.5 * mu;
 q_end = [0;0;0];
 hand_local_pt  = [0; -r];
 [x, y, theta, u, z] = GetDubinPath(q_start, q_end, parameters);
@@ -130,7 +130,7 @@ hand_traj_opts.t = t_q;
 hand_traj_opts.interp_mode = 'spline';
 hand_traj = HandTraj(hand_traj_opts);
 
-sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, mu+0.1);
+sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, mu);
 sim_results = sim_inst.RollOut();
 num_rec_configs_sim = size(sim_results.obj_configs, 2);
 figure;

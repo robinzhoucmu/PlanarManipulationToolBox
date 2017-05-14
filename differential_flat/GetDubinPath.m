@@ -18,7 +18,7 @@ r = parameters.r;
 mu = parameters.mu;
 radius_turn =  (a / (b* r * mu));
 if nargin < 4
-    step_size = radius_turn /100;
+    step_size = radius_turn /50;
 end
 z_start = zeros(3,1);
 z_end = zeros(3,1);
