@@ -12,7 +12,8 @@ classdef PushActionDubins < handle
         % directions of the left and right edges of the friction cone. 
         fl
         fr  
-        % center of "shifted" rear axle
+        % center of "shifted" rear axle with respect to the rotated frame
+        % at COM using the vector from push point to COM as +y axis.
         rc  
         % turning radius
         turning_radius
@@ -125,7 +126,7 @@ classdef PushActionDubins < handle
         % Given start and end pose of the object local frame w.r.t the
         % world, return the object local frame trajectories and pusher
         % point's frame (whose +y aligns with inward normal) trajectory. 
-        function [pose_traj, pose_pusher_traj] = PlanDubinsPaath(obj, pose_start, pose_end)
+        function [traj_localframe, traj_pusherframe] = PlanDubinsPaath(obj, pose_start, pose_end, num_steps)
             % First, convert the start and end poses to DubinPushFrame. 
             pose_start_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_start);
             pose_end_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_end);
@@ -133,8 +134,30 @@ classdef PushActionDubins < handle
             z_start = obj.CartesianSpaceToFlatSpace(pose_start_dubinsframe);
             z_end = obj.CartesianSpaceToFlatSpace(pose_end_dubinsframe);
             % Call Dubins curve planner. 
-            
-            z = dubins(z_start', z_end', obj.turning_radius, step_size);
+            % Note that z_end is not included.
+            traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
+            % Add z_end.
+            traj_z(:,end+1) = z_end;
+            dt = 1.0 / num_steps;
+            % vz = (z(i+1) - z(i)) / dt.
+            v_z =  diff(traj_z, 1, 2) / dt;
+            traj_dubinspushframe = obj.FlatSpaceToCartesianSpace(traj_z(1:2,1:end-1), v_z);
+            % Get object local frames trajectory.
+            traj_localframe = zeros(3, num_steps+1);
+            traj_pusherframe = zeros(3, num_steps+1);
+            for i = 1:1:size(traj_dubinspushframe, 2)
+                traj_localframe(:, i) = obj.GetLocalFrameGivenDubinPushFrame(traj_dubinspushframe(:, i));
+                  
+            end
+            % append the final goal pose. 
+            traj_localframe(:, end) = pose_end;
+            for i = 1:1:num_steps + 1
+                R = [cos( traj_localframe(3, i)), -sin( traj_localframe(1:2, i));
+                        sin( traj_localframe(1:2, i)), cos( traj_localframe(1:2, i))];
+                vec_pt =   R * obj.np;
+                traj_pusherframe(1:2,i) = traj_localframe(1:2, i) + vec_pt;
+                traj_pusherframe(3, i) = atan2(vec_pt(1), -vec_pt(2));
+            end
         end
         
     end

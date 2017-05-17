@@ -51,12 +51,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double *q0      = mxGetPr(prhs[0]);
     double *q1      = mxGetPr(prhs[1]);
     double r        = mxGetScalar(prhs[2]);
-    double stepSize = mxGetScalar(prhs[3]);
-
+    //double stepSize = mxGetScalar(prhs[3]);
+    double num_steps = mxGetScalar(prhs[3]);
+    
     DubinsPath path;
     dubins_init(q0, q1, r, &path);
     double length = dubins_path_length(&path);
-    n = (int)floor(length/stepSize);
+    double stepSize = length / num_steps;
+    
+//n = (int)floor(length/stepSize);
+    n = num_steps;
     if (n < 1)
         n = 1;
 
