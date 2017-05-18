@@ -25,7 +25,7 @@ classdef PushActionDubins < handle
         flag_symmetric
     end
     methods (Access = public)
-        % Set the pushing point (2*1), normal (2*1 unit) in local object frame and friction.
+        % Set the pushing point (2*1), normal (2*1 unit) w.r.t local object frame and friction.
         function obj =  PushActionDubins(pt, np, mu, ls_a, ls_b)
             obj.pt = pt;
             obj.np = np;
@@ -40,7 +40,7 @@ classdef PushActionDubins < handle
             obj.fr = Rr * obj.np;
             % If the inward normal is the opposite of point vector, then
             % it's symmetric.
-            if p_x * n_y + p_y * n_x == 0
+            if pt(1) * np(2) + pt(2) * np(1) == 0
                 obj.flag_symmetric = 1;
             else
                 obj.flag_symmetric = 0;
@@ -63,6 +63,7 @@ classdef PushActionDubins < handle
         function [] = ComputeCenterOfRearAxleAndTurningRadius(obj)
             % Compute distances of the line of forces to the COM. 
             % Equation for left cone: fl_y * x - fl_x * y - fl_y * p_x  + fl_x * p_y     
+            % Compute distance of origin to the lines.  
             dl = abs(-obj.fl(2) * obj.pt(1) + obj.fl(1) * obj.pt(2)) / norm(obj.fl);
             dr = abs(-obj.fr(2) * obj.pt(1) + obj.fr(1) * obj.pt(2)) / norm(obj.fr);
             % Compute the distance of the contact point to the COM.
@@ -126,7 +127,7 @@ classdef PushActionDubins < handle
         % Given start and end pose of the object local frame w.r.t the
         % world, return the object local frame trajectories and pusher
         % point's frame (whose +y aligns with inward normal) trajectory. 
-        function [traj_localframe, traj_pusherframe] = PlanDubinsPaath(obj, pose_start, pose_end, num_steps)
+        function [traj_localframe, traj_pusherframe, path_length] = PlanDubinsPath(obj, pose_start, pose_end, num_steps)
             % First, convert the start and end poses to DubinPushFrame. 
             pose_start_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_start);
             pose_end_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_end);
@@ -136,27 +137,29 @@ classdef PushActionDubins < handle
             % Call Dubins curve planner. 
             % Note that z_end is not included.
             traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
+            path_length = traj_z(4, end);
             % Add z_end.
-            traj_z(:,end+1) = z_end;
+            traj_z(:,end+1) = [z_end',path_length];
             dt = 1.0 / num_steps;
             % vz = (z(i+1) - z(i)) / dt.
             v_z =  diff(traj_z, 1, 2) / dt;
-            traj_dubinspushframe = obj.FlatSpaceToCartesianSpace(traj_z(1:2,1:end-1), v_z);
+            traj_dubinspushframe = obj.FlatSpaceToCartesianSpace(traj_z(1:2,1:end-1), v_z(1:2,:));
             % Get object local frames trajectory.
             traj_localframe = zeros(3, num_steps+1);
             traj_pusherframe = zeros(3, num_steps+1);
             for i = 1:1:size(traj_dubinspushframe, 2)
-                traj_localframe(:, i) = obj.GetLocalFrameGivenDubinPushFrame(traj_dubinspushframe(:, i));
-                  
+                traj_localframe(:, i) = obj.GetLocalFrameGivenDubinPushFrame(traj_dubinspushframe(:, i));                  
             end
             % append the final goal pose. 
             traj_localframe(:, end) = pose_end;
             for i = 1:1:num_steps + 1
-                R = [cos( traj_localframe(3, i)), -sin( traj_localframe(1:2, i));
-                        sin( traj_localframe(1:2, i)), cos( traj_localframe(1:2, i))];
+                R = [cos( traj_localframe(3, i)), -sin( traj_localframe(3, i));
+                        sin( traj_localframe(3, i)), cos( traj_localframe(3, i))];
+                 % Get the inward normal in world frame. 
                 vec_pt =   R * obj.np;
                 traj_pusherframe(1:2,i) = traj_localframe(1:2, i) + vec_pt;
-                traj_pusherframe(3, i) = atan2(vec_pt(1), -vec_pt(2));
+                % From the rotation matrix with second column equals vec_pt.
+                traj_pusherframe(3, i) = atan2(-vec_pt(1), vec_pt(2));
             end
         end
         
