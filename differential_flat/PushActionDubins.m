@@ -82,7 +82,8 @@ classdef PushActionDubins < handle
         function [] = ComputeHomogTfPushWrtLocal(obj)
             % the dubins push frame (rc_x, rc_y, theta): origin -> center of rear axle
             % +y axis -> the vector pointing from the contact point to COM.        
-            R_pushframe = [obj.np(2) , obj.np(1); - obj.np(1), obj.np(2)];
+            %R_pushframe = [obj.np(2) , obj.np(1); - obj.np(1), obj.np(2)];
+            R_pushframe = [-obj.pt(2), -obj.pt(1); obj.pt(1), -obj.pt(2)] / norm(obj.pt);
             t_pushframe = R_pushframe * obj.rc;
             obj.tf_push_wrt_local = [R_pushframe, t_pushframe; 0,0,1];
         end
@@ -155,11 +156,12 @@ classdef PushActionDubins < handle
             for i = 1:1:num_steps + 1
                 R = [cos( traj_localframe(3, i)), -sin( traj_localframe(3, i));
                         sin( traj_localframe(3, i)), cos( traj_localframe(3, i))];
-                 % Get the inward normal in world frame. 
-                vec_pt =   R * obj.np;
+                vec_pt =   R * obj.pt;
+                vec_normal = R * obj.np;
                 traj_pusherframe(1:2,i) = traj_localframe(1:2, i) + vec_pt;
                 % From the rotation matrix with second column equals vec_pt.
-                traj_pusherframe(3, i) = atan2(-vec_pt(1), vec_pt(2));
+                %traj_pusherframe(3, i) = atan2(vec_pt(1), -vec_pt(2));
+                traj_pusherframe(3,i) = atan2(-vec_normal(1), vec_normal(2));
             end
         end
         
