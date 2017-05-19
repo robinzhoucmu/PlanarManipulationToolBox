@@ -1,14 +1,18 @@
 rng(1);
-tic;
-%% Construct pushobj.
-% shape and support points.
+table_center = [0; -317.5/1000; 0];
+% Hardware specs for the hand.
+tip_radius = 2.5 / 1000;
+% 4 spacings, each is 6mm.
+width_finger = 24/ 1000;
+
 shape_info.shape_id = 'polygon1';
 shape_info.shape_type = 'polygon';
-le = 0.02;
-% CCW.
-shape_info.shape_vertices = [-le,le,le,-le;-le,-le,le,le];
-shape_info.pho = le;                                            
-% Uniformly sample points in the polygon area 
+le_short = 0.03 + 0.002;
+le_long = 0.05 + 0.002;
+shape_info.shape_vertices = 0.5 * [-le_long, le_long, le_long, -le_long;-le_short, -le_short, le_short, le_short];
+le = (le_short + le_long)/4;
+shape_info.pho = le;
+
 options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
 num_support_pts = 20;
@@ -30,24 +34,15 @@ b_normalized = A(3,3);
 pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
-tip_radius = le / 20;
-width_finger = le * 0.75;
+pose_vision_node = [-134.557/1000; -281.589/1000; -0.041];
+%pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-r = le + tip_radius;
-mu = 2.0;
+mu = 1.0;
+q_start = pose_vision_node;
+q_end = table_center;
 
-%q_start =  [2.0*le; -4.0*le; 0];
-%q_start =  [6*le; 2*le; -pi/2];
-%q_start =  [0; -4*le; -pi];
-%q_start =  [0; 3*le; pi];
-q_start = [3*le; 0;0];
-%q_start =  [-0.1*le; -1*le; -pi/12];
-%q_start =  [-0.1*le; -3*le; -pi/12];
-%q_start =  [-0.1*le; -2*le; -pi/12];
-q_end = [0;0;0];
-
-hand_local_pt  = [-r;le/4];
+hand_local_pt  = [-le_long/2 - tip_radius; 0];
 np = [1;0];
 push_action = PushActionDubins(hand_local_pt, np, 0.5 * mu, a, b);
 num_steps = 500;
@@ -55,7 +50,6 @@ num_steps = 500;
 x = traj_localframe(1,:);
 y = traj_localframe(2,:);
 theta = traj_localframe(3,:);
-%[x, y, theta, u, z] = GetDubinPath(q_start, q_end, parameters);
 
 num_rec_configs = length(x)
 figure;
@@ -78,11 +72,7 @@ for i = 1:1:num_rec_configs
         plot(vertices(1,:), vertices(2,:), '-', 'Color', c);
          R = [cos(theta(i)), -sin(theta(i)); sin(theta(i)), cos(theta(i))];
          % hand frame point. center of the two fingers.
-         hand_pt= R * hand_local_pt + [x(i);y(i)];
-         % rotate the hand frame ccw by pi/2. 
-         %x(i), y(i), theta(i)
-         %[hand_pt; theta(i) + pi/2.0; width_finger]
-         %hand_two_finger.q = [hand_pt; theta(i) + pi/2.0; width_finger];
+
          hand_two_finger.q = zeros(4,1);
          hand_two_finger.q(1:3) = traj_pusherframe(:,i);
          hand_two_finger.q(3) = hand_two_finger.q(3) + pi/2.0;
@@ -90,26 +80,18 @@ for i = 1:1:num_rec_configs
          
          hold on;
          hand_two_finger.Draw(gcf);
-%          drawCircle(hand_pt(1), hand_pt(2), hand_single_finger.finger_radius, 'k');
-%          hold on;
-%          plot(hand_pt(1), hand_pt(2), 'k-');
     end
 end
 axis equal;
 drawnow;
 
-%Open loop simulation.
+
 perturbation = 0.0 * (2*rand(3,1) - ones(3,1)).* [0.01;0.01;pi/12];
 pushobj.pose = q_start + perturbation;
 T = 1.0;
 hand_q_traj = zeros(4, num_rec_configs);
 hand_q_traj(4,:) = ones([1 num_rec_configs]) * width_finger;
 
-% hand_q_traj(3,:) = bsxfun(@plus, theta, pi/2);
-% for i = 1:1:num_rec_configs
-%     R = [cos(theta(i)), -sin(theta(i)); sin(theta(i)), cos(theta(i))];
-%     hand_q_traj(1:2, i) = R * hand_local_pt + [x(i);y(i)];
-% end
 hand_q_traj(1:3,:) = traj_pusherframe;
 hand_q_traj(3,:) = bsxfun(@plus, pi/2, hand_q_traj(3,:));
 t_q = linspace(0, T, num_rec_configs);
@@ -149,3 +131,5 @@ for i = 1:1:num_rec_configs_sim
     end
 end
 axis equal;
+
+
