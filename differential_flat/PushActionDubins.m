@@ -144,7 +144,10 @@ classdef PushActionDubins < handle
             dt = 1.0 / num_steps;
             % vz = (z(i+1) - z(i)) / dt.
             v_z =  diff(traj_z, 1, 2) / dt;
-            traj_dubinspushframe = obj.FlatSpaceToCartesianSpace(traj_z(1:2,1:end-1), v_z(1:2,:));
+            traj_dubinspushframe = zeros(3, num_steps + 1);
+            traj_dubinspushframe(:, 1) = pose_start_dubinsframe;
+            traj_dubinspushframe(:, 2:end) = obj.FlatSpaceToCartesianSpace(traj_z(1:2,1:end-1), v_z(1:2,:));
+            
             % Get object local frames trajectory.
             traj_localframe = zeros(3, num_steps+1);
             traj_pusherframe = zeros(3, num_steps+1);

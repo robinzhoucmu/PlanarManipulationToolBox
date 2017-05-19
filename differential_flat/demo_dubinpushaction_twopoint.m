@@ -50,12 +50,11 @@ q_end = [0;0;0];
 hand_local_pt  = [-r;le/4];
 np = [1;0];
 push_action = PushActionDubins(hand_local_pt, np, 0.5 * mu, a, b);
-num_steps = 500;
+num_steps = 300;
 [traj_localframe, traj_pusherframe] = push_action.PlanDubinsPath(q_start, q_end, num_steps);
 x = traj_localframe(1,:);
 y = traj_localframe(2,:);
 theta = traj_localframe(3,:);
-%[x, y, theta, u, z] = GetDubinPath(q_start, q_end, parameters);
 
 num_rec_configs = length(x)
 figure;

@@ -7,8 +7,9 @@ width_finger = 24/ 1000;
 
 shape_info.shape_id = 'polygon1';
 shape_info.shape_type = 'polygon';
-le_short = 0.03 + 0.002;
-le_long = 0.05 + 0.002;
+extra_len = 0.001;
+le_short = 0.035 + extra_len;
+le_long = 0.05 + extra_len;
 shape_info.shape_vertices = 0.5 * [-le_long, le_long, le_long, -le_long;-le_short, -le_short, le_short, le_short];
 le = (le_short + le_long)/4;
 shape_info.pho = le;
@@ -34,18 +35,20 @@ b_normalized = A(3,3);
 pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
-pose_vision_node = [-134.557/1000; -281.589/1000; -0.041];
+pose_vision_node = [ -35.0830485244/1000; ...
+   -378.8867871/1000;  ...
+     -0.0297944656226];
 %pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 1.0;
+mu = 1.5;
 q_start = pose_vision_node;
 q_end = table_center;
 
 hand_local_pt  = [-le_long/2 - tip_radius; 0];
 np = [1;0];
 push_action = PushActionDubins(hand_local_pt, np, 0.5 * mu, a, b);
-num_steps = 500;
+num_steps = 49;
 [traj_localframe, traj_pusherframe] = push_action.PlanDubinsPath(q_start, q_end, num_steps);
 x = traj_localframe(1,:);
 y = traj_localframe(2,:);
