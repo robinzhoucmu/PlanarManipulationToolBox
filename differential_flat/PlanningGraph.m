@@ -39,10 +39,14 @@ classdef PlanningGraph < handle
         % Grid the state space and construct nodes.
         function [] = ConstructNodes(obj)
             % uniform grid
-            x = linspace(obj.pose_range_min(1), obj.pose_range_max(1), obj.nd);
-            y = linspace(obj.pose_range_min(2), obj.pose_range_max(2), obj.nd);
-            theta = linspace(obj.pose_range_min(3), obj.pose_range_max(3), obj.nd);
+%             x = linspace(obj.pose_range_min(1), obj.pose_range_max(1), obj.nd);
+%             y = linspace(obj.pose_range_min(2), obj.pose_range_max(2), obj.nd);
+%             theta = linspace(obj.pose_range_min(3), obj.pose_range_max(3), obj.nd);
             % random sampling
+            x = bsxfun(@plus,obj.pose_range_min(1), rand(obj.nd^3, 1) * (obj.pose_range_max(1) - obj.pose_range_min(1)));
+            y = bsxfun(@plus,obj.pose_range_min(2), rand(obj.nd^3, 1) * (obj.pose_range_max(2) - obj.pose_range_min(2)));
+            theta = bsxfun(@plus,obj.pose_range_min(3), rand(obj.nd^3, 1) * (obj.pose_range_max(3) - obj.pose_range_min(3)));
+
             [X, Y, Theta] = meshgrid(x, y, theta);
             obj.pose_nodes = zeros(3, length(X(:)));
             obj.pose_nodes = [X(:)'; Y(:)'; Theta(:)'];
@@ -157,11 +161,12 @@ classdef PlanningGraph < handle
         
         % Visualize a path. 
         function [h] = VisualizePlannedPath(obj, pushobj, hand_two_finger, way_pts, action_records)
-            h = figure;
+            %h = figure;
             num_pushes = length(action_records);
             num_steps_draw = 20;
             width_finger = 24/ 1000;
             for ind_seg = 1:1:num_pushes
+                h = figure;
                 q_start = way_pts(:, ind_seg);
                 q_end = way_pts(:, ind_seg + 1);
                 [traj_localframe, traj_pusherframe] = ...
@@ -169,7 +174,7 @@ classdef PlanningGraph < handle
                 x = traj_localframe(1,:);
                 y = traj_localframe(2,:);
                 theta = traj_localframe(3,:);
-                num_rec_configs = length(x)
+                num_rec_configs = length(x);
                 hold on;
                 seg_size = 2;
                 for i = 1:1:num_rec_configs
