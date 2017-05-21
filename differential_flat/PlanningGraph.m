@@ -46,10 +46,11 @@ classdef PlanningGraph < handle
             x = bsxfun(@plus,obj.pose_range_min(1), rand(obj.nd^3, 1) * (obj.pose_range_max(1) - obj.pose_range_min(1)));
             y = bsxfun(@plus,obj.pose_range_min(2), rand(obj.nd^3, 1) * (obj.pose_range_max(2) - obj.pose_range_min(2)));
             theta = bsxfun(@plus,obj.pose_range_min(3), rand(obj.nd^3, 1) * (obj.pose_range_max(3) - obj.pose_range_min(3)));
+            obj.pose_nodes = [x';y';theta'];
+            %[X, Y, Theta] = meshgrid(x, y, theta);
+            %obj.pose_nodes = zeros(3, length(X(:)));
+            %obj.pose_nodes = [X(:)'; Y(:)'; Theta(:)'];
 
-            [X, Y, Theta] = meshgrid(x, y, theta);
-            obj.pose_nodes = zeros(3, length(X(:)));
-            obj.pose_nodes = [X(:)'; Y(:)'; Theta(:)'];
         end
         
         % Construct the graph and run dijkastra.
@@ -80,6 +81,9 @@ classdef PlanningGraph < handle
                 min_node_original_id = ceil(min_node_id / num_actions);
                 min_node_action_id = min_node_id - (min_node_original_id - 1) * num_actions;
                 for j = 1:1:num_expanded_nodes
+                    if (mark(j)) 
+                        continue;
+                    end
                     neighbor_original_id = ceil(j / num_actions);
                     neighbor_action_id = j - (neighbor_original_id - 1) * num_actions;
                     if  neighbor_original_id ~= min_node_original_id
@@ -156,6 +160,25 @@ classdef PlanningGraph < handle
                 [way_pts_intermediate, action_records_intermediate] = obj.GetShortestPathInGraph(best_nxt_pt_id);
                 way_pts = [q_start, way_pts_intermediate];
                 action_records = [best_nxt_action_id, action_records_intermediate];
+            end
+        end
+        
+        % Get a dense sampling of poses along the given way points and action
+        % types with specified sampling rate.
+        function [traj_obj, traj_pusher, action_ids] = GetCompleteObjectHandPath(obj, way_pts, action_records, ns_seg)
+            if nargin < 4
+                ns_seg = obj.num_steps;
+            end
+            num_actions = length(action_records);
+            traj_obj = zeros(3, num_actions * (ns_seg + 1));
+            traj_pusher = zeros(3, num_actions * (ns_seg + 1));
+            action_ids = zeros(num_actions * (ns_seg + 1), 1);
+            for i = 1:1:num_actions
+                q_start = way_pts(:, i);
+                q_end = way_pts(:, i + 1);
+                [traj_obj(:, (i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1)), traj_pusher(:, (i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1))] = ...
+                    obj.all_push_actions{action_records(i)}.PlanDubinsPath(q_start, q_end, ns_seg);
+                action_ids((i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1)) = action_records(i) * ones(ns_seg+1, 1);  
             end
         end
         

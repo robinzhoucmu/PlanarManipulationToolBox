@@ -35,19 +35,19 @@ b_normalized = A(3,3);
 pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
-pose_vision_node = [ -35.0830485244/1000; ...
-   -378.8867871/1000;  ...
-     -0.0297944656226];
+pose_vision_node = [ -112.337604338/1000; ...
+   -364.167505223/1000;  ...
+     -0.0370174448887];
 %pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 1.5;
+mu = 0.4;
 q_start = pose_vision_node;
 q_end = table_center;
 
 hand_local_pt  = [-le_long/2 - tip_radius; 0];
 np = [1;0];
-push_action = PushActionDubins(hand_local_pt, np, 0.5 * mu, a, b);
+push_action = PushActionDubins(hand_local_pt, np, mu, a, b);
 num_steps = 49;
 [traj_localframe, traj_pusherframe] = push_action.PlanDubinsPath(q_start, q_end, num_steps);
 x = traj_localframe(1,:);
@@ -109,7 +109,7 @@ for i = 1:1:length(t_samples)
     hand_q_interp_vals(:, i) = hand_traj.GetHandConfiguration(t_samples(i));
 end
 
-sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, mu);
+sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_two_finger, 1.5 * mu);
 sim_results = sim_inst.RollOut();
 num_rec_configs_sim = size(sim_results.obj_configs, 2);
 figure;
