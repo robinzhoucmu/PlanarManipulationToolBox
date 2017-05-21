@@ -167,6 +167,18 @@ classdef PushActionDubins < handle
                 traj_pusherframe(3,i) = atan2(-vec_normal(1), vec_normal(2));
             end
         end
-        
+        % Only compute the path length. Useful to construct 
+        function [path_length] = GetDubinsPathLength(obj, pose_start, pose_end, num_steps)
+            % First, convert the start and end poses to DubinPushFrame. 
+            pose_start_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_start);
+            pose_end_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_end);
+            % Get the flat output start and goal. 
+            z_start = obj.CartesianSpaceToFlatSpace(pose_start_dubinsframe);
+            z_end = obj.CartesianSpaceToFlatSpace(pose_end_dubinsframe);
+            % Call Dubins curve planner. 
+            % Note that z_end is not included.
+            traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
+            path_length = traj_z(4, end);
+        end
     end
 end
