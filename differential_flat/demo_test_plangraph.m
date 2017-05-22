@@ -39,13 +39,14 @@ b_normalized = A(3,3);
 pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
+
 pose_vision_node = [ -35.0830485244/1000; ...
    -378.8867871/1000;  ...
      -0.0297944656226];
 %pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 0.35;
+mu = 0.2;
 q_start = pose_vision_node;
 q_end = table_center;
 
@@ -74,7 +75,7 @@ table_size_x = (451.6 - 30) / 1000.0;
 table_size_y = (254.0 - 30)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 8;
+nd = 12;
 cost_switch = 0.01;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
