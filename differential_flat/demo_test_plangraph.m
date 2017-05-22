@@ -1,3 +1,5 @@
+clear all;
+close all;
 rng(1);
 table_center = [0; -317.5/1000; 0];
 % Hardware specs for the hand.
@@ -16,9 +18,11 @@ shape_info.pho = le;
 
 options_support_pts.mode = 'polygon';
 options_support_pts.vertices = shape_info.shape_vertices';
-num_support_pts = 20;
+num_support_pts = 50;
 
-support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
+%support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
+support_pts = densifyPolygon(shape_info.shape_vertices', num_support_pts);
+
 num_support_pts = size(support_pts, 1);
 options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
@@ -66,11 +70,11 @@ num_steps = 49;
 
 all_push_actions = {push_action_1, push_action_2, push_action_3, push_action_4};
 pose_goal = q_end;
-table_size_x = 451.6 / 1000.0;
-table_size_y = 254.0 / 1000.0;
+table_size_x = (451.6 - 30) / 1000.0;
+table_size_y = (254.0 - 30)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 10;
+nd = 8;
 cost_switch = 0.01;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
@@ -82,6 +86,8 @@ hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 %[way_pts, action_records, tot_path_length] = plan_graph.GetShortestPathInGraph(11);
 %plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
 
- [way_pts, action_records, min_path_length] = plan_graph.QueryNewStartPose( [0; -317.5/1000; pi])
+ [way_pts, action_records, min_path_length] = plan_graph.QueryNewStartPose( [0; -317.5/1000; pi/2])
  plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
-[traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records);
+[traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records, 30);
+csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
+table_z_h = 0.325; PrintPusherCartesianTrajectoryMultiAction(traj_pusher, action_ids, table_z_h, csv_file_path);
