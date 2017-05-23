@@ -5,7 +5,7 @@ table_center = [0; -317.5/1000; 0];
 % Hardware specs for the hand.
 tip_radius = 2.5 / 1000;
 % 4 spacings, each is 6mm.
-width_finger = 24/ 1000;
+width_finger = (24 - 6)/ 1000;
 
 shape_info.shape_id = 'polygon1';
 shape_info.shape_type = 'polygon';
