@@ -46,7 +46,7 @@ pose_vision_node = [ -35.0830485244/1000; ...
 %pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 0.25;
+mu = 0.3;
 q_start = pose_vision_node;
 q_end = table_center;
 
@@ -71,12 +71,13 @@ num_steps = 49;
 
 all_push_actions = {push_action_1, push_action_2, push_action_3, push_action_4};
 pose_goal = q_end;
-table_size_x = (451.6 - 30) / 1000.0;
-table_size_y = (254.0 - 30)/ 1000.0;
+safe_buffer = 35;
+table_size_x = (451.6 - safe_buffer) / 1000.0;
+table_size_y = (254.0 - safe_buffer)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 10;
-cost_switch = 0.01;
+nd = 12;
+cost_switch = 0.03;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
 tic;
