@@ -16,7 +16,7 @@ shape_info.shape_type = 'polygon';
 shape_vertices = get_shape(shape_id);
 shape_vertices(end,:) = [];
 shape_vertices = shape_vertices';
-shape_vertices(1,:) = shape_vertices(1,:) * 0.3;
+shape_vertices(1,:) = shape_vertices(1,:) * 0.302;
 shape_vertices(2,:) = shape_vertices(2,:) * 0.25;
 shape_info.shape_vertices = shape_vertices;
 
@@ -53,20 +53,20 @@ mu = 0.2;
 %q_start = pose_vision_node;
 q_end = table_center;
 
-
-hand_local_pt_1  = [-xmax - 2*tip_radius +  0.00314; 0];
+virtual_buffer = 1.0 / 1000;
+hand_local_pt_1  = [- (xmax + 2*tip_radius + virtual_buffer) +  0.00314; 0];
 np_1 = [1;0];
 push_action_1 = PushActionDubins(hand_local_pt_1, np_1,  mu, a, b);
 
-hand_local_pt_2  = [ xmax + 2*tip_radius -  0.00314; 0];
+hand_local_pt_2  = [ xmax + 2*tip_radius + virtual_buffer -  0.00314; 0];
 np_2 = [-1;0];
 push_action_2 = PushActionDubins(hand_local_pt_2, np_2, mu, a, b);
 
-hand_local_pt_3  = [ 0; - ymax - 2*tip_radius + 0.0044;];
+hand_local_pt_3  = [ 0; - (ymax + 2*tip_radius + virtual_buffer) + 0.0044;];
 np_3 = [0;1];
 push_action_3 = PushActionDubins(hand_local_pt_3, np_3, mu, a, b);
 
-hand_local_pt_4  = [ 0; ymax + 2*tip_radius - 0.0044;];
+hand_local_pt_4  = [ 0; ymax + 2*tip_radius + virtual_buffer - 0.0044;];
 np_4 = [0;-1];
 push_action_4 = PushActionDubins(hand_local_pt_4, np_4, mu, a, b);
 
@@ -78,7 +78,7 @@ table_size_x = (451.6 - 30) / 1000.0;
 table_size_y = (254.0 - 30)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 10;
+nd = 12;
 cost_switch = 0.01;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
@@ -88,3 +88,7 @@ toc;
 
  [way_pts, action_records, min_path_length] = plan_graph.QueryNewStartPose( [0; -317.5/1000; pi/2])
  plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
+ [traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records, 30);
+csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
+table_z_h = 0.325; PrintPusherCartesianTrajectoryMultiAction(traj_pusher, action_ids, table_z_h, csv_file_path);
+
