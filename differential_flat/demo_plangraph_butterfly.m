@@ -1,73 +1,76 @@
 clear all;
-close all;
+tic;
 rng(1);
+
 table_center = [0; -317.5/1000; 0];
 % Hardware specs for the hand.
 tip_radius = 2.5 / 1000;
-% 4 spacings, each is 6mm.
-width_finger = (24 - 6)/ 1000;
+% 3 spacings, each is 6mm.
+width_finger = 18/ 1000;
 
-shape_info.shape_id = 'polygon1';
+
+shape_id = 'butter';
+shape_info.shape_id = shape_id;
 shape_info.shape_type = 'polygon';
-extra_len = 0.001;
-le_short = 0.035 + extra_len;
-le_long = 0.05 + extra_len;
-shape_info.shape_vertices = 0.5 * [-le_long, le_long, le_long, -le_long;-le_short, -le_short, le_short, le_short];
-le = (le_short + le_long)/4;
-shape_info.pho = le;
+[rho] = compute_shape_avgdist_to_center(shape_id) * 0.3;
+shape_vertices = get_shape(shape_id);
+shape_vertices(end,:) = [];
+shape_vertices = shape_vertices';
+shape_vertices(1,:) = shape_vertices(1,:) * 0.3;
+shape_vertices(2,:) = shape_vertices(2,:) * 0.25;
+shape_info.shape_vertices = shape_vertices;
 
-options_support_pts.mode = 'polygon';
-options_support_pts.vertices = shape_info.shape_vertices';
-num_support_pts = 50;
-
-%support_pts = GridSupportPoint(num_support_pts, options_support_pts); % N*2.
-support_pts = densifyPolygon(shape_info.shape_vertices', num_support_pts);
+support_pts = shape_info.shape_vertices';
+%------------------------------------
 
 num_support_pts = size(support_pts, 1);
 options_pressure.mode = 'uniform';
 pressure_weights = AssignPressure(support_pts, options_pressure);
+
+shape_info.pho = rho;                                            
+
 
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
 pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
 pushobj.FitLS(ls_type, 50, 0.1);
-pushobj.noise_df = 10000;
+pushobj.noise_df = 1000;
+pushobj.nsides_symmetry = 2;
+x =shape_info.shape_vertices(1,:); y = shape_info.shape_vertices(2,:); k = convhull(x,y);
+xmax = max(x(k));
+ymax = max(y(k));
+
 A = pushobj.ls_coeffs;
 a = A(1,1);
 b_normalized = A(3,3);
 pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
-
-pose_vision_node = [ -35.0830485244/1000; ...
-   -378.8867871/1000;  ...
-     -0.0297944656226];
-%pose_start = pose_vision_node - table_center;
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 0.25;
-q_start = pose_vision_node;
+mu = 0.2;
+%q_start = pose_vision_node;
 q_end = table_center;
 
-hand_local_pt_1  = [-le_long/2 - tip_radius; 0];
+
+hand_local_pt_1  = [-xmax - 2*tip_radius +  0.00314; 0];
 np_1 = [1;0];
 push_action_1 = PushActionDubins(hand_local_pt_1, np_1,  mu, a, b);
 
-hand_local_pt_2  = [le_long/2 + tip_radius; 0];
+hand_local_pt_2  = [ xmax + 2*tip_radius -  0.00314; 0];
 np_2 = [-1;0];
 push_action_2 = PushActionDubins(hand_local_pt_2, np_2, mu, a, b);
 
-hand_local_pt_3  = [ 0; -le_short/2 - tip_radius;];
+hand_local_pt_3  = [ 0; - ymax - 2*tip_radius + 0.0044;];
 np_3 = [0;1];
 push_action_3 = PushActionDubins(hand_local_pt_3, np_3, mu, a, b);
 
-hand_local_pt_4  = [ 0; le_short/2 + tip_radius;];
+hand_local_pt_4  = [ 0; ymax + 2*tip_radius - 0.0044;];
 np_4 = [0;-1];
 push_action_4 = PushActionDubins(hand_local_pt_4, np_4, mu, a, b);
 
 num_steps = 49;
-%[traj_localframe, traj_pusherframe] = push_action.PlanDubinsPath(q_start, q_end, num_steps);
 
 all_push_actions = {push_action_1, push_action_2, push_action_3, push_action_4};
 pose_goal = q_end;
@@ -83,12 +86,5 @@ tic;
 plan_graph.ConstructGraph(cost_switch);
 toc;
 
-%hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
-%[way_pts, action_records, tot_path_length] = plan_graph.GetShortestPathInGraph(11);
-%plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
-
  [way_pts, action_records, min_path_length] = plan_graph.QueryNewStartPose( [0; -317.5/1000; pi/2])
  plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
-[traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records, 30);
-csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
-table_z_h = 0.325; PrintPusherCartesianTrajectoryMultiAction(traj_pusher, action_ids, table_z_h, csv_file_path);
