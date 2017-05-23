@@ -183,11 +183,13 @@ classdef PlanningGraph < handle
         end
         
         % Visualize a path. 
-        function [h] = VisualizePlannedPath(obj, pushobj, hand_two_finger, way_pts, action_records)
+        function [h] = VisualizePlannedPath(obj, pushobj, hand_two_finger, way_pts, action_records, width_finger)
             %h = figure;
             num_pushes = length(action_records);
             num_steps_draw = 20;
-            width_finger = 24/ 1000;
+            if (nargin < 6)
+                width_finger = 18/ 1000;
+            end
             for ind_seg = 1:1:num_pushes
                 h = figure;
                 q_start = way_pts(:, ind_seg);
