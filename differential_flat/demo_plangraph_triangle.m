@@ -43,7 +43,7 @@ b = b_normalized / (pushobj.pho^2);
 
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 0.25;
+mu = 0.3;
 q_end = table_center;
 
 % Longer right angle edge: contact point right below COM. 
@@ -67,11 +67,11 @@ num_steps = 49;
 
 all_push_actions = {push_action_1, push_action_2, push_action_3};
 pose_goal = q_end;
-table_size_x = (451.6 - 30) / 1000.0;
-table_size_y = (254.0 - 30)/ 1000.0;
+table_size_x = (451.6 - 40) / 1000.0;
+table_size_y = (254.0 - 40)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 10;
+nd = 15;
 cost_switch = 0.01;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
@@ -81,6 +81,10 @@ toc;
 
  [way_pts, action_records, min_path_length] = plan_graph.QueryNewStartPose( [0; -317.5/1000; pi/2])
  plan_graph.VisualizePlannedPath(pushobj, hand_two_finger, way_pts, action_records);
-%[traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records, 30);
-%csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
-%table_z_h = 0.325; PrintPusherCartesianTrajectoryMultiAction(traj_pusher, action_ids, table_z_h, csv_file_path);
+[traj_obj, traj_pusher, action_ids] = plan_graph.GetCompleteObjectHandPath( way_pts, action_records, 30);
+csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
+table_z_h = 0.325; PrintPusherCartesianTrajectoryMultiAction(traj_pusher, action_ids, table_z_h, csv_file_path);
+
+%csv_read_file = '~/catkin_ws/src/dubins_pushing/scripts/output.txt';
+%VisualizePushingExpLog(csv_read_file, pushobj, hand_two_finger, 18/1000)
+%ImproveFigure(gcf)
