@@ -1,7 +1,14 @@
-load exp_data/plan_graph_triangle_mu03nd15.mat;
+clear all;
 close all;
 
-dq = [0,0,pi/2; 30,50, pi/4; -50, 20, pi;];   % 3 cases for red triangle.
+%load exp_data/plan_graph_triangle_mu03nd15.mat;
+%load exp_data/plan_graph_bigrect_mu03nd12_cs03.mat;
+%load exp_data/plan_graph_butter_mu03nd12_cs05.mat;
+load exp_data/plan_graph_butter_mu025nd10_cs05_vbhalfmm.mat;
+
+%dq = [0,0,pi/2; 30,50, pi/4; -50, 20, pi;];   % 3 cases for red triangle.
+%dq = [20,-30,pi/2; 30,50, pi/3; 60, 20, pi*5/6 ;];  % 3 cases for big rect. 
+dq = [-30,10,pi/2; 20,-10, pi/6; 60, 20, pi*3/4 ;]; % 3 cases for butter.
 dq(:,1:2) = dq(:,1:2) / 1000.0;
 for i = 1:1:size(dq, 1)
   q_start = [0 + dq(i,1); -317.5/1000 + dq(i,2); 0 + dq(i,3)]
