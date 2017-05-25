@@ -49,11 +49,11 @@ b = b_normalized / (pushobj.pho^2);
 
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 
-mu = 0.3;
+mu = 0.25;
 %q_start = pose_vision_node;
 q_end = table_center;
 
-virtual_buffer = 1.0 / 1000;
+virtual_buffer = 0.5 / 1000;
 hand_local_pt_1  = [- (xmax + 2*tip_radius + virtual_buffer) +  0.00314; 0];
 np_1 = [1;0];
 push_action_1 = PushActionDubins(hand_local_pt_1, np_1,  mu, a, b);
@@ -79,7 +79,7 @@ table_size_x = (451.6 - buffer_size) / 1000.0;
 table_size_y = (254.0 - buffer_size)/ 1000.0;
 range_pose_min = [q_end(1) - table_size_x / 2; q_end(2) - table_size_y / 2; -pi];
 range_pose_max = [q_end(1) + table_size_x / 2; q_end(2) + table_size_y / 2; pi ];
-nd = 12;
+nd = 10;
 cost_switch = 0.05;
 plan_graph = PlanningGraph(all_push_actions, pose_goal);
 plan_graph.SetRangeAndDiscretization(range_pose_min, range_pose_max, nd);
