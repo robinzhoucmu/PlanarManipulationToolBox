@@ -183,7 +183,7 @@ classdef PushActionDubins < handle
         % Steer for a small distance from A to B. If B is within the
         % distance, then reach B; otherwise stop at the closest way point
         % towards B. The intermediate points are not returned. 
-        function [pose_near] = SteerSmallDistance(obj, pose_start, pose_end, eps_dist)
+        function [pose_near, flag_reach] = SteerSmallDistance(obj, pose_start, pose_end, eps_dist)
             % First, convert the start and end poses to DubinPushFrame. 
             pose_start_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_start);
             pose_end_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_end);
@@ -192,12 +192,14 @@ classdef PushActionDubins < handle
             z_end = obj.CartesianSpaceToFlatSpace(pose_end_dubinsframe);
             % Call Dubins curve planner. 
             % Note that z_end is not included.
+            flag_reach = 0;
             num_steps = 50;
             dt = 1.0 / num_steps;
             traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
             path_length = traj_z(4, end);
             if (path_length <= eps_dist)
                 pose_near = pose_end;
+                flag_reach = 1;
             else
                 ratio_cut = eps_dist / path_length;
                 ind_waypt_near = min(ceil(num_steps * ratio_cut), num_steps - 1);
@@ -207,6 +209,16 @@ classdef PushActionDubins < handle
                     (traj_z(1:2, ind_waypt_near + 1) -  traj_z(1:2, ind_waypt_near)) / dt);
                 pose_near = obj.GetLocalFrameGivenDubinPushFrame(push_frame);
             end
+        end
+        function [pusherframe] = GetPusherFrameGivenObjLocalFrame(obj, obj_pose)
+             R = [cos( obj_pose(3)), -sin( obj_pose(3));
+                     sin( obj_pose(3)), cos(obj_pose(3))];
+            vec_pt =   R * obj.pt;
+            vec_normal = R * obj.np;
+            pusherframe(1:2) = traj_localframe(1:2, i) + vec_pt;
+            % From the rotation matrix with second column equals vec_pt.
+            %traj_pusherframe(3, i) = atan2(vec_pt(1), -vec_pt(2));
+            pusherframe(3) = atan2(-vec_normal(1), vec_normal(2));
         end
     end
 end
