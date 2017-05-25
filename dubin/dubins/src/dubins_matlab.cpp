@@ -28,8 +28,8 @@ static int storeData(double q[3], double x, void* user_data);
 // The gateway function
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     // Check for proper number of arguments
-    if (nrhs != 4)
-        mexErrMsgIdAndTxt("Dubins:path:nrhs", "Four inputs required.");
+    if (nrhs < 4)
+        mexErrMsgIdAndTxt("Dubins:path:nrhs", "At least four inputs required.");
 
     if (nlhs != 1)
         mexErrMsgIdAndTxt("Dubins:path:nlhs", "One output required.");
@@ -51,13 +51,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double *q0      = mxGetPr(prhs[0]);
     double *q1      = mxGetPr(prhs[1]);
     double r        = mxGetScalar(prhs[2]);
-    //double stepSize = mxGetScalar(prhs[3]);
-    double num_steps = mxGetScalar(prhs[3]);
+    int flag_use_step_size = 0;
+    if (nrhs == 5)
+        flag_use_step_size = mxGetScalar(prhs[4]);
     
     DubinsPath path;
     dubins_init(q0, q1, r, &path);
+    
     double length = dubins_path_length(&path);
-    double stepSize = length / num_steps;
+    //double stepSize = length / num_steps;
+    
+    double stepSize;
+    int num_steps;
+    if (flag_use_step_size) {
+        stepSize = mxGetScalar(prhs[3]);
+        num_steps = (int)floor(length/stepSize);
+    } else {
+        num_steps = mxGetScalar(prhs[3]);
+        stepSize = length / num_steps;
+    }
     
 //n = (int)floor(length/stepSize);
     n = num_steps;

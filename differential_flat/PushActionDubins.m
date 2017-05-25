@@ -180,5 +180,33 @@ classdef PushActionDubins < handle
             traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
             path_length = traj_z(4, end);
         end
+        % Steer for a small distance from A to B. If B is within the
+        % distance, then reach B; otherwise stop at the closest way point
+        % towards B. The intermediate points are not returned. 
+        function [pose_near] = SteerSmallDistance(obj, pose_start, pose_end, eps_dist)
+            % First, convert the start and end poses to DubinPushFrame. 
+            pose_start_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_start);
+            pose_end_dubinsframe = obj.GetDubinPushFrameGivenLocalFrame(pose_end);
+            % Get the flat output start and goal. 
+            z_start = obj.CartesianSpaceToFlatSpace(pose_start_dubinsframe);
+            z_end = obj.CartesianSpaceToFlatSpace(pose_end_dubinsframe);
+            % Call Dubins curve planner. 
+            % Note that z_end is not included.
+            num_steps = 50;
+            dt = 1.0 / num_steps;
+            traj_z = dubins(z_start', z_end', obj.turning_radius, num_steps);
+            path_length = traj_z(4, end);
+            if (path_length <= eps_dist)
+                pose_near = pose_end;
+            else
+                ratio_cut = eps_dist / path_length;
+                ind_waypt_near = min(ceil(num_steps * ratio_cut), num_steps - 1);
+                %z_waypt_near = traj_z(1:2, ind_waypt_near);
+                %vz_waypt_near = (traj_z(1:2, ind_waypt_near + 1) -  traj_z(1:2, ind_waypt_near)) / dt;
+                push_frame = obj.FlatSpaceToCartesianSpace( traj_z(1:2, ind_waypt_near), ...
+                    (traj_z(1:2, ind_waypt_near + 1) -  traj_z(1:2, ind_waypt_near)) / dt);
+                pose_near = obj.GetLocalFrameGivenDubinPushFrame(push_frame);
+            end
+        end
     end
 end

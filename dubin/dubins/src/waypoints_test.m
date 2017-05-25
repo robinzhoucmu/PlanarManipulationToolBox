@@ -22,7 +22,8 @@ waypoints = [q0;q1;q2;q3;q4;q0];
 figure
 hold on
 for i=1:size(waypoints, 1)-1
-    path = dubins(waypoints(i,:), waypoints(i+1,:), rho, num_steps);
+    %path = dubins(waypoints(i,:), waypoints(i+1,:), rho, num_steps);
+    path = dubins(waypoints(i,:), waypoints(i+1,:), rho, 0.1, 1);
     x = path(1,:);
     y = path(2,:);
     theta = path(3,:);
