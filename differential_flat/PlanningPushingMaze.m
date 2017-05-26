@@ -30,7 +30,7 @@ classdef PlanningPushingMaze < handle
         num_nodes     
     end
     methods
-        function [obj] = PlanningPushMaze(boundary, obstacle_polygons, all_push_actions) 
+        function [obj] = PlanningPushingMaze(boundary, obstacle_polygons, all_push_actions) 
             obj.boundary = boundary;
             obj.obstacle_polygons = obstacle_polygons;
             obj.all_push_actions = all_push_actions;
@@ -56,8 +56,13 @@ classdef PlanningPushingMaze < handle
             % class where y axis the squeezing direction).
             pt_fingers = bsxfun(@plus, pose_pusher(1:2), ...
                 [cos(pose_pusher(3)), -sin(pose_pusher(3)); sin(pose_pusher(3)), cos(pose_pusher(3))] * [-obj.finger_width/2, obj.finger_width/2; 0, 0]);
-            buffer = [obj.obj.tip_radius; obj.tip_radius];
+            buffer = [obj.tip_radius; obj.tip_radius];
             cur_obj_vertices = GetPolygonShapeInWorldFrame(obj.obj_vertices, pose_obj);
+            % Check the object is inside the boundary.
+            flag_collision = sum( (min(cur_obj_vertices, [], 2) < (obj.boundary(:,1))) | (max(cur_obj_vertices, [], 2) > (obj.boundary(:,2))) );
+            if (flag_collision) 
+                return; 
+            end
             % Check collision between the object polygon and static obstacle polygons. 
             for i = 1:1:length(obj.obstacle_polygons)
                     flag_in_1 = inpolygon(obj.obstacle_polygons{i}(1,:), obj.obstacle_polygons{i}(2,:), ...
@@ -72,16 +77,16 @@ classdef PlanningPushingMaze < handle
             end
             if (~flag_collision)
                 % Check whether the fingers are inside the map boundary.
-                flag_collision = sum( (min(pt_fingers, [], 2) < (obj.boundary(:,1) + buffer)) | (max(pt_fingers, [], 2) > (obj.boundary(:,1) - buffer)) );
+                flag_collision = sum( (min(pt_fingers, [], 2) < (obj.boundary(:,1) + buffer)) | (max(pt_fingers, [], 2) > (obj.boundary(:,2) - buffer)) );
                 if (~flag_collision)
                     for i = 1:1:length(obj.obstacle_polygons)
                         % Check whether the fingers are inside the obstacles.
-                         flag_collision = sum(inpolygon(pt_fingers(1,:), pt_fingers(2,:), obj.obstacle_polygons{i}(1,:), obj.obstacle_polygons{i}(2,:)));
+                         flag_collision = sum(inpolygon(pt_fingers(1,:), pt_fingers(2,:), obj.obstacle_polygons{i}(1,:), obj.obstacle_polygons{i}(2,:))) > 0;
                          % Check the distance of the finger centers to the
                          % obstacles are smaller than the tip radius or not.
                          if (~flag_collision)
                             [dist_fingers] = distancePointPolygon(pt_fingers', obj.obstacle_polygons{i}');
-                            flag_collision = sum(dist_fingers <= buffer);
+                            flag_collision = sum(dist_fingers <= buffer) > 0;
                             if (flag_collision)
                                 break;
                             end
@@ -109,7 +114,7 @@ classdef PlanningPushingMaze < handle
         function [neighbor_ids] = FindKNNEuclidean(obj, p, k)
             dists = sum(bsxfun(@minus, obj.Tr_nodes(1:2,1:obj.num_nodes), p).^2, 1);
             [~,idx] = sort(dists, 'ascend');
-            neighbor_ids = idx(1:k);
+            neighbor_ids = idx(1:min(k, obj.num_nodes));
         end
         % Find nearest neighbor using Dubins distance given query node
         % (with action) and a list of candidates (from Euclidean
@@ -133,8 +138,18 @@ classdef PlanningPushingMaze < handle
         end
         % For a target, steer a bit from q_near to q_new for a given
         % tree_id(which determines movement direction)
-        function [q_new, flag_reach] = Steer(obj, q_near, q_target)
-            [q_new,flag_reach] = obj.all_push_actions{q_target(4)}.SteerSmallDistance(q_near(1:3), q_target(1:3), obj.steer_dist);
+        function [q_new, flag_reach, traj_localframe, traj_pusherframe] = Steer(obj, q_near, q_target, num_way_pts)
+            [pose_new,flag_reach] = obj.all_push_actions{q_target(4)}.SteerSmallDistance(q_near(1:3), q_target(1:3), obj.steer_dist);
+            q_new = [pose_new; q_target(4)];
+            if nargin < 4
+                num_way_pts = 1;
+            end
+            if num_way_pts > 1
+                [traj_localframe, traj_pusherframe, ~] = obj.all_push_actions{q_target(4)}.PlanDubinsPath(q_near(1:3), pose_new, num_way_pts);
+            else 
+                traj_localframe = [];
+                traj_pusherframe = [];
+            end
         end
         
         function [q_rand, flag_target] = SampleRandomNode(obj)
@@ -169,22 +184,41 @@ classdef PlanningPushingMaze < handle
         end
         
         function [traj_obj, traj_pusher, action_records] = RRTPlanPath(obj)
-            InitializeTrees();
+            obj.InitializeTrees();
             flag_stop = 0;
+            h = figure;
+            hold on;
+            obj.DrawStaticMap(h);
+            num_samples = 0;
             while ~flag_stop
-                [q_rand, flag_target] = obj.SampleRandomNode();
+                rand_sample_in_collision = 1;
+                while (rand_sample_in_collision)
+                    [q_rand, flag_target] = obj.SampleRandomNode();
+                    pose_pusher_rand = obj.all_push_actions{q_rand(4)}.GetPusherFrameGivenObjLocalFrame(q_rand(1:3));
+%                     if (q_rand(1) > 0.23) & (q_rand(1) < 0.27) & (q_rand(2) >0.03) & (q_rand(2) <0.12 )
+%                     q_rand, q_new
+%                     end
+                    [rand_sample_in_collision] = obj.CheckCollisionGivenObjectAndPusher(q_rand(1:3), pose_pusher_rand);
+                    %rand_sample_in_collision = 0;
+                end
+                num_samples = num_samples + 1;
                 [neighbor_ids] = obj.FindKNNEuclidean(q_rand(1:2), obj.nn_k);
                 [nn_id, dubin_dist_min] = obj.FindNNDubins(q_rand, neighbor_ids); 
                 q_near = obj.Tr_nodes(:, nn_id);
-                [q_new, flag_reach] = obj.Steer(q_near, q_rand);
-                pose_obj = q_new(1:3);
-                pose_pusher = obj.all_push_actions{q_new(4)}.GetPusherFrameGivenObjLocalFrame(pose_obj);
-                [flag_collision] = obj.CheckCollisionGivenObjectAndPusher(pose_obj, pose_pusher);
+                [q_new, flag_reach, traj_localframe, traj_pusherframe] = obj.Steer(q_near, q_rand, 20);
+                [flag_collision] = obj.CheckCollisionGivenPath(traj_localframe, traj_pusherframe);
+                
+                %pose_obj = q_new(1:3);
+                %pose_pusher = obj.all_push_actions{q_new(4)}.GetPusherFrameGivenObjLocalFrame(pose_obj);
+                %[flag_collision] = obj.CheckCollisionGivenObjectAndPusher(pose_obj, pose_pusher);
                 if ~flag_collision
                     obj.AddNodeToTree(q_new, nn_id);
-                end
-                if flag_reach && flag_target
-                    flag_stop = 1;
+                    obj.num_nodes, num_samples
+                    plot(q_rand(1), q_rand(2), '+'); hold on; 
+                    plot([q_near(1), q_new(1)], [q_near(2), q_new(2)], 'b-'); hold on; drawnow;
+                    if flag_reach && flag_target
+                        flag_stop = 1;
+                    end
                 end
             end
             % get the object, pusher frames and action_ids along the path.
@@ -197,7 +231,9 @@ classdef PlanningPushingMaze < handle
                 traj_obj(:,end + 1) = obj_pose;
                 action_id =  obj.Tr_nodes(4, cur_node_id);
                 action_records(end + 1) = action_id;
-                traj_pusher(:,end + 1) = obj.all_push_actions{action_id}.GetPusherFrameGivenObjLocalFrame(obj_pose);
+                if (action_id >= 1)
+                    traj_pusher(:,end + 1) = obj.all_push_actions{action_id}.GetPusherFrameGivenObjLocalFrame(obj_pose);
+                end
                 cur_node_id = obj.Tr_parent_ids(cur_node_id);
             end
             % Reverse direction.
@@ -207,5 +243,51 @@ classdef PlanningPushingMaze < handle
             action_records = action_records(end-1:-1:1);
         end
         
+        function [] = VisualizePath(obj, traj_obj_way_pts, action_records)
+            
+            num_steps_draw = 20;
+            num_switches = size(traj_obj_way_pts, 2) - 1;
+            color_map = ['b', 'm', 'c', 'r', 'g'];
+            for ind = 1:1:num_switches
+                h = figure;
+                hold on;
+                obj.DrawStaticMap(h);
+                q_start = traj_obj_way_pts(:, ind);
+                q_end = traj_obj_way_pts(:, ind + 1);
+                 [traj_localframe, traj_pusherframe] = ...
+                    obj.all_push_actions{action_records(ind)}.PlanDubinsPath(q_start, q_end, num_steps_draw);
+                x = traj_localframe(1,:);
+                y = traj_localframe(2,:);
+                theta = traj_localframe(3,:);
+                num_rec_configs = length(x);
+                hold on;
+                seg_size = 2;
+                for i = 1:1:num_rec_configs
+                    if mod(i, seg_size) == 1 || i == num_rec_configs
+                    plot(x(i), y(i), 'b+');
+                    obj_pose = [x(i);y(i);theta(i)];
+                    vertices = SE2Algebra.GetPointsInGlobalFrame(obj.obj_vertices, obj_pose);
+                    vertices(:,end+1) = vertices(:,1);
+                    c = color_map(mod(ind, length(color_map)) + 1);
+                    plot(vertices(1,:), vertices(2,:), '-', 'Color', c);
+                    end
+                end
+                axis([obj.boundary(1,1) obj.boundary(1,2) obj.boundary(2,1) obj.boundary(2,2)]);
+                axis equal;
+            end
+        
+        end
+        
+        function [] = DrawStaticMap(obj, h)
+            figure(h);
+            plot([obj.boundary(1,1), obj.boundary(1,1), obj.boundary(1,2), obj.boundary(1,2), obj.boundary(1,1)], ...
+                    [obj.boundary(2,1), obj.boundary(2,2), obj.boundary(2,2), obj.boundary(2,1), obj.boundary(2,1)], 'b-');
+            hold on;
+            plot(obj.pose_goal(1), obj.pose_goal(2), 'r*', 'MarkerSize', 10);
+            plot([obj.obstacle_polygons{1}(1,:), obj.obstacle_polygons{1}(1,1)], ...
+                [obj.obstacle_polygons{1}(2,:), obj.obstacle_polygons{1}(2,1)], 'r-');
+            axis([obj.boundary(1,1) - 0.05, obj.boundary(1,2) + 0.05, obj.boundary(2,1) - 0.05, obj.boundary(2,2) + 0.05]);
+            axis equal;
+        end
     end
 end

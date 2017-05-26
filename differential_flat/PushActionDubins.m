@@ -215,7 +215,8 @@ classdef PushActionDubins < handle
                      sin( obj_pose(3)), cos(obj_pose(3))];
             vec_pt =   R * obj.pt;
             vec_normal = R * obj.np;
-            pusherframe(1:2) = traj_localframe(1:2, i) + vec_pt;
+            pusherframe = zeros(3,1);
+            pusherframe(1:2) = obj_pose(1:2) + vec_pt;
             % From the rotation matrix with second column equals vec_pt.
             %traj_pusherframe(3, i) = atan2(vec_pt(1), -vec_pt(2));
             pusherframe(3) = atan2(-vec_normal(1), vec_normal(2));

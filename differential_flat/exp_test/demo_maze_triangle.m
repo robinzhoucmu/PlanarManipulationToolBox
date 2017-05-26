@@ -1,5 +1,6 @@
-clear all;
+%clear all;
 close all;
+rng(1);
 % Hardware specs for the hand.
 tip_radius = 2.5 / 1000;
 % 3 spacings, each is 6mm.
@@ -29,8 +30,8 @@ pressure_weights = AssignPressure(support_pts, options_pressure);
 % limit surface fitting based on pressure distribution.
 ls_type = 'quadratic';
 % Uncomment the following two lines if you first run this file. 
-pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
-pushobj.FitLS(ls_type, 50, 0.1);
+%pushobj = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+%pushobj.FitLS(ls_type, 50, 0.1);
 pushobj.noise_df = 10000;
 A = pushobj.ls_coeffs;
 a = A(1,1);
@@ -40,7 +41,7 @@ b = b_normalized / (pushobj.pho^2);
 
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
 mu = 0.3;
-
+%mu = 1.0;
 % Longer right angle edge: contact point right below COM. 
 hand_local_pt_1  = [0;  -le_short/3 - tip_radius];
 np_1 = [0;1];
@@ -57,8 +58,31 @@ hand_local_pt_3  = [qx;qy] * r_extend;
 np_3 = [-qx; - qy] / norm([qx;qy]);
 push_action_3 = PushActionDubins(hand_local_pt_3, np_3, mu, a, b);
 
+all_push_actions = {push_action_1, push_action_2, push_action_3};
 
 % Set the boundary of the maze.
-boundary = [0, 3.5 * le_long; 0, 3.5 * le_long];
-obstacle_polygons = []
-rrt_planner_maze = PlanningPushMaze(boundary, obstacle_polygons, all_push_actions) 
+xmax = 5.5 * le_long;
+ymax = 5.25 * le_long;
+boundary = [0, xmax; 0, ymax];
+d1 = 1.75 * le_long;
+d2 = 1.75 * le_long;
+%d3 = 1.5 * le_short;
+d3 = (xmax - d1 - 4.5 * le_short)/2;
+d4 = 2.25 * le_long;
+%obstacle= [0, ymax; xmax - d1, ymax; xmax - d1, d2; d3, d2; 0, d2 + d4]';
+obstacle= [0, ymax; xmax - d1, ymax; xmax - d1, d2; xmax - d1 - d3, d2; xmax - d1 - d3, d2+d4; d3, d2+d4; d3, d2; 0, d2]';
+obstacle_polygons{1} = obstacle;
+buffer_dist = 0.02;
+pose_start = [boundary(1,2) - le_short * 2 / 3 - buffer_dist; boundary(2,2) - le_long * 2 / 3 - buffer_dist; -pi/2];
+%pose_goal = [0+buffer_dist + le_short / 3; d2 + buffer_dist + le_long / 3; -pi/2]; 
+pose_goal = [(xmax - d1)/2; d2 + buffer_dist + le_long / 3 + d4/4; -pi/2]; 
+rrt_planner_maze = PlanningPushingMaze(boundary, obstacle_polygons, all_push_actions);
+nn_k = 100;
+steer_dist = 0.5;
+cost_switch = 0.1;
+rrt_planner_maze.SetPlan(pose_start, pose_goal, cost_switch, steer_dist, nn_k);
+rrt_planner_maze.SetPolygonObjectAndRoundPusherGeometry(shape_info.shape_vertices, tip_radius, width_finger);
+tic;
+[traj_obj, traj_pusher, action_records] = rrt_planner_maze.RRTPlanPath();
+toc;
+rrt_planner_maze.VisualizePath(traj_obj, action_records)
