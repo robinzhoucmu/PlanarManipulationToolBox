@@ -243,8 +243,7 @@ classdef PlanningPushingMaze < handle
             action_records = action_records(end-1:-1:1);
         end
         
-        function [] = VisualizePath(obj, traj_obj_way_pts, action_records)
-            
+        function [] = VisualizePath(obj, traj_obj_way_pts, action_records)         
             num_steps_draw = 20;
             num_switches = size(traj_obj_way_pts, 2) - 1;
             color_map = ['b', 'm', 'c', 'r', 'g'];
@@ -288,6 +287,24 @@ classdef PlanningPushingMaze < handle
                 [obj.obstacle_polygons{1}(2,:), obj.obstacle_polygons{1}(2,1)], 'r-');
             axis([obj.boundary(1,1) - 0.05, obj.boundary(1,2) + 0.05, obj.boundary(2,1) - 0.05, obj.boundary(2,2) + 0.05]);
             axis equal;
+        end
+        % For execution on the robot. Add offset to align table center.
+        function [traj_obj, traj_pusher, action_ids] = GetPusherExpExecutePath(obj, way_pts, action_records, tc_x, tc_y)
+            ns_seg = 30;
+            num_actions = length(action_records);
+            traj_obj = zeros(3, num_actions * (ns_seg + 1));
+            traj_pusher = zeros(3, num_actions * (ns_seg + 1));
+            action_ids = zeros(num_actions * (ns_seg + 1), 1);
+            for i = 1:1:num_actions
+                q_start = way_pts(:, i);
+                q_end = way_pts(:, i + 1);
+                [traj_obj(:, (i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1)), traj_pusher(:, (i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1))] = ...
+                    obj.all_push_actions{action_records(i)}.PlanDubinsPath(q_start, q_end, ns_seg);
+                action_ids((i-1) * (ns_seg + 1) + 1: i * (ns_seg + 1)) = action_records(i) * ones(ns_seg+1, 1);  
+            end
+            trans = [tc_x - obj.boundary(1,2)/2; tc_y - obj.boundary(2,2)/2];
+            traj_obj(1:2,:) = bsxfun(@plus, trans, traj_obj(1:2, :));
+            traj_pusher(1:2, :) = bsxfun(@plus, trans, traj_pusher(1:2, :));
         end
     end
 end

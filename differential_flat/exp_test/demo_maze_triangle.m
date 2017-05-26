@@ -40,7 +40,7 @@ pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
-mu = 0.3;
+mu = 0.5;
 %mu = 1.0;
 % Longer right angle edge: contact point right below COM. 
 hand_local_pt_1  = [0;  -le_short/3 - tip_radius];
@@ -61,14 +61,24 @@ push_action_3 = PushActionDubins(hand_local_pt_3, np_3, mu, a, b);
 all_push_actions = {push_action_1, push_action_2, push_action_3};
 
 % Set the boundary of the maze.
+%xmax = 5.5 * le_long;
+%ymax = 5.25 * le_long;
 xmax = 5.5 * le_long;
-ymax = 5.25 * le_long;
+ymax = 4.25 * le_long;
+
 boundary = [0, xmax; 0, ymax];
-d1 = 1.75 * le_long;
-d2 = 1.75 * le_long;
+% d1 = 1.75 * le_long;
+% d2 = 1.75 * le_long;
+% %d3 = 1.5 * le_short;
+% d3 = (xmax - d1 - 4.5 * le_short)/2;
+% d4 = 2.25 * le_long;
+
+d1 = 1.9 * le_long;
+d2 = 1.5 * le_long;
 %d3 = 1.5 * le_short;
 d3 = (xmax - d1 - 4.5 * le_short)/2;
-d4 = 2.25 * le_long;
+d4 = 2.0 * le_long;
+
 %obstacle= [0, ymax; xmax - d1, ymax; xmax - d1, d2; d3, d2; 0, d2 + d4]';
 obstacle= [0, ymax; xmax - d1, ymax; xmax - d1, d2; xmax - d1 - d3, d2; xmax - d1 - d3, d2+d4; d3, d2+d4; d3, d2; 0, d2]';
 obstacle_polygons{1} = obstacle;
@@ -85,4 +95,7 @@ rrt_planner_maze.SetPolygonObjectAndRoundPusherGeometry(shape_info.shape_vertice
 tic;
 [traj_obj, traj_pusher, action_records] = rrt_planner_maze.RRTPlanPath();
 toc;
-rrt_planner_maze.VisualizePath(traj_obj, action_records)
+rrt_planner_maze.VisualizePath(traj_obj, action_records);
+
+table_center = [0; -317.5/1000; 0];
+[traj_obj_exec, traj_pusher_exec, action_ids] = rrt_planner_maze.GetPusherExpExecutePath(traj_obj, action_records, table_center(1), table_center(2));
