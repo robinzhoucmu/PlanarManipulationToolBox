@@ -290,7 +290,7 @@ classdef PlanningPushingMaze < handle
         end
         % For execution on the robot. Add offset to align table center.
         function [traj_obj, traj_pusher, action_ids] = GetPusherExpExecutePath(obj, way_pts, action_records, tc_x, tc_y)
-            ns_seg = 30;
+            ns_seg = 20;
             num_actions = length(action_records);
             traj_obj = zeros(3, num_actions * (ns_seg + 1));
             traj_pusher = zeros(3, num_actions * (ns_seg + 1));

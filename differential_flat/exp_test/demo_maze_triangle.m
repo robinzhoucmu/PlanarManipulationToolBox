@@ -40,7 +40,7 @@ pushobj.ls_coeffs = diag([a;a;b_normalized]);
 b = b_normalized / (pushobj.pho^2);
 
 hand_two_finger = ConstructTwoRoundFingersGripperHand(tip_radius);
-mu = 0.5;
+mu = 0.45;
 %mu = 1.0;
 % Longer right angle edge: contact point right below COM. 
 hand_local_pt_1  = [0;  -le_short/3 - tip_radius];
@@ -63,8 +63,9 @@ all_push_actions = {push_action_1, push_action_2, push_action_3};
 % Set the boundary of the maze.
 %xmax = 5.5 * le_long;
 %ymax = 5.25 * le_long;
-xmax = 5.5 * le_long;
-ymax = 4.25 * le_long;
+safe_buffer = 1.0 / 1000;
+xmax = 5.5 * le_long - safe_buffer;
+ymax = 4.25 * le_long - safe_buffer;
 
 boundary = [0, xmax; 0, ymax];
 % d1 = 1.75 * le_long;
@@ -88,8 +89,8 @@ pose_start = [boundary(1,2) - le_short * 2 / 3 - buffer_dist; boundary(2,2) - le
 pose_goal = [(xmax - d1)/2; d2 + buffer_dist + le_long / 3 + d4/4; -pi/2]; 
 rrt_planner_maze = PlanningPushingMaze(boundary, obstacle_polygons, all_push_actions);
 nn_k = 100;
-steer_dist = 0.5;
-cost_switch = 0.1;
+steer_dist = 0.55;
+cost_switch = 0.2;
 rrt_planner_maze.SetPlan(pose_start, pose_goal, cost_switch, steer_dist, nn_k);
 rrt_planner_maze.SetPolygonObjectAndRoundPusherGeometry(shape_info.shape_vertices, tip_radius, width_finger);
 tic;
@@ -99,3 +100,11 @@ rrt_planner_maze.VisualizePath(traj_obj, action_records);
 
 table_center = [0; -317.5/1000; 0];
 [traj_obj_exec, traj_pusher_exec, action_ids] = rrt_planner_maze.GetPusherExpExecutePath(traj_obj, action_records, table_center(1), table_center(2));
+
+csv_file_path = '/home/jiaji/catkin_ws/src/dubins_pushing/test_multi_actions.csv';
+table_z_h = 0.325; 
+PrintPusherCartesianTrajectoryMultiAction(traj_pusher_exec, action_ids, table_z_h, csv_file_path);
+
+%csv_read_file = '~/catkin_ws/src/dubins_pushing/scripts/output.txt';
+%VisualizePushingExpLog(csv_read_file, pushobj, hand_two_finger, 18/1000)
+%ImproveFigure(gcf)
