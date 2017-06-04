@@ -12,7 +12,7 @@ pusher_poses(:, 1:2) = pusher_poses(:, 1:2) / unit;
 action_ids = D(:,8);
 seg_draw = floor(num_stamps / 30);
 figure;
-color_map = ['b', 'm', 'c'];
+color_map = ['b', 'm', 'r'];
 num_actions = 1;
 unit = 1;
 for i = 1:1:num_stamps - 1
@@ -39,12 +39,12 @@ for i = 1:1:num_stamps - 1
         end
 
         %plot(vertices(1,:), vertices(2,:),  'Color', c, 'LineStyle', linestyle, 'LineWidth', linewidth);
-        fill(vertices(1,:), vertices(2,:), c, 'FaceAlpha', 0.1 , 'EdgeColor', 'k');
+        fill(vertices(1,:), vertices(2,:), c, 'FaceAlpha', 0.05 , 'EdgeColor', c, 'EdgeAlpha', 0.5);
         hold on;
         q = hand.q;
         q(1:3) = pusher_poses(i,:)' * unit;
         %q(4) = width_finger;
-        hand.Draw(gcf, q, 'r', 2);
+        hand.Draw(gcf, q, c, 2);
         hold on;
         if (( i == 1 || i == num_stamps - 1))
             fill(vertices(1,:), vertices(2,:), 'k', 'FaceAlpha', 0.5 , 'EdgeColor', 'k');
@@ -56,6 +56,6 @@ safe_buffer = 20;
 table_size_x = (451.6 - 100) / 1000.0;
 table_size_y = (254.0 - 10)/ 1000.0;
 table_center = [0; -317.5/1000];
-%axis([table_center(1) - table_size_x/2, table_center(1) + table_size_x/2, table_center(2) - table_size_y/2, table_center(2) + table_size_y/2]);
+axis([-0.15, 0.15, table_center(2) - 0.08, table_center(2) + 0.08]);
 axis equal;
 end
