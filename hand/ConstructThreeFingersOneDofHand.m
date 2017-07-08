@@ -13,4 +13,9 @@ hand_three_fingers_gripper.num_fingers = 3;
 hand_three_fingers_gripper.finger_radius = finger_radius;
 hand_three_fingers_gripper.fun_fk = fun_fk_hand_three_fingers;
 hand_three_fingers_gripper.fun_fv = fun_fv_hand_three_fingers;    
+
+hand_three_fingers_gripper.finger_geometries{1} = [0;0];
+hand_three_fingers_gripper.finger_geometries{2} = [0;0];
+hand_three_fingers_gripper.finger_geometries{3} = [0;0];
+
 end

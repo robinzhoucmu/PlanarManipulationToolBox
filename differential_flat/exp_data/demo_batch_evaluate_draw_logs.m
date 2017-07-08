@@ -7,8 +7,13 @@ datafiles = {'plan_graph_bigrect_mu03nd12_cs03.mat', ...
                     'plan_graph_bigrect_mu03nd12_cs03.mat', ...
                     'plan_graph_butter_mu025nd10_cs05_vbhalfmm.mat', ...
                     'plan_graph_triangle_mu03nd15.mat'};
-all_records = cell(12, 1);
-for ind_group = 1:1:4
+%  pathFolder = {'exp_data/robot_exp_logs/butter'};
+% datafiles = {'plan_graph_butter_mu025nd10_cs05_vbhalfmm.mat'};               
+ figure_save_folder = '~/Dropbox/2017Spring/ISRR2017/paper/Figures/exp_logs';
+all_records = cell(3 * length(pathFolder), 1);
+avg_offset = zeros(3, 3 * length(pathFolder));
+avg_offset_cf = zeros(3, 3 * length(pathFolder));
+for ind_group = 1:1:length(pathFolder)
     load(datafiles{ind_group});
     d = dir(pathFolder{ind_group});
     isub = [d(:).isdir]; 
@@ -24,15 +29,20 @@ for ind_group = 1:1:4
         num_runs = length(key_poses_obj);
         offset_obj_final_poses = zeros(3, num_runs);
 
-        for i = 1:1:num_runs
-            offset_obj_final_poses(:,i) = key_poses_obj{i}(:,end) - table_center;
-            offset_obj_final_poses(3,i) = offset_obj_final_poses(3,i) * 180 / pi;
+        for j = 1:1:num_runs
+            offset_obj_final_poses(:,j) = key_poses_obj{j}(:,end) - table_center;
+            offset_obj_final_poses(3,j) = offset_obj_final_poses(3,j) * 180 / pi;
         end
         [mu,sigma,muci,sigmaci] = normfit(offset_obj_final_poses', 0.05);
-        ind = 4 * (ind_group - 1) + i;
+        ind = 3 * (ind_group - 1) + i;
         all_records{ind}.folder_name = folder_name;
         all_records{ind}.avg_offset = mu;
-        all_records{ind}.ci = sigmaci(2,:) - mu;
-        VisualizePushingExpLog(file_names{num_runs}, pushobj, hand_two_finger);
+        all_records{ind}.ci = muci(2,:) - mu;
+        avg_offset(:,ind) = mu';
+        avg_offset_cf(:, ind) =  all_records{ind}.ci;
+%         h = VisualizePushingExpLog(file_names{num_runs}, pushobj, hand_two_finger);
+%         ImproveFigure(h);
+%         figure_name = strcat('twopoints_push_log', int2str(ind));
+%         savefig2pdf(h, figure_save_folder, figure_name);
     end
 end

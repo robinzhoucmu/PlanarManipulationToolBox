@@ -37,9 +37,12 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
             if nargin < 2
                 num_sim_segs = 1;
             end
+            % Note that 'MaxStep' has a significant effect on simulation
+            % speed. However, if 'MaxStep' is too large, penetration may
+            % happen and the simulation will not be accurate. 
             opts = odeset('RelTol',1e-4,...
               'AbsTol', 1e-5,...
-              'MaxStep',0.005);             
+              'MaxStep',0.05);             
             dt_record = 0.02;
             %results.all_contact_info = {};
             results.hand_configs = [];
@@ -55,7 +58,11 @@ classdef ForwardSimulationCombinedStateNewGeometry < handle
                 cur_t = t_start;
                 cur_hand_q = obj.hand_traj.GetHandConfiguration(cur_t);
                 % Roll out the hand trajectory until contact happens.
-                obj.pushobj.InjectLSNoise();
+                % Uncomment for noise injection to the model. For each
+                % segment, we keep the model as the same. A good rule of
+                % thumb is 10 segments at most. Otherwise ODE may suffer
+                % from convergence. 
+                %obj.pushobj.InjectLSNoise();
                 obj.mu_cur  = max(0, rand() * (obj.mu_max - obj.mu_min) + obj.mu_min);
                 sol = ode45(@obj.ObjectHandMotion, t_range, [obj.pushobj.pose;cur_hand_q], opts);                
                 %t_eval = 0:dt_record:t_max;

@@ -243,10 +243,11 @@ classdef PlanningPushingMaze < handle
             action_records = action_records(end-1:-1:1);
         end
         
-        function [] = VisualizePath(obj, traj_obj_way_pts, action_records)         
+        function [] = VisualizePath(obj, traj_obj_way_pts, action_records, hand)         
             num_steps_draw = 20;
             num_switches = size(traj_obj_way_pts, 2) - 1;
             color_map = ['b', 'm', 'c', 'r', 'g'];
+            %color_map = ['b', 'm', 'c', 'r', 'g'];
             for ind = 1:1:num_switches
                 h = figure;
                 hold on;
@@ -268,11 +269,20 @@ classdef PlanningPushingMaze < handle
                     vertices = SE2Algebra.GetPointsInGlobalFrame(obj.obj_vertices, obj_pose);
                     vertices(:,end+1) = vertices(:,1);
                     c = color_map(mod(ind, length(color_map)) + 1);
-                    plot(vertices(1,:), vertices(2,:), '-', 'Color', c);
+                    plot(vertices(1,:), vertices(2,:), '-', 'Color', 'm');
                     end
                 end
+                q = zeros(4,1);
+                 q(1:3) = traj_pusherframe(:,1);
+                 q(3) = q(3) + pi/2;
+                 q(4) = hand.q(4);
+                 hand.Draw(gcf, q, 'k', 3.0);
+                 hold on;
                 axis([obj.boundary(1,1) obj.boundary(1,2) obj.boundary(2,1) obj.boundary(2,2)]);
                 axis equal;
+                ImproveFigure(gcf);
+                xlabel('X/m');
+                ylabel('Y/m');
             end
         
         end

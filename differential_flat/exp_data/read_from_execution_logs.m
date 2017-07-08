@@ -9,6 +9,8 @@ file_names = cell(num_files, 1);
 for i = 1:1:num_files
     file_name = file_infos(i).name;
     data_log = csvread(fullfile(folder_name, file_name));
+    % Discard the first row. 
+    data_log(1,:) = [];
     file_names{i} = fullfile(folder_name, file_name);
     action_types = data_log(:, end);
     indices_transition = find((action_types(2:end) == action_types(1:end-1))==0);

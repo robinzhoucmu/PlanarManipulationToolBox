@@ -21,13 +21,12 @@ function [pushobj_polygon, shape_info] = CreateNSidedPolygonPushObject(num_edges
     options_pressure.mode = 'uniform';
     pressure_weights = AssignPressure(support_pts, options_pressure);
     
-%     figure, plot(support_pts(:,1), support_pts(:,2), '^');
-%     axis equal;
-%     drawnow;
-
-    num_wrench_twist_pairs = 300;
+    num_wrench_twist_pairs = 50;
     ratio_facet = 0.1;
     pushobj_polygon = PushedObject(support_pts', pressure_weights, shape_info, ls_type);
+    tic;
+    display('Start to fit limit surface parameteric model.');
     pushobj_polygon.FitLS(ls_type, num_wrench_twist_pairs, ratio_facet);
-    
+    display('Complete the fitting procedure.')
+    toc;
 end

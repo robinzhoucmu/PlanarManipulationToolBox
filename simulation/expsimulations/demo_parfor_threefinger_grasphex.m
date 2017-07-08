@@ -1,5 +1,5 @@
 clear all;
-flag_plot = 0;
+flag_plot = 1;
 rng(1);
 p = gcp;
 if (isempty(p))
@@ -31,8 +31,8 @@ num_sides = 6;
 [pushobj_hex,shape_info] = CreateNSidedPolygonPushObject(num_sides, le, ls_type);
 
 tic;
-num_poses_xy = 100;
-num_poses_theta = 11; 
+num_poses_xy = 10;
+num_poses_theta = 5; 
 num_poses = num_poses_xy * num_poses_theta;
 sample_radius = le;
 sample_angle = pi * 2.0 / 6;
@@ -45,7 +45,7 @@ parfor ind_pose = 1:1:num_poses
     pushobj.pose = sampled_ic_poses(:, ind_pose);
     hand_three_finger = ConstructThreeFingersOneDofHand(finger_radius);
     hand_traj = HandTraj(hand_traj_opts);
-    sim_inst = ForwardSimulationCombinedState(pushobj, hand_traj, hand_three_finger, mu);
+    sim_inst = ForwardSimulationCombinedStateNewGeometry(pushobj, hand_traj, hand_three_finger, mu);
     sim_results_all{ind_pose} = sim_inst.RollOut();
     ind_pose
 end
@@ -59,41 +59,41 @@ end
 if (flag_plot)
     [h1, h2] = PlotPrePostDistributions(sim_results_all, pushobj_hex.pho,0, 0);
     [h3] = PlotObjectConfigurationTrajectory(sim_results_all, pushobj_hex.pho,0,0);
-%     figure; seg = 10; 
-%     ks = 4;
-%     for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
-%         traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_tri.pho;
-%         quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);
-%         hold on;
-%     end
+    figure; seg = 10; 
+    ks = 4;
+    for i = (ks)*num_poses_xy:1:(ks+1)*num_poses_xy
+        traj_obj = sim_results_all{i}.obj_configs; traj_obj(1:2,:) = traj_obj(1:2, :) / pushobj_hex.pho;
+        quiver3(traj_obj(1,1:seg:end-1), traj_obj(2,1:seg:end-1), traj_obj(3,1:seg:end-1), traj_obj(1,2:seg:end) - traj_obj(1,1:seg:end-1), traj_obj(2,2:seg:end) - traj_obj(2,1:seg:end-1), traj_obj(3,2:seg:end) -traj_obj(3,1:seg:end-1) , 'MaxHeadSize', 0.2);
+        hold on;
+    end
 end
 str_datetime = datestr(datetime('now'));
 str_file_to_save = strcat('data_logs/', str_datetime);
 pushobj = pushobj_hex;
 save(str_file_to_save, 'sim_results_all', 'q_inits', 'q_ends', 'pushobj');
-% hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
-% for ind_pose = 1:1:num_poses
-%     sim_results = sim_results_all{ind_pose};
-%     num_rec_configs = size(sim_results.obj_configs, 2);
-%     h = figure;
-%     hold on;
-%     seg_size = 10;
-%     for i = 1:1:num_rec_configs
-%         if mod(i, seg_size) == 1
-%             if (i == 1) || (i + seg_size > num_rec_configs)
-%                 c = 'k';
-%                 c_obj = 'b';
-%             else
-%                 c = 'g';
-%                 c_obj = 'r';
-%             end
-%         % Plot the square object.
-%             plot(sim_results.obj_configs(1, i), sim_results.obj_configs(2,i), 'b+');
-%             vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj_tri.shape_vertices, sim_results.obj_configs(:,i));
-%             vertices(:,end+1) = vertices(:,1);
-%             plot(vertices(1,:), vertices(2,:), '-', 'Color', c_obj);
-%             hand_for_plot.Draw(h, sim_results.hand_configs(:, i), c);
-%         end
-%     end
-%     axis equal;    
-% end
+hand_for_plot = ConstructThreeFingersOneDofHand(finger_radius);
+for ind_pose = 1:1:num_poses
+    sim_results = sim_results_all{ind_pose};
+    num_rec_configs = size(sim_results.obj_configs, 2);
+    h = figure;
+    hold on;
+    seg_size = 10;
+    for i = 1:1:num_rec_configs
+        if mod(i, seg_size) == 1
+            if (i == 1) || (i + seg_size > num_rec_configs)
+                c = 'k';
+                c_obj = 'b';
+            else
+                c = 'g';
+                c_obj = 'r';
+            end
+        % Plot the square object.
+            plot(sim_results.obj_configs(1, i), sim_results.obj_configs(2,i), 'b+');
+            vertices = SE2Algebra.GetPointsInGlobalFrame(pushobj_hex.shape_vertices, sim_results.obj_configs(:,i));
+            vertices(:,end+1) = vertices(:,1);
+            plot(vertices(1,:), vertices(2,:), '-', 'Color', c_obj);
+            hand_for_plot.Draw(h, sim_results.hand_configs(:, i), c);
+        end
+    end
+    axis equal;    
+end

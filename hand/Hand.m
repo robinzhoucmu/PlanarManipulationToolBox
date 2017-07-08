@@ -100,8 +100,8 @@ classdef Hand < handle
             finger_carts_global = obj.GetGlobalFingerCartesians();
             if strcmp(obj.finger_type, 'all_circles')
                 for i = 1:1:obj.num_fingers
-                    drawCircle(finger_carts_global(1,i), finger_carts_global(2,i), ...
-                        obj.finger_radius, 'color', c, 'LineWidth', lw);
+                     drawCircle(finger_carts_global(1,i), finger_carts_global(2,i), ...
+                         obj.finger_radius, 'color', c, 'LineWidth', lw);
                 end
             elseif strcmp(obj.finger_type, 'multi_polygons')
                 % Draw each polygons.

@@ -96,7 +96,8 @@ rrt_planner_maze.SetPolygonObjectAndRoundPusherGeometry(shape_info.shape_vertice
 tic;
 [traj_obj, traj_pusher, action_records] = rrt_planner_maze.RRTPlanPath();
 toc;
-rrt_planner_maze.VisualizePath(traj_obj, action_records);
+hand_two_finger.q(4) = width_finger;
+rrt_planner_maze.VisualizePath(traj_obj, action_records, hand_two_finger);
 
 table_center = [0; -317.5/1000; 0];
 [traj_obj_exec, traj_pusher_exec, action_ids] = rrt_planner_maze.GetPusherExpExecutePath(traj_obj, action_records, table_center(1), table_center(2));
