@@ -19,14 +19,16 @@ See reference https://arxiv.org/pdf/1705.10664.pdf for more details.
 5) Helper files include plotting tools and SE(2) algebra.
 
 External packages:
-Polygonal geometry:
+
+1) Polygonal geometry:
 https://www.mathworks.com/matlabcentral/fileexchange/7844-geom2d/content/geom2d/polygons2d/projPointOnPolygon.m
-SDP solver for limit surface fitting:
+
+2) SDP solver for limit surface fitting:
 http://cvxr.com/cvx/
 
 Key references:
 
-Zhou J, Paolini R, Bagnell JA and Mason MT (2016) A convex polynomial force-motion model for planar sliding: identification and application. In: 2016 IEEE International Conference on Robotics and Automation (ICRA). pp. 372–377.
+Jiaji Zhou, R. Paolini, J. A. Bagnell, and M. T. Mason. A convex polynomial force-motion model for planar sliding: identification and application. In: 2016 IEEE International Conference on Robotics and Automation (ICRA). pp. 372–377.
 
 Jiaji Zhou, J Andrew Bagnell, and Matthew T Mason. A fast stochastic contact model for planar pushing and grasping: Theory and experimental validation. In Robotics: Science and systems XIII, 2017.
 
