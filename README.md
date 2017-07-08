@@ -21,7 +21,7 @@ See reference https://arxiv.org/pdf/1705.10664.pdf for more details.
 External packages:
 
 1) Polygonal geometry:
-https://www.mathworks.com/matlabcentral/fileexchange/7844-geom2d/content/geom2d/polygons2d/projPointOnPolygon.m
+https://www.mathworks.com/matlabcentral/fileexchange/7844-geom2d
 
 2) SDP solver for limit surface fitting:
 http://cvxr.com/cvx/
